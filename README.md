@@ -1,0 +1,31 @@
+# Photo Authenticity Checker
+
+Checks a single photo and gives one clear verdict: is it real, fully AI-generated, or partly changed by AI? It also shows a calibrated confidence and **where** the evidence is (the edited region, a suspicious face, or where the AI traces are strongest).
+
+Built for the **Meta Global AI Developer Hackathon 2026** (Indie Developer track, theme "Build for Your World"), 26 Oct – 4 Nov 2026.
+
+> **Status:** work in progress. Day 2: project setup only, no model code yet.
+
+## Why
+
+Fake and AI-edited images spread fast through forwarded messages (for example on WhatsApp). People who receive them, fact-checkers and journalists need a quick, honest answer, and one that rarely calls a real photo fake.
+
+## How it works
+
+*Coming soon.* Planned: one Meta DINOv3 backbone for the whole image and for each face, an edited-region map, SAM 3.1 to name regions, and Muse Spark for a short plain-language explanation. The verdict never depends on an external API call.
+
+## Data used
+
+| Dataset | Link | Licence / terms | Used for |
+|---|---|---|---|
+| WildDeepfake | [Hugging Face](https://huggingface.co/datasets/xingjunm/WildDeepfake) | Hugging Face lists Apache 2.0; the authors' [GitHub](https://github.com/OpenTAI/wild-deepfake) states research-only use | Evaluation only (test split) |
+
+*More datasets will be added here as they are used.*
+
+## Background
+
+I worked on the same problem in ImageCLEF 2026 ([paper](https://ceur-ws.org/Vol-4283/paper289.pdf)). This project was built from scratch during the hackathon, with different models and a different architecture.
+
+## Licence
+
+To be decided.
