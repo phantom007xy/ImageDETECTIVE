@@ -1,0 +1,36 @@
+# private notes for Claude Code (this file)
+CLAUDE.local.md
+# Claude Code's local settings for this folder
+.claude/settings.local.json
+# secrets
+.env
+*.env
+kaggle.json
+# model weights and saved features
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.npy
+*.npz
+checkpoints/
+weights/
+features/
+# data (including my private photos)
+data/raw/
+data/images/
+data/private/
+*.zip
+*.tar
+*.tar.gz
+# python and tools
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+wandb/
+runs/
+flagged/
+.gradio/
