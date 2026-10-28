@@ -19,7 +19,7 @@ Fake and AI-edited images spread fast through forwarded messages (for example on
 | Dataset | Link | Licence / terms | Used for |
 |---|---|---|---|
 | WildDeepfake | [Hugging Face](https://huggingface.co/datasets/xingjunm/WildDeepfake) | Hugging Face lists Apache 2.0; the authors' [GitHub](https://github.com/OpenTAI/wild-deepfake) states research-only use | Evaluation only (test split) |
-| Chameleon | [AIDE GitHub](https://github.com/shilinyan99/AIDE) (access on request from the authors) | "Only used for academic research. Commercial use in any form is prohibited." (authors' terms) | Evaluation only |
+| Chameleon | [AIDE GitHub](https://github.com/shilinyan99/AIDE); the official release is a list of image URLs, and the images were obtained via the copy the authors pointed to ([issue #1](https://github.com/shilinyan99/AIDE/issues/1)) | "Only used for academic research. Commercial use in any form is prohibited." (authors' terms). The images belong to their original owners and are not shared in this repository | Evaluation only |
 
 *More datasets will be added here as they are used.*
 
