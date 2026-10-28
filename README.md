@@ -28,4 +28,4 @@ I worked on the same problem in ImageCLEF 2026 ([paper](https://ceur-ws.org/Vol-
 
 ## Licence
 
-To be decided.
+The code in this repository is released under the [MIT Licence](LICENSE). It covers only the code written for this project. Pretrained models (e.g. DINOv3, under the [DINOv3 Licence](https://ai.meta.com/resources/models-and-libraries/dinov3-license)) and datasets are not part of this repository and keep their own licences (see "Data used" above).
