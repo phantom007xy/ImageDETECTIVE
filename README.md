@@ -19,8 +19,22 @@ Fake and AI-edited images spread fast through forwarded messages (for example on
 | Dataset | Link | Licence / terms | Used for |
 |---|---|---|---|
 | WildDeepfake | [Hugging Face](https://huggingface.co/datasets/xingjunm/WildDeepfake) | Hugging Face lists Apache 2.0; the authors' [GitHub](https://github.com/OpenTAI/wild-deepfake) states research-only use | Evaluation only (test split) |
+| Chameleon | [AIDE GitHub](https://github.com/shilinyan99/AIDE) (access on request from the authors) | "Only used for academic research. Commercial use in any form is prohibited." (authors' terms) | Evaluation only |
 
 *More datasets will be added here as they are used.*
+
+### References
+
+- **Chameleon** comes from *A Sanity Check for AI-generated Image Detection* by Shilin Yan, Ouxiang Li, Jiayin Cai, Yanbin Hao, Xiaolong Jiang, Yao Hu and Weidi Xie ([arXiv:2406.19435](https://arxiv.org/abs/2406.19435), [project page](https://shilinyan99.github.io/AIDE)). The paper asks whether AI-image detectors still work on today's most realistic AI images. Its Chameleon set (26,033 images: 14,863 real, 11,170 AI-generated) keeps only AI images that human annotators took for real photos. The paper also proposes AIDE, a detector that combines low-level pixel traces with high-level image meaning.
+
+```bibtex
+@article{yan2024sanity,
+  title={A Sanity Check for AI-generated Image Detection},
+  author={Yan, Shilin and Li, Ouxiang and Cai, Jiayin and Hao, Yanbin and Jiang, Xiaolong and Hu, Yao and Xie, Weidi},
+  journal={arXiv preprint arXiv:2406.19435},
+  year={2024}
+}
+```
 
 ## Background
 
