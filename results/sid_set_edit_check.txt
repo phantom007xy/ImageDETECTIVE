@@ -1,0 +1,31 @@
+﻿=== format and size per class ===
+real        314 images | formats {'JPEG': 314} | square 15/314 | most common size (1024, 768)
+synthetic   272 images | formats {'PNG': 272} | square 272/272 | most common size (1024, 1024)
+tampered    297 images | formats {'JPEG': 272, 'PNG': 25} | square 297/297 | most common size (1024, 1024)
+
+=== masks (tampered) ===
+mask has the same size as the image: {True: 272, False: 25}
+edited share of the image: median 0.09 [10%: 0.01, 90%: 0.38]
+
+=== fine texture (mean residual, higher = more fine noise) ===
+real              median 1.72 [10%: 0.67, 90%: 4.40]
+synthetic         median 0.95 [10%: 0.34, 90%: 2.62]
+tampered inside   median 1.87 [10%: 0.73, 90%: 3.82]
+tampered outside  median 1.27 [10%: 0.42, 90%: 3.16]
+
+=== how different are they? (AUC: 0.5 = same, 1.0 = fully separable) ===
+real vs synthetic                : 0.70
+real vs tampered OUTSIDE the mask: 0.61   <- near 0.5 = outside looks like a real photo
+synthetic vs tampered OUTSIDE    : 0.60   <- near 0.5 = outside looks synthetic
+tampered inside vs outside       : 0.64   <- near 0.5 = no local difference
+
+=== noise in FLAT areas only (edges removed, so content matters less) ===
+real               314 images | median 1.27 [10%: 0.56, 90%: 3.06]
+synthetic          272 images | median 0.63 [10%: 0.28, 90%: 1.82]
+tampered inside    292 images | median 1.39 [10%: 0.55, 90%: 2.65]
+tampered outside   292 images | median 1.03 [10%: 0.32, 90%: 2.35]
+real vs synthetic                : 0.76
+real vs tampered OUTSIDE the mask: 0.61
+synthetic vs tampered OUTSIDE    : 0.65
+tampered inside vs outside       : 0.62
+share of tampered images where the edit is smoother than its surroundings: 37%
