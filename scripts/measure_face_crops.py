@@ -14,6 +14,7 @@ Usage:
 """
 
 import argparse
+import csv
 import statistics
 from pathlib import Path
 
@@ -64,8 +65,17 @@ def measure_frame(detector, image):
 
 
 def median_of(rows, key):
-    values = [r[key] for r in rows if key in r]
+    values = [r[key] for r in rows if r.get(key) == r.get(key)]  # skips missing and NaN values
     return statistics.median(values) if values else float("nan")
+
+
+def spread_of(rows, key):
+    """10th and 90th percentile, ignoring missing values."""
+    values = [r[key] for r in rows if r.get(key) == r.get(key)]  # x == x is False for NaN
+    if len(values) < 2:
+        return float("nan"), float("nan")
+    deciles = statistics.quantiles(values, n=10)
+    return deciles[0], deciles[-1]
 
 
 def main():
@@ -73,6 +83,7 @@ def main():
     parser.add_argument("--model", required=True, help="path to the YuNet .onnx file")
     parser.add_argument("--frames-per-seq", type=int, default=0,
                         help="measure only this many evenly spaced frames per sequence (0 = all)")
+    parser.add_argument("--csv", help="write one row per sequence to this CSV file instead of printing it")
     parser.add_argument("dirs", nargs="+", help="folders with extracted crops")
     args = parser.parse_args()
 
@@ -90,8 +101,12 @@ def main():
                 frames = [frames[i] for i in picks]
             rows = [measure_frame(detector, cv2.imread(str(f))) for f in frames]
             found = [r for r in rows if r["found"]]
+            relative = seq.relative_to(root)
             summary = {
-                "sequence": str(seq.relative_to(root)),
+                "label": label,
+                # The archive folder groups sequences that probably come from the same video.
+                "archive": f"{root.name}/{relative.parts[0]}",
+                "sequence": relative.as_posix(),
                 "frames": len(rows),
                 "found_rate": len(found) / len(rows),
                 "k": median_of(found, "k"),
@@ -100,16 +115,28 @@ def main():
                 "brightness": median_of(rows, "brightness"),
             }
             per_class.setdefault(label, []).append(summary)
-            print(f"[{label}] {summary['sequence']}: {summary['frames']} frames, face found in "
-                  f"{summary['found_rate']:.0%} | k = {summary['k']:.2f} eye distances | "
-                  f"centre {summary['offset_y']:+.2f} below eyes | sharpness {summary['sharpness']:.0f} | "
-                  f"brightness {summary['brightness']:.0f}")
+            if not args.csv:
+                print(f"[{label}] {summary['sequence']}: {summary['frames']} frames, face found in "
+                      f"{summary['found_rate']:.0%} | k = {summary['k']:.2f} eye distances | "
+                      f"centre {summary['offset_y']:+.2f} below eyes | sharpness {summary['sharpness']:.0f} | "
+                      f"brightness {summary['brightness']:.0f}")
 
-    print("\n=== per class (median over sequences) ===")
+    if args.csv:
+        all_rows = [s for seqs in per_class.values() for s in seqs]
+        with open(args.csv, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=list(all_rows[0]))
+            writer.writeheader()
+            writer.writerows(all_rows)
+        print(f"wrote {len(all_rows)} sequences to {args.csv}")
+
+    print("\n=== per class: median over sequences [10th - 90th percentile] ===")
     for label, seqs in sorted(per_class.items()):
-        print(f"{label}: {len(seqs)} sequences | k = {median_of(seqs, 'k'):.2f} | "
-              f"centre {median_of(seqs, 'offset_y'):+.2f} below eyes | "
-              f"sharpness {median_of(seqs, 'sharpness'):.0f} | brightness {median_of(seqs, 'brightness'):.0f}")
+        found = statistics.mean(s["found_rate"] for s in seqs)
+        line = f"{label}: {len(seqs)} sequences, face found in {found:.0%} of frames"
+        for key, fmt in (("k", ".2f"), ("offset_y", "+.2f"), ("sharpness", ".0f"), ("brightness", ".0f")):
+            low, high = spread_of(seqs, key)
+            line += f" | {key} {median_of(seqs, key):{fmt}} [{low:{fmt}} - {high:{fmt}}]"
+        print(line)
 
 
 if __name__ == "__main__":
