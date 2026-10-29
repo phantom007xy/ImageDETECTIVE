@@ -1,6 +1,6 @@
-# Photo Authenticity Checker
+# ImageDETECTIVE
 
-Checks a single photo and gives one clear verdict: is it real, fully AI-generated, or partly changed by AI? It also shows a calibrated confidence and **where** the evidence is (the edited region, a suspicious face, or where the AI traces are strongest).
+An authenticity checker for photos. It checks a single photo and gives one clear verdict: is it real, fully AI-generated, or partly changed by AI? It also shows a calibrated confidence and **where** the evidence is (the edited region, a suspicious face, or where the AI traces are strongest).
 
 Built for the **Meta Global AI Developer Hackathon 2026** (Indie Developer track, theme "Build for Your World"), 26 Oct – 4 Nov 2026.
 
