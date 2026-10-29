@@ -4,7 +4,7 @@ An authenticity checker for photos. It checks a single photo and gives one clear
 
 Built for the **Meta Global AI Developer Hackathon 2026** (Indie Developer track, theme "Build for Your World"), 26 Oct – 4 Nov 2026.
 
-> **Status:** work in progress. Day 2: project setup only, no model code yet.
+> **Status:** work in progress. Day 4: data checks done, DINOv3 feature extraction working; no detector or app yet.
 
 ## Why
 
