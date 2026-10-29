@@ -16,7 +16,8 @@ kaggle.json
 *.npz
 checkpoints/
 weights/
-features/
+# saved feature files in the project root only (src/features/ is code and must be tracked)
+/features/
 # data (including my private photos)
 data/raw/
 data/images/
