@@ -73,6 +73,21 @@ def sd_faces_list(root, n, rng, out_dir):
     write_list(out_dir / "sd_faces.csv", rows)
 
 
+def sd_faces_train_list(root, n_per_version, rng, out_dir):
+    """Training list: SD 1.5 and SD 2.1 faces that are NOT in sd_faces.csv (the dev list).
+
+    SDXL stays out completely, as the generator the head has never seen. n_per_version is kept
+    small on purpose: many more AI portraits than real portraits would teach "portrait = AI".
+    """
+    with open(out_dir / "sd_faces.csv", newline="") as f:
+        dev = {r["path"] for r in csv.DictReader(f)}
+    rows = []
+    for res, version in (("512", "sd1.5"), ("768", "sd2.1")):
+        files = sorted(str(p) for who in ("man", "woman") for p in (root / res / who).glob("*.jpg") if str(p) not in dev)
+        rows += [{"path": p, "label": 1, "source": f"sd_faces/{version}"} for p in rng.sample(files, n_per_version)]
+    write_list(out_dir / "sd_faces_train.csv", rows)
+
+
 def wilddeepfake_list(root, frames_per_seq, out_dir):
     """A few evenly spaced frames per sequence (neighbouring frames are near-identical)."""
     rows = []
@@ -101,6 +116,7 @@ def main():
     parser.add_argument("--wilddeepfake", type=Path, help="the extracted WildDeepfake test folder")
     parser.add_argument("--frames-per-seq", type=int, default=8)
     parser.add_argument("--muse-image", type=Path, help="a folder made by scripts/make_muse_images.py")
+    parser.add_argument("--sd-faces-train", type=int, help="with --sd-faces: also a training list, N per SD 1.5 / 2.1")
     parser.add_argument("--n", type=int, default=1000, help="images per class (Chameleon) or in total (SD faces)")
     parser.add_argument("--out-dir", type=Path, default=Path("features/lists"))
     parser.add_argument("--seed", type=int, default=0)
@@ -110,7 +126,9 @@ def main():
     rng = random.Random(args.seed)
     if args.chameleon:
         chameleon_lists(args.chameleon, args.n, rng, args.out_dir)
-    if args.sd_faces:
+    if args.sd_faces and args.sd_faces_train:
+        sd_faces_train_list(args.sd_faces, args.sd_faces_train, rng, args.out_dir)  # keeps sd_faces.csv as it is
+    elif args.sd_faces:
         sd_faces_list(args.sd_faces, args.n, rng, args.out_dir)
     if args.wilddeepfake:
         wilddeepfake_list(args.wilddeepfake, args.frames_per_seq, args.out_dir)

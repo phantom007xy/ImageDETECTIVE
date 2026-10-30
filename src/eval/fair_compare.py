@@ -7,6 +7,7 @@ come from the app's preprocessing (python -m src.features.extract --mode app), s
 what the app would do. Only dev sets belong here, never Chameleon or a final test set.
 
 Real pools use the real images (label 0) of their files, fake sets the AI images (label 1).
+"NAME:file@source" keeps only one source of a file (e.g. features/sd_faces_app.npz@sd_faces/sdxl).
 A real pool may be private (data/private/...): only its saved feature vectors are read, never
 the photos, and only totals are printed.
 
@@ -28,9 +29,13 @@ from src.models.linear_head import LinearHead
 MAX_FALSE_ALARMS = 0.05
 
 
-def load(path, label):
+def load(spec, label):
+    """spec = "path" or "path@source": only the images of that label (and source, if given)."""
+    path, _, source = spec.partition("@")
     data = np.load(path)
     keep = data["labels"] == label
+    if source:
+        keep &= data["sources"] == source
     return torch.from_numpy(data["features"][keep].astype(np.float32))
 
 
