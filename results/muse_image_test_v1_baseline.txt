@@ -1,0 +1,47 @@
+Baseline on 100 Muse Image fakes, 30 Oct 2026 (the "before" number; Muse Image not yet in training).
+Images: scripts/make_muse_images.py with data/prompts/muse_image_test_v1.csv (test only, never training):
+100 of 100 generated, none refused, $1.00. Standard mode (muse-image-1.0), search tools off, PNG.
+Sizes returned: 1792x1344 (48), 1344x1792 (21), 1920x1280 (16), 1600x1600 (11), 1152x2048 (3), 1280x1920 (1).
+Heads: weights/head_path_a_sidset30.pt (frozen DINOv3-L, SID-Set = OpenImages vs. FLUX), weights/head_face_sidset10.pt.
+Only AI images here, so no false-alarm numbers.
+
+== The app's view (python -m src.eval.app_verdicts --head weights/head_path_a_sidset30.pt
+   --list features/lists/muse_image_test_v1.csv; whole image, aspect ratio kept, AI >= 0.65, authentic <= 0.35) ==
+AI, all                            n= 100 | Likely AI-generated  30 ( 30%) | Uncertain  17 ( 17%) | Likely authentic  53 ( 53%)
+  muse_image/animal                n=  14 | Likely AI-generated   4 ( 29%) | Uncertain   0 (  0%) | Likely authentic  10 ( 71%)
+  muse_image/object_food           n=  13 | Likely AI-generated   6 ( 46%) | Uncertain   2 ( 15%) | Likely authentic   5 ( 38%)
+  muse_image/people/candid         n=  12 | Likely AI-generated   6 ( 50%) | Uncertain   2 ( 17%) | Likely authentic   4 ( 33%)
+  muse_image/people/group          n=  12 | Likely AI-generated   3 ( 25%) | Uncertain   3 ( 25%) | Likely authentic   6 ( 50%)
+  muse_image/people/indoor_lowlight n=  12 | Likely AI-generated   7 ( 58%) | Uncertain   3 ( 25%) | Likely authentic   2 ( 17%)
+  muse_image/people/portrait       n=  12 | Likely AI-generated   2 ( 17%) | Uncertain   2 ( 17%) | Likely authentic   8 ( 67%)
+  muse_image/people/selfie         n=  12 | Likely AI-generated   0 (  0%) | Uncertain   2 ( 17%) | Likely authentic  10 ( 83%)
+  muse_image/scene                 n=  13 | Likely AI-generated   2 ( 15%) | Uncertain   3 ( 23%) | Likely authentic   8 ( 62%)
+
+== Fixed centre crop, threshold 0.5 (python -m src.eval.evaluate_head --test features/muse_image_test_v1_eval.npz) ==
+Path A head, whole image:
+muse_image_test_v1_eval                0 real   100 AI | AI caught 41.0%
+  muse_image/animal                    0 real    14 AI | AI caught 35.7%
+  muse_image/object_food               0 real    13 AI | AI caught 46.2%
+  muse_image/people/candid             0 real    12 AI | AI caught 66.7%
+  muse_image/people/group              0 real    12 AI | AI caught 41.7%
+  muse_image/people/indoor_lowlight     0 real    12 AI | AI caught 83.3%
+  muse_image/people/portrait           0 real    12 AI | AI caught 25.0%
+  muse_image/people/selfie             0 real    12 AI | AI caught 16.7%
+  muse_image/scene                     0 real    13 AI | AI caught 15.4%
+Face head, per face (SAM 3 found 184 faces in the 100 images):
+muse_image_test_v1_eval                0 real   184 AI | AI caught 31.5%
+  muse_image/people/selfie             0 real    15 AI | AI caught 13.3%
+  muse_image/people/portrait           0 real    12 AI | AI caught 25.0%
+  muse_image/people/group              0 real    71 AI | AI caught 28.2%
+
+-> FAILS the judge test: more than half of these judge-like fakes are called "Likely authentic", worst on
+   bright selfies and portraits. A head trained on one generator (FLUX) does not transfer to Muse Image.
+-> Low-light people are caught most often (83%): probably partly the brightness bias
+   (results/face_head_first_results.txt), not real AI traces.
+-> Fix: Muse Image (and more generators) in training, with matched real photos; this file is the "before".
+
+== Metadata ==
+Every file carries XMP with iptcExt:DigitalSourceType =
+http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia (no C2PA block).
+The detector reads pixels only, so it never sees this. A metadata check catches unchanged files with
+certainty; WhatsApp, screenshots and many editors strip it, so the pixel detector is still needed.
