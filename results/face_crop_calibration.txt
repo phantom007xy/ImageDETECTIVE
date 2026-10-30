@@ -1,0 +1,12 @@
+﻿SAM faces (>= 64 px): 1146 | no eyes found: 299 | not frontal: 444 | frontal: 403
+wrote results\face_crop_calibration.csv
+
+width_ratio      | real: median 2.53, spread 0.17 (n=184) | synthetic: median 2.61, spread 0.17 (n=219) | all: median 2.58, spread 0.17 (n=403)
+height_ratio     | real: median 3.11, spread 0.16 (n=184) | synthetic: median 3.05, spread 0.18 (n=219) | all: median 3.09, spread 0.17 (n=403)
+sqrt_mask_ratio  | real: median 2.30, spread 0.13 (n=184) | synthetic: median 2.31, spread 0.13 (n=219) | all: median 2.30, spread 0.13 (n=403)
+
+eyes relative to the box centre (eye distances): dx -0.01, dy -0.37 (real -0.39, synthetic -0.35)
+
+most stable base: sqrt_mask_ratio (median 2.30 x eye distance)
+crop rule in SAM units: eye distance ~= sqrt_mask / 2.30; side = 1.74 x sqrt_mask; centre = box centre + (-0.37 + 0.6) eye distances downwards
+took 12.1 min
