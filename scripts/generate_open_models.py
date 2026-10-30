@@ -8,8 +8,10 @@ Models (licences checked 31 Oct 2026):
   sd35m  = stabilityai/stable-diffusion-3.5-medium (Stability AI Community License: free below $1M
            revenue, we own the outputs, outputs must not train a *generative* foundation model;
            gated: accept the terms once on Hugging Face)
-  pixart = PixArt-alpha/PixArt-Sigma-XL-2-1024-MS (OpenRAIL++, open)
-No SDXL-based model on purpose: SDXL stays the generator the head has never seen.
+  pixart = PixArt-alpha/PixArt-Sigma-XL-2-1024-MS (OpenRAIL++, open). It uses SDXL's decoder (VAE),
+           so its images are a dev test only, never training: SDXL must stay unseen.
+  k22    = kandinsky-community/kandinsky-2-2-decoder + -prior (Apache 2.0, open); its own MoVQ decoder
+No SDXL-based model for training: SDXL stays the generator the head has never seen.
 Runtime rule: these are offline data-preparation tools only; the app never calls them.
 
 Each model gets its own share of the prompts (--part / --parts), so every caption is used once.
@@ -33,8 +35,10 @@ import numpy as np
 import torch
 
 MODELS = {
-    "sd35m": {"repo": "stabilityai/stable-diffusion-3.5-medium", "steps": 28, "guidance": 4.5},
-    "pixart": {"repo": "PixArt-alpha/PixArt-Sigma-XL-2-1024-MS", "steps": 20, "guidance": 4.5},
+    "sd35m": {"repo": "stabilityai/stable-diffusion-3.5-medium", "steps": 28, "guidance": 4.5, "megapixels": 0.8},
+    "pixart": {"repo": "PixArt-alpha/PixArt-Sigma-XL-2-1024-MS", "steps": 20, "guidance": 4.5, "megapixels": 0.8},
+    # Kandinsky 2.2 was trained at 768 x 768, so it gets a smaller size.
+    "k22": {"repo": "kandinsky-community/kandinsky-2-2-decoder", "steps": 30, "guidance": 4.0, "megapixels": 0.6},
 }
 FIELDS = ["id", "file", "width", "height", "seconds", "status"]
 
@@ -45,6 +49,9 @@ def load_pipeline(name, device):
         from diffusers import StableDiffusion3Pipeline
         pipe = StableDiffusion3Pipeline.from_pretrained(MODELS[name]["repo"], torch_dtype=torch.float16)
         pipe.enable_model_cpu_offload(gpu_id=torch.device(device).index or 0)
+    elif name == "k22":
+        from diffusers import AutoPipelineForText2Image  # loads the prior and the decoder together
+        pipe = AutoPipelineForText2Image.from_pretrained(MODELS[name]["repo"], torch_dtype=torch.float16).to(device)
     else:
         from diffusers import PixArtSigmaPipeline
         pipe = PixArtSigmaPipeline.from_pretrained(MODELS[name]["repo"], torch_dtype=torch.float16).to(device)
@@ -67,7 +74,7 @@ def main():
     parser.add_argument("--parts", type=int, default=1)
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--device", default="cuda:0")
-    parser.add_argument("--megapixels", type=float, default=0.8)
+    parser.add_argument("--megapixels", type=float, help="image size; default: the model's own setting")
     parser.add_argument("--limit", type=int, help="generate at most this many new images (for a quick test)")
     args = parser.parse_args()
 
@@ -93,7 +100,7 @@ def main():
         if new_file:
             writer.writeheader()
         for i, row in enumerate(todo, 1):
-            width, height = target_size(row["size"], args.megapixels)
+            width, height = target_size(row["size"], args.megapixels or settings["megapixels"])
             seed = zlib.crc32(row["id"].encode())  # the same image on every run
             start = time.time()
             image = pipe(row["prompt"], width=width, height=height, num_inference_steps=settings["steps"],
