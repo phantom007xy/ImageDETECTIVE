@@ -62,6 +62,21 @@ def eval_view(image, size=MODEL_SIZE):
     return jpeg(square_crop(image, side, (w - side) // 2, (h - side) // 2, size), 90)
 
 
+def inference_view(image, long_side=MODEL_SIZE):
+    """For the app: the whole image with its aspect ratio kept, so the evidence map covers all of it.
+
+    The long side becomes `long_side`; both sides are then trimmed (at most 15 px) to a multiple
+    of 16, so every pixel belongs to a whole patch. Same JPEG step as eval_view.
+    """
+    w, h = image.size
+    scale = long_side / max(w, h)
+    w, h = max(16, round(w * scale)), max(16, round(h * scale))
+    image = image.resize((w, h), Image.BICUBIC)
+    keep_w, keep_h = w - w % 16, h - h % 16
+    left, top = (w - keep_w) // 2, (h - keep_h) // 2
+    return jpeg(image.crop((left, top, left + keep_w, top + keep_h)), 90)
+
+
 def to_tensor(image):
     """PIL RGB -> normalised [3, H, W] float tensor."""
     pixels = torch.from_numpy(np.asarray(image, dtype=np.float32) / 255.0).permute(2, 0, 1)
