@@ -38,7 +38,7 @@ from PIL import Image, ImageOps  # noqa: E402
 
 from src.data import preprocess  # noqa: E402
 from src.faces.sam_faces import FaceFinder  # noqa: E402
-from src.inference import AI_ABOVE, REAL_BELOW  # noqa: E402
+from src.inference import load_calibration  # noqa: E402
 from src.models.backbone import Backbone  # noqa: E402
 from src.models.linear_head import LinearHead  # noqa: E402
 
@@ -88,6 +88,7 @@ def main():
         }
         for name, head in heads.items():
             row[f"p_{name}"] = round(probability(head, app_view), 4)
+            row[f"logit_{name}"] = round(float(head.logits(app_view)[0]), 4)
             row[f"p_{name}_centre_crop"] = round(probability(head, crop_view), 4)
         rows.append(row)
 
@@ -122,12 +123,14 @@ def main():
             cells = "".join(f"{np.mean([r[f'p_{n}'] > 0.5 for r in part]):>9.0%}" for n in heads)
             print(f"  {title:<30}{len(part):>5}{cells}")
 
-    print(f"\nApp verdicts on all {len(rows)} photos (AI >= {AI_ABOVE}, authentic <= {REAL_BELOW}):")
+    print(f"\nApp verdicts on all {len(rows)} photos (each head's own calibration if it has one):")
     for name in heads:
-        p = np.array([r[f"p_{name}"] for r in rows])
-        print(f"  {name:<5} Likely AI-generated {int((p >= AI_ABOVE).sum()):>4} | "
-              f"Uncertain {int(((p > REAL_BELOW) & (p < AI_ABOVE)).sum()):>4} | "
-              f"Likely authentic {int((p <= REAL_BELOW).sum()):>4}")
+        _, ai_logit, real_logit, calibrated = load_calibration(HEADS[name])
+        z = np.array([r[f"logit_{name}"] for r in rows])
+        print(f"  {name:<5} Likely AI-generated {int((z > ai_logit).sum()):>4} | "
+              f"Uncertain {int(((z > real_logit) & (z <= ai_logit)).sum()):>4} | "
+              f"Likely authentic {int((z <= real_logit).sum()):>4}   "
+              f"({'calibrated' if calibrated else 'provisional 0.65 / 0.35'})")
 
     cells = "  ".join(f"{name} {np.mean([r[f'p_{name}_centre_crop'] > 0.5 for r in rows]):.0%}" for name in heads)
     print(f"\nFor comparison with the Chameleon numbers (centre crop), all photos called AI: {cells}")
