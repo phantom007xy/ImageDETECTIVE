@@ -1,0 +1,58 @@
+Muse Image same-content pairs (v1) and the wider brightness range, 30 Oct 2026. Frozen DINOv3-L + linear head.
+
+== Data ==
+500 real photos picked from SID-Set train files 0-9 (OpenImages; 300 with a SAM face), split 400 train / 100 val
+before generating. Muse Spark (muse-spark-1.3, standard mode, reasoning_effort minimal) captioned them:
+403 ok, 97 skipped (children or sensitive), $1.14. Muse Image (search tools off): 396 fakes, 7 refused, $3.96.
+Each fake is centre-cropped to its real photo's aspect ratio and resized to its size (scripts/make_pair_lists.py).
+-> 320 train pairs (16 random copies each), 76 val pairs. SID-Set files 0-9 are left out of the heads below, so
+no val real photo was seen in training.
+Brightness range in training: x0.85-1.15 (old) -> x0.6-1.5 (new, "aug_v2"), the same for real and AI.
+
+== Heads (python -m src.eval.compare_heads, A/B/C as below, --reference "Cham. random") ==
+A = old brightness range, SID-Set files 10-29 | B = new range, same files | C = B + the 320 train pairs
+A: 20 files, 44916 training vectors (22536 AI)
+    SID val          AUC 1.000 | real called AI  0.6% | AI caught 100.0% | caught at 5% FA 100.0%
+    Muse pairs val   AUC 0.861 | real called AI  0.0% | AI caught 14.5% | caught at 5% FA 42.1%
+    Cham. random     AUC 0.908 | real called AI  9.2% | AI caught 76.5% | caught at 5% FA 70.3%
+    Cham. size-m.    AUC 0.883 | real called AI  9.3% | AI caught 70.0% | caught at 5% FA 62.2%
+    Muse test (AI)   AI caught 42.0% | at the Cham. random 5%-FA threshold 29.0%
+    SD faces (AI)    AI caught 90.0% | at the Cham. random 5%-FA threshold 81.2%
+B: 20 files, 44916 training vectors (22536 AI)
+    SID val          AUC 1.000 | real called AI  0.6% | AI caught 100.0% | caught at 5% FA 100.0%
+    Muse pairs val   AUC 0.857 | real called AI  0.0% | AI caught 15.8% | caught at 5% FA 38.2%
+    Cham. random     AUC 0.907 | real called AI 10.0% | AI caught 77.6% | caught at 5% FA 71.3%
+    Cham. size-m.    AUC 0.883 | real called AI 10.4% | AI caught 71.5% | caught at 5% FA 61.4%
+    Muse test (AI)   AI caught 43.0% | at the Cham. random 5%-FA threshold 30.0%
+    SD faces (AI)    AI caught 91.6% | at the Cham. random 5%-FA threshold 82.8%
+C: 21 files, 55156 training vectors (27656 AI)
+    SID val          AUC 1.000 | real called AI  2.5% | AI caught 99.6% | caught at 5% FA 100.0%
+    Muse pairs val   AUC 0.980 | real called AI  3.9% | AI caught 88.2% | caught at 5% FA 90.8%
+    Cham. random     AUC 0.869 | real called AI 24.1% | AI caught 79.8% | caught at 5% FA 58.6%
+    Cham. size-m.    AUC 0.836 | real called AI 21.6% | AI caught 72.9% | caught at 5% FA 50.4%
+    Muse test (AI)   AI caught 95.0% | at the Cham. random 5%-FA threshold 81.0%
+    SD faces (AI)    AI caught 84.8% | at the Cham. random 5%-FA threshold 50.1%
+(One-off sweep, same data: pairs + only 5 SID-Set files -> Chameleon real called AI 33.0%; pairs only -> 37.3%.)
+
+== Which real photos does C flag? (one-off; Chameleon reals split by "SAM found a face >= 64 px") ==
+chameleon_random        head B: real called AI | with face  7.4% (n=310) | no face 11.2% (n=690)
+chameleon_random        head C: real called AI | with face 31.3% (n=310) | no face 20.9% (n=690)
+chameleon_size_matched  head B: real called AI | with face  9.7% (n=308) | no face 10.7% (n=692)
+chameleon_size_matched  head C: real called AI | with face 29.5% (n=308) | no face 18.1% (n=692)
+Simple image statistics hardly explain the rise (one-off; Spearman of the C-minus-B score with saturation -0.03,
+contrast +0.03, brightness +0.03, megapixels +0.05, sharpness +0.22).
+
+== Brightness check (python -m src.eval.brightness_check --list features/lists/chameleon_random.csv --view whole) ==
+300 real images from chameleon_random.csv (whole); per brightness factor: mean logit (share called AI at 0.5)
+  head_A                   x0.5:  -4.86 (  9%) | x0.7:  -5.21 (  9%) | x1:  -5.28 (  9%) | x1.3:  -5.92 (  8%) | x1.6:  -6.69 (  5%)
+  head_B                   x0.5:  -4.73 ( 10%) | x0.7:  -5.09 (  9%) | x1:  -5.16 (  9%) | x1.3:  -5.58 (  8%) | x1.6:  -6.12 (  6%)
+  head_C                   x0.5:  -2.51 ( 25%) | x0.7:  -2.84 ( 23%) | x1:  -2.91 ( 22%) | x1.3:  -3.43 ( 19%) | x1.6:  -4.07 ( 15%)
+
+== Conclusions ==
+-> Muse pairs fix the Muse problem: held-out Muse test 43% -> 95% caught (81% at a strict threshold).
+-> But C flags 24% of real Chameleon photos, 31% of those with faces: it partly learned "polished people photo
+   = AI". Our real training photos are older amateur Flickr snapshots (OpenImages); Muse fakes, Unsplash photos
+   (Chameleon's reals) and modern phone photos all look polished. C is NOT safe for a judge's real selfie.
+-> The wider brightness range barely changes the darkness bias (logit rise at half brightness: A +0.42,
+   B +0.43, C +0.40); only the bright end improves a little. Real low-light photos must be tested.
+-> Next: modern, polished real photos in training (licence-clean), paired with Muse fakes of the same content.
