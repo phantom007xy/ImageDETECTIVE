@@ -1,4 +1,4 @@
-Polished real photos (Wikimedia Commons) and Commons pairs, 31 Oct 2026. Frozen DINOv3-L + linear head.
+Polished real photos (Wikimedia Commons) and Commons pairs, 30 Oct 2026. Frozen DINOv3-L + linear head.
 Rules from now on (plan Section 0): decisions only on dev sets, Chameleon closed until Day 8, every head
 gets its own threshold (at most 5% false alarms on every real dev pool), all numbers with the app's
 preprocessing (features made with python -m src.features.extract --mode app).

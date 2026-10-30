@@ -1,4 +1,4 @@
-Generator variety, step 1 (31 Oct 2026): SD 1.5 / 2.1 faces in training, SDXL held out completely.
+Generator variety, step 1 (30 Oct 2026): SD 1.5 / 2.1 faces in training, SDXL held out completely.
 Frozen DINOv3-L + linear head. Dev sets only; own threshold per head (at most 5% false alarms on every
 real dev pool); app preprocessing (src.features.extract --mode app).
 
