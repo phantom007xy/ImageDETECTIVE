@@ -4,16 +4,20 @@ Run from the repo root:  python -m app.app   (then open http://127.0.0.1:7860)
 """
 
 import gradio as gr
+from PIL import ImageOps
 
 from src.inference import Detector, evidence_overlay
 
-HEAD_PATH = "weights/head_path_a_sidset30.pt"
+# Provisional (31 Oct): head C = SID-Set + Muse Image pairs, results/muse_pairs_v1_heads.txt.
+# The previous head was weights/head_path_a_sidset30.pt.
+HEAD_PATH = "weights/muse_pairs_v1/head_C.pt"
 detector = Detector(HEAD_PATH)
 
 
 def check(image):
     if image is None:
         return "Upload a photo first.", None
+    image = ImageOps.exif_transpose(image)  # upright, as the phone shows it
     result = detector.analyze(image)
     lines = [
         f"## {result['verdict']}",
