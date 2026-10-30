@@ -1,11 +1,15 @@
 """Check one photo: DINOv3 patch features -> linear head per patch -> score, verdict, evidence map.
 
 Thin version: whole-image path (Path A) only. Faces, edited regions, SAM and Muse come later.
-The thresholds are NOT calibrated yet, so the verdict is a preview.
+If the head has a calibration file next to it (<head>_calibration.json, from
+src/calibrate/calibrate.py), the verdict uses its thresholds and temperature; otherwise the
+provisional thresholds below are used and the verdict is only a preview.
 """
 
+import json
 import math
 import time
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -15,23 +19,33 @@ from src.data import preprocess
 from src.models.backbone import Backbone
 from src.models.linear_head import LinearHead
 
-# Provisional thresholds on the AI probability, until calibration with real photos (plan Section 5.6).
+# Provisional thresholds on the AI probability, only for heads without a calibration file.
 AI_ABOVE = 0.65
 REAL_BELOW = 0.35
 
 
-def verdict(probability_ai):
-    if probability_ai >= AI_ABOVE:
-        return "Likely AI-generated"
-    if probability_ai <= REAL_BELOW:
-        return "Likely authentic"
-    return "Uncertain"
+def load_calibration(head_path):
+    """(temperature, AI threshold, authentic threshold, calibrated?) with both thresholds on the logit."""
+    path = Path(head_path).with_name(Path(head_path).stem + "_calibration.json")
+    if path.exists():
+        c = json.loads(path.read_text())
+        return c["temperature"], c["ai_logit"], c["real_logit"], True
+    return 1.0, math.log(AI_ABOVE / (1 - AI_ABOVE)), math.log(REAL_BELOW / (1 - REAL_BELOW)), False
 
 
 class Detector:
     def __init__(self, head_path, device=None):
         self.backbone = Backbone(device=device)
         self.head = LinearHead.load(head_path)
+        self.temperature, self.ai_logit, self.real_logit, self.calibrated = load_calibration(head_path)
+
+    def verdict(self, score):
+        """score = the image logit. AI only strictly above its threshold (as in the calibration)."""
+        if score > self.ai_logit:
+            return "Likely AI-generated"
+        if score <= self.real_logit:
+            return "Likely authentic"
+        return "Uncertain"
 
     def analyze(self, image):
         start = time.perf_counter()
@@ -46,10 +60,11 @@ class Detector:
         # The head on each patch. Their average is exactly the head on the average patch vector.
         patch_logits = (tokens @ self.head.weight + self.head.bias).reshape(grid_h, grid_w)
         score = patch_logits.mean().item()
-        probability_ai = 1 / (1 + math.exp(-score))
+        probability_ai = 1 / (1 + math.exp(-score / self.temperature))  # calibrated, if a calibration exists
         return {
+            "score": score,
             "probability_ai": probability_ai,
-            "verdict": verdict(probability_ai),
+            "verdict": self.verdict(score),
             "patch_logits": patch_logits.numpy(),
             "seconds": time.perf_counter() - start,
         }

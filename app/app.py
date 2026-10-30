@@ -20,17 +20,19 @@ def check(image):
         return "Upload a photo first.", None
     image = ImageOps.exif_transpose(image)  # upright, as the phone shows it
     result = detector.analyze(image)
-    lines = [
-        f"## {result['verdict']}",
-        f"**AI probability:** {result['probability_ai']:.0%}",
-    ]
+    p = result["probability_ai"]
+    confidence = {"Likely AI-generated": f"**Confidence:** {p:.0%} AI",
+                  "Likely authentic": f"**Confidence:** {1 - p:.0%} real"}.get(result["verdict"], f"**AI probability:** {p:.0%}")
+    lines = [f"## {result['verdict']}", confidence]
     if result["verdict"] == "Likely authentic":
         lines.append("*This photo doesn't look AI-made or AI-changed. It doesn't confirm when or where it was taken.*")
-    lines += [
-        "",
-        f"Checked in {result['seconds']:.1f} s. **Preview:** thresholds are not calibrated yet, and only the "
-        "whole image is checked (no faces, no edited regions).",
-    ]
+    if detector.calibrated:
+        status = ("Thresholds calibrated on development photos: at most 5% of real dev photos are called AI, "
+                  "and at most 15% of a real/fake mix is Uncertain.")
+    else:
+        status = "**Preview:** thresholds are not calibrated yet."
+    lines += ["", f"Checked in {result['seconds']:.1f} s. {status} Only the whole image is checked so far "
+              "(no faces, no edited regions)."]
     return "\n".join(lines), evidence_overlay(image, result["patch_logits"])
 
 
