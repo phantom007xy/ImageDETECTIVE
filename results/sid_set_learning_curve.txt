@@ -1,0 +1,10 @@
+﻿test: 586 images (314 real, 272 AI vectors)
+
+files  images | train AUC | test AUC | real called AI AI caught balanced (threshold 0.5) | AI caught at 5% false alarms
+    1     576 |     1.000 |    1.000 |           0.3%    100.0%    99.8%                  |                       100.0%
+    5    2812 |     1.000 |    1.000 |           0.0%    100.0%   100.0%                  |                       100.0%
+   10    5595 |     1.000 |    1.000 |           0.0%    100.0%   100.0%                  |                       100.0%
+   20   11239 |     1.000 |    1.000 |           0.0%    100.0%   100.0%                  |                       100.0%
+   30   16824 |     1.000 |    1.000 |           0.0%    100.0%   100.0%                  |                       100.0%
+
+saved the head trained on 30 files to weights\head_path_a_sidset30.pt
