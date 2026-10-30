@@ -1,12 +1,16 @@
-"""Brightness check: does a head's AI score move when the same REAL images get darker or brighter?
+"""Brightness / resolution check: does a head's AI score move when the same REAL images change?
 
-A detector should not care about brightness. If darker images score higher, real night photos
-and low-light selfies get more false alarms (priority #1). The check uses only the real images
-of a list, changes their brightness and reports the mean score and the share called AI.
+A detector should not care about brightness or resolution. If darker images score higher, real
+night photos and low-light selfies get more false alarms (priority #1); if smaller images score
+higher, small real images (thumbnails, old forwards) do. The check uses only the real images of a
+list, changes them (--change brightness: brighter/darker by the factor; --change downscale: width
+and height times the factor) and reports the mean score and the share called AI.
 
 Usage (from the repo root):
   python -m src.eval.brightness_check --heads weights/head_path_a_sidset30.pt weights/head_face_sidset10.pt
       --list features/lists/wilddeepfake.csv --view ready-crop
+  python -m src.eval.brightness_check --heads ... --list features/lists/commons_dev.csv --view app
+      --change downscale --factors 1 0.5 0.35 0.25
 """
 
 import argparse
@@ -22,7 +26,14 @@ from src.faces import crop
 from src.models.backbone import Backbone
 from src.models.linear_head import LinearHead
 
-VIEWS = {"whole": preprocess.eval_view, "ready-crop": crop.ready_crop_view}
+VIEWS = {"whole": preprocess.eval_view, "ready-crop": crop.ready_crop_view, "app": preprocess.inference_view}
+
+
+def change(image, kind, factor):
+    if kind == "brightness":
+        return ImageEnhance.Brightness(image).enhance(factor)
+    w, h = image.size
+    return image.resize((max(16, round(w * factor)), max(16, round(h * factor))), Image.BICUBIC)
 
 
 def main():
@@ -30,7 +41,8 @@ def main():
     parser.add_argument("--heads", type=Path, nargs="+", required=True)
     parser.add_argument("--list", type=Path, required=True, help="CSV image list (path, label, source)")
     parser.add_argument("--view", choices=list(VIEWS), default="whole",
-                        help="whole = whole photo (448 px); ready-crop = the image is a face crop already")
+                        help="whole = centre crop (448 px); ready-crop = the image is a face crop already; app = the app's view")
+    parser.add_argument("--change", choices=["brightness", "downscale"], default="brightness")
     parser.add_argument("--n", type=int, default=300, help="real images to use")
     parser.add_argument("--factors", type=float, nargs="+", default=[0.5, 0.7, 1.0, 1.3, 1.6])
     parser.add_argument("--seed", type=int, default=0)
@@ -49,13 +61,16 @@ def main():
     features = {}
     for factor in args.factors:
         out = []
-        for i in range(0, len(images), 32):
-            batch = [preprocess.to_tensor(view(ImageEnhance.Brightness(im).enhance(factor))) for im in images[i:i + 32]]
-            out.append(backbone.mean_patch_vector(torch.stack(batch)).cpu())
+        tensors = [preprocess.to_tensor(view(change(im, args.change, factor))) for im in images]
+        for i in range(len(tensors)):  # app views differ in shape, so one image per pass there
+            if args.view == "app":
+                out.append(backbone.mean_patch_vector(tensors[i].unsqueeze(0)).cpu())
+            elif i % 32 == 0:
+                out.append(backbone.mean_patch_vector(torch.stack(tensors[i:i + 32])).cpu())
         features[factor] = torch.cat(out)
 
     print(f"{len(images)} real images from {args.list.name} ({args.view}); "
-          f"per brightness factor: mean logit (share called AI at 0.5)")
+          f"per {args.change} factor: mean logit (share called AI at 0.5)")
     for head_path in args.heads:
         head = LinearHead.load(head_path)
         cells = []
