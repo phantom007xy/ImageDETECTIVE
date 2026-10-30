@@ -17,7 +17,7 @@ from PIL import Image
 
 from src.inference import Detector
 
-VERDICTS = ["Likely AI-generated", "Uncertain", "Likely authentic"]
+VERDICTS = ["Likely AI-generated", "This face looks AI-made or AI-changed", "Uncertain", "Likely authentic"]
 
 
 def main():

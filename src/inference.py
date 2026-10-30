@@ -1,9 +1,17 @@
-"""Check one photo: DINOv3 patch features -> linear head per patch -> score, verdict, evidence map.
+"""Check one photo: whole image (Path A) and every face (Path F), one verdict, an evidence map.
 
-Thin version: whole-image path (Path A) only. Faces, edited regions, SAM and Muse come later.
-If the head has a calibration file next to it (<head>_calibration.json, from
+Whole image: DINOv3 patch features -> linear head per patch -> score and evidence map.
+Faces: SAM 3 finds them, each face crop (src/faces/crop.py) goes through the same DINOv3 and the
+same head. If the head has a calibration file next to it (<head>_calibration.json, from
 src/calibrate/calibrate.py), the verdict uses its thresholds and temperature; otherwise the
-provisional thresholds below are used and the verdict is only a preview.
+provisional thresholds below are used and the verdict is only a preview. Edited regions, SAM 3.1
+and Muse come later.
+
+Verdict (plan Section 5.6; Path B not built yet):
+  1. whole-image score above the AI threshold        -> "Likely AI-generated"
+  2. otherwise a face above the (very strict) face threshold -> "This face looks AI-made or AI-changed"
+  3. otherwise whole-image score at or below the authentic threshold -> "Likely authentic"
+  4. everything else                                 -> "Uncertain"
 """
 
 import json
@@ -13,9 +21,11 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from PIL import Image, ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from src.data import preprocess
+from src.faces import crop
+from src.faces.sam_faces import FaceFinder
 from src.models.backbone import Backbone
 from src.models.linear_head import LinearHead
 
@@ -25,32 +35,59 @@ REAL_BELOW = 0.35
 
 
 def load_calibration(head_path):
-    """(temperature, AI threshold, authentic threshold, calibrated?) with both thresholds on the logit."""
+    """Temperature and thresholds (on the logit) of a head; provisional values if it has no calibration."""
     path = Path(head_path).with_name(Path(head_path).stem + "_calibration.json")
     if path.exists():
         c = json.loads(path.read_text())
-        return c["temperature"], c["ai_logit"], c["real_logit"], True
-    return 1.0, math.log(AI_ABOVE / (1 - AI_ABOVE)), math.log(REAL_BELOW / (1 - REAL_BELOW)), False
+        return {"temperature": c["temperature"], "ai_logit": c["ai_logit"], "real_logit": c["real_logit"],
+                "face_ai_logit": c.get("face_ai_logit"), "calibrated": True}
+    return {"temperature": 1.0, "ai_logit": math.log(AI_ABOVE / (1 - AI_ABOVE)),
+            "real_logit": math.log(REAL_BELOW / (1 - REAL_BELOW)), "face_ai_logit": None, "calibrated": False}
 
 
 class Detector:
-    def __init__(self, head_path, device=None):
+    def __init__(self, head_path, device=None, faces=True):
         self.backbone = Backbone(device=device)
         self.head = LinearHead.load(head_path)
-        self.temperature, self.ai_logit, self.real_logit, self.calibrated = load_calibration(head_path)
+        self.calibration = load_calibration(head_path)
+        self.calibrated = self.calibration["calibrated"]
+        self.finder = FaceFinder(device=device) if faces else None
 
-    def verdict(self, score):
-        """score = the image logit. AI only strictly above its threshold (as in the calibration)."""
-        if score > self.ai_logit:
+    def probability(self, logit):
+        return 1 / (1 + math.exp(-logit / self.calibration["temperature"]))
+
+    def verdict(self, score, faces):
+        c = self.calibration
+        if score > c["ai_logit"]:  # strictly above, as in the calibration
             return "Likely AI-generated"
-        if score <= self.real_logit:
+        if any(f.get("flagged") for f in faces):
+            return "This face looks AI-made or AI-changed"
+        if score <= c["real_logit"]:
             return "Likely authentic"
         return "Uncertain"
+
+    def check_faces(self, image):
+        """Every face SAM 3 finds: its box and, if it is big enough, its score from the same head."""
+        if self.finder is None:
+            return []
+        faces = self.finder.find(image)
+        for face in faces:
+            if face["too_small"]:
+                continue
+            pixels = preprocess.to_tensor(crop.eval_face_view(image, face)).unsqueeze(0)
+            logit = float(self.head.logits(self.backbone.mean_patch_vector(pixels).cpu())[0])
+            face["logit"] = logit
+            face["probability_ai"] = self.probability(logit)
+            limit = self.calibration["face_ai_logit"]
+            face["flagged"] = limit is not None and logit > limit  # only this changes the verdict
+            face["level"] = "ai" if face["flagged"] else ("leans_ai" if face["probability_ai"] >= 0.5 else "real")
+        return faces
 
     def analyze(self, image):
         start = time.perf_counter()
         # Phones often store photos sideways plus an EXIF "rotate" tag: turn the photo upright first.
-        view = preprocess.inference_view(ImageOps.exif_transpose(image).convert("RGB"))
+        image = ImageOps.exif_transpose(image).convert("RGB")
+        view = preprocess.inference_view(image)
         pixels = preprocess.to_tensor(view).unsqueeze(0)
         tokens = self.backbone.patch_tokens(pixels)[0].float().cpu()
         if not torch.isfinite(tokens).all():
@@ -60,12 +97,13 @@ class Detector:
         # The head on each patch. Their average is exactly the head on the average patch vector.
         patch_logits = (tokens @ self.head.weight + self.head.bias).reshape(grid_h, grid_w)
         score = patch_logits.mean().item()
-        probability_ai = 1 / (1 + math.exp(-score / self.temperature))  # calibrated, if a calibration exists
+        faces = self.check_faces(image)
         return {
             "score": score,
-            "probability_ai": probability_ai,
-            "verdict": self.verdict(score),
+            "probability_ai": self.probability(score),  # calibrated, if a calibration exists
+            "verdict": self.verdict(score, faces),
             "patch_logits": patch_logits.numpy(),
+            "faces": faces,
             "seconds": time.perf_counter() - start,
         }
 
@@ -83,3 +121,29 @@ def evidence_overlay(image, patch_logits, scale=4.0):
     heat[..., 3] = (np.abs(strength) * np.where(strength > 0, 160, 90)).astype(np.uint8)
     heat_image = Image.fromarray(heat, "RGBA").resize(image.size, Image.BILINEAR)
     return Image.alpha_composite(image.convert("RGBA"), heat_image).convert("RGB")
+
+
+FACE_COLOURS = {"ai": (220, 30, 30), "leans_ai": (245, 150, 20), "real": (30, 170, 70), "too_small": (150, 150, 150)}
+
+
+def draw_faces(image, faces):
+    """A numbered box per face: red = looks AI-made (changes the verdict), orange = leans AI-made,
+    green = looks real, grey = too small to check.
+
+    A white edge around every box keeps it visible on the red/blue evidence map.
+    """
+    image = image.copy()
+    draw = ImageDraw.Draw(image)
+    width = max(2, round(min(image.size) / 300))
+    font = ImageFont.load_default(size=max(14, round(min(image.size) / 40)))
+    for n, face in enumerate(faces, 1):
+        colour = FACE_COLOURS["too_small" if face["too_small"] else face["level"]]
+        x0, y0, x1, y1 = face["box"]
+        draw.rectangle((x0 - width, y0 - width, x1 + width, y1 + width), outline="white", width=width)
+        draw.rectangle((x0, y0, x1, y1), outline=colour, width=width)
+        label = draw.textbbox((x0, y0), str(n), font=font)  # number tag just above the box
+        pad = width
+        tag = (x0, y0 - (label[3] - label[1]) - 3 * pad, x0 + (label[2] - label[0]) + 2 * pad, y0)
+        draw.rectangle(tag, fill=colour)
+        draw.text((tag[0] + pad, tag[1] + pad), str(n), fill="white", font=font)
+    return image
