@@ -1,0 +1,82 @@
+First face head (Path F), 30 Oct 2026. Frozen DINOv3-L, linear head on the average patch vector of each face crop.
+Faces: SAM 3 ("face", score >= 0.5, >= 64 px), crop rule from results/face_crop_calibration.txt.
+Training: SID-Set train files 0-9 (real = OpenImages, AI = FLUX), 4 random copies per face (k 2.6-4.0).
+Tests: the fixed app crop (k = 4.0, JPEG 90). WildDeepfake: its own ready-made crops ("measured on tighter crops").
+All numbers are per face unless stated otherwise.
+
+== Faces found (python -m src.features.extract_faces ...) ==
+SID-Set train 0-9: 5,571 images -> 5,188 faces (about 2,500 real, 2,700 AI) -> 20,752 training vectors
+SID-Set validation 0: 544 faces (292 real, 252 AI) | SD faces: 1,006 faces from 996 images
+Chameleon random: 1,005 faces in 885 of 2,000 images | Chameleon size-matched: 658 faces in 545 of 2,000 images
+WildDeepfake: 6,448 frames (806 sequences x 8 frames)
+
+== Learning curve (python -m src.eval.learning_curve --train "features/faces/train-*_train.npz"
+   --test features/faces/validation-00000-of-00034_eval.npz --steps 1 2 5 10 --save weights/head_face_sidset10.pt) ==
+files  images | train AUC | test AUC | real called AI AI caught balanced (threshold 0.5) | AI caught at 5% false alarms
+    1     310 |     1.000 |    0.997 |           2.4%     97.6%    97.6%                  |                        98.4%
+    2     611 |     1.000 |    0.998 |           1.7%     96.8%    97.6%                  |                        98.8%
+    5    1452 |     1.000 |    0.999 |           1.7%     96.8%    97.6%                  |                       100.0%
+   10    2862 |     1.000 |    0.999 |           1.0%     98.4%    98.7%                  |                        99.6%
+-> SID-Set faces are as easy as SID-Set whole images: flat from 1 file on, says nothing about other generators.
+
+== Other datasets (python -m src.eval.evaluate_head --head ... --test features/faces/*_eval.npz) ==
+face head (weights/head_face_sidset10.pt):
+sd_faces_eval                          0 real  1006 AI | AI caught 84.6%
+  sd_faces/sd1.5                       0 real   333 AI | AI caught 86.5%
+  sd_faces/sd2.1                       0 real   335 AI | AI caught 80.9%
+  sd_faces/sdxl                        0 real   338 AI | AI caught 86.4%
+chameleon_random_eval                398 real   607 AI | AUC 0.806 | real called AI 17.3% | AI caught 61.3% | AI caught at 5% false alarms 37.4%
+chameleon_size_matched_eval          381 real   277 AI | AUC 0.839 | real called AI 16.8% | AI caught 74.0% | AI caught at 5% false alarms 49.1%
+wilddeepfake_eval                   3168 real  3280 AI | AUC 0.393 | real called AI 3.3% | AI caught 4.3% | AI caught at 5% false alarms 5.1%
+Path A head (weights/head_path_a_sidset30.pt, trained on whole images) on the same face crops:
+sd_faces_eval                          0 real  1006 AI | AI caught 70.0%
+  sd_faces/sd1.5                       0 real   333 AI | AI caught 79.0%
+  sd_faces/sd2.1                       0 real   335 AI | AI caught 63.9%
+  sd_faces/sdxl                        0 real   338 AI | AI caught 67.2%
+chameleon_random_eval                398 real   607 AI | AUC 0.892 | real called AI 3.0% | AI caught 54.2% | AI caught at 5% false alarms 66.7%
+chameleon_size_matched_eval          381 real   277 AI | AUC 0.859 | real called AI 3.4% | AI caught 53.4% | AI caught at 5% false alarms 59.2%
+wilddeepfake_eval                   3168 real  3280 AI | AUC 0.461 | real called AI 0.0% | AI caught 0.5% | AI caught at 5% false alarms 4.8%
+-> The face head catches more SD faces at threshold 0.5 mostly because it leans towards "AI": it also flags 17% of
+   real Chameleon faces. At a fixed 5% false-alarm rate on Chameleon faces it is worse than the Path A head.
+   SD faces has no real images, so "AI caught" there can't show this trade-off.
+
+== Variants (one-off sweep; reproduce with learning_curve --weight-decay W, and for the shared head
+   --train "features/train-*_train.npz" "features/faces/train-*_train.npz" --steps 40) ==
+AUC | AI caught at 5% false alarms         Cham. random faces   Cham. size-matched faces   WildDeepfake AUC
+face head, weight decay 1e-3 (saved)        0.806 | 37.4%        0.839 | 49.1%              0.393
+face head, weight decay 1e-2                0.833 | 45.1%        0.841 | 53.4%              0.395
+face head, weight decay 1e-1                0.856 | 55.7%        0.832 | 53.8%              0.396
+face head, weight decay 1                   0.866 | 60.3%        0.817 | 49.8%              0.403
+shared head (whole + faces), wd 1e-3        0.856 | 53.7%        0.853 | 60.6%              0.441
+shared head (whole + faces), wd 1e-2        0.867 | 57.7%        0.850 | 62.8%              0.426
+Path A head (whole images only)             0.892 | 66.7%        0.859 | 59.2%              0.461
+-> No variant clearly beats the Path A head on Chameleon faces. More regularisation helps the face head a little.
+
+== WildDeepfake: what drives the face head's score? (one-off; per sequence, mean score of 8 frames;
+   sharpness and brightness from results/wilddeepfake_test_crops.csv) ==
+real: 396 sequences | Spearman(score, sharpness) +0.06 | Spearman(score, brightness) -0.23
+fake: 410 sequences | Spearman(score, sharpness) +0.01 | Spearman(score, brightness) -0.53
+per-sequence AUC 0.383
+-> Not blur. Brightness: darker faces get higher AI scores. WildDeepfake fakes are brighter (median 96 vs. 78),
+   which pushes the AUC below 0.5. The head has never seen a face swap, so no swap signal was expected.
+
+== Brightness check on REAL images (python -m src.eval.brightness_check --heads weights/head_path_a_sidset30.pt
+   weights/head_face_sidset10.pt --list features/lists/<list>.csv --view <view>) ==
+300 real images from wilddeepfake.csv (ready-crop); per brightness factor: mean logit (share called AI at 0.5)
+  head_path_a_sidset30     x0.5: -15.25 (  0%) | x0.7: -16.39 (  0%) | x1: -17.17 (  0%) | x1.3: -18.04 (  0%) | x1.6: -18.91 (  0%)
+  head_face_sidset10       x0.5:  -5.07 (  8%) | x0.7:  -5.93 (  6%) | x1:  -6.58 (  3%) | x1.3:  -7.39 (  1%) | x1.6:  -8.26 (  1%)
+300 real images from chameleon_random.csv (whole); per brightness factor: mean logit (share called AI at 0.5)
+  head_path_a_sidset30     x0.5:  -4.99 ( 10%) | x0.7:  -5.34 (  9%) | x1: -5.40 (  8%) | x1.3:  -5.98 (  6%) | x1.6:  -6.70 (  5%)
+  head_face_sidset10       x0.5:  -3.07 ( 16%) | x0.7:  -3.40 ( 14%) | x1: -3.49 ( 13%) | x1.3:  -4.01 ( 11%) | x1.6:  -4.57 (  9%)
+-> Same photos, only darker: the AI score rises for both heads. A risk for real night / low-light photos.
+   Note: scaling pixels is not the same as a real low-light photo (no extra noise), so real low-light photos
+   must be in the real-photo test.
+
+== Does a face path help the verdict? (one-off; per image: whole only vs. max(whole, best face + delta),
+   best delta chosen on the same data, so optimistic) ==
+chameleon_random (1000 real, 1000 AI)        whole only: AUC 0.902 | AI caught at 5% FA 69.7%
+                                             whole OR face (best of the three heads): AUC 0.902 | 70.2%
+chameleon_size_matched (1000 real, 1000 AI)  whole only: AUC 0.876 | AI caught at 5% FA 60.8%
+                                             whole OR face (best of the three heads): AUC 0.876 | 60.9%
+-> On fully generated images the face path adds nothing yet; the whole-image path already sees them.
+   Its real job is face swaps (type b), which need face-swap training data (DFDC).
