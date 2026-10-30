@@ -9,7 +9,7 @@ import time
 
 import numpy as np
 import torch
-from PIL import Image
+from PIL import Image, ImageOps
 
 from src.data import preprocess
 from src.models.backbone import Backbone
@@ -35,7 +35,8 @@ class Detector:
 
     def analyze(self, image):
         start = time.perf_counter()
-        view = preprocess.inference_view(image.convert("RGB"))
+        # Phones often store photos sideways plus an EXIF "rotate" tag: turn the photo upright first.
+        view = preprocess.inference_view(ImageOps.exif_transpose(image).convert("RGB"))
         pixels = preprocess.to_tensor(view).unsqueeze(0)
         tokens = self.backbone.patch_tokens(pixels)[0].float().cpu()
         if not torch.isfinite(tokens).all():
