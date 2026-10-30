@@ -96,7 +96,7 @@ def main():
 
     key = api_key()
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    new_file = not manifest.exists()
+    new_file = not manifest.exists() or manifest.stat().st_size == 0  # an empty file needs the header too
     with (open(manifest, "a", newline="", encoding="utf-8") as out, httpx.Client(timeout=300) as client,
           ThreadPoolExecutor(args.workers) as pool):
         writer = csv.DictWriter(out, fieldnames=FIELDS, lineterminator="\n")

@@ -192,7 +192,7 @@ def main():
         return
 
     key = api_key()
-    new_file = not captions_csv.exists()
+    new_file = not captions_csv.exists() or captions_csv.stat().st_size == 0  # an empty file needs the header too
     tokens_in = tokens_out = 0
     with (open(captions_csv, "a", newline="", encoding="utf-8") as out, httpx.Client(timeout=300) as client,
           ThreadPoolExecutor(args.workers) as pool):
