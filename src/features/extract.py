@@ -7,8 +7,11 @@ all the frozen baseline needs.
 Path A never trains on local edits, so by default only real (0) and fully synthetic (1) images
 are used; tampered images (2) are for the edited-region head.
 
+Inputs are SID-Set Parquet files or CSV image lists (columns: path, label, source; see
+src/data/folder.py), picked by file extension.
+
 Usage (from the repo root):
-  python -m src.features.extract PARQUET [PARQUET ...] --out-dir features --mode train --copies 4
+  python -m src.features.extract INPUT [INPUT ...] --out-dir features --mode train --copies 4
 """
 
 import argparse
@@ -20,8 +23,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from src.data import preprocess
-from src.data.sid_set import iter_rows
+from src.data import folder, preprocess, sid_set
 from src.models.backbone import Backbone
 
 
@@ -30,7 +32,14 @@ def view_rng(img_id, copy, seed):
     return random.Random(zlib.crc32(f"{seed}:{img_id}:{copy}".encode()))
 
 
-def extract_file(backbone, parquet_path, out_path, mode, copies, seed, batch_size, labels):
+def read_input(path, labels):
+    """SID-Set Parquet file or CSV image list, with only the wanted labels."""
+    if path.suffix == ".csv":
+        return (row for row in folder.iter_rows(path) if row["label"] in labels)
+    return sid_set.iter_rows(path, labels=labels)
+
+
+def extract_file(backbone, input_path, out_path, mode, copies, seed, batch_size, labels):
     features, labels_out, img_ids, copy_ids, sources = [], [], [], [], []
     batch = []
 
@@ -40,7 +49,7 @@ def extract_file(backbone, parquet_path, out_path, mode, copies, seed, batch_siz
             batch.clear()
 
     start, images = time.time(), 0
-    for row in iter_rows(parquet_path, labels=labels):
+    for row in read_input(input_path, labels):
         images += 1
         for copy in range(copies if mode == "train" else 1):
             if mode == "train":
@@ -67,12 +76,12 @@ def extract_file(backbone, parquet_path, out_path, mode, copies, seed, batch_siz
         sources=np.array(sources),
         mode=mode,
     )
-    print(f"{parquet_path.name}: {images} images -> {len(labels_out)} vectors in {time.time() - start:.0f} s -> {out_path}")
+    print(f"{input_path.name}: {images} images -> {len(labels_out)} vectors in {time.time() - start:.0f} s -> {out_path}")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("parquet", nargs="+", type=Path)
+    parser.add_argument("inputs", nargs="+", type=Path, help="SID-Set .parquet files or .csv image lists")
     parser.add_argument("--out-dir", type=Path, default=Path("features"))
     parser.add_argument("--mode", choices=["train", "eval"], default="train")
     parser.add_argument("--copies", type=int, default=4, help="random copies per image (train mode only)")
@@ -84,7 +93,7 @@ def main():
     args.out_dir.mkdir(parents=True, exist_ok=True)
     backbone = Backbone()
     print(f"DINOv3 on {backbone.device} ({backbone.dtype})")
-    for path in args.parquet:
+    for path in args.inputs:
         out_path = args.out_dir / f"{path.stem}_{args.mode}.npz"
         extract_file(backbone, path, out_path, args.mode, args.copies, args.seed, args.batch_size, tuple(args.labels))
 

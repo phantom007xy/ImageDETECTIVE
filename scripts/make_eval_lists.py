@@ -1,0 +1,92 @@
+"""Build CSV image lists (path, label, source) for evaluating the Path A head on other datasets.
+
+  - Chameleon, random: N real + N AI images.
+  - Chameleon, size-matched: real and AI images taken in equal numbers per short-side bin, so the
+    image size (which alone separates the classes with AUC 0.83) can't help.
+  - SD faces: N AI images, spread evenly over SD 1.5 / 2.1 / XL and man / woman.
+
+Usage:
+  python scripts/make_eval_lists.py --chameleon D:/Datasets/Chameleon/test
+      --sd-faces D:/Datasets/stable-diffusion-face-dataset/stable-diffusion-face-dataset --out-dir features/lists
+"""
+
+import argparse
+import csv
+import random
+from collections import defaultdict
+from pathlib import Path
+
+from PIL import Image
+
+BIN = 32  # short-side bin width in pixels
+
+
+def write_list(path, rows):
+    with open(path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["path", "label", "source"])
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"wrote {len(rows)} rows to {path}")
+
+
+def short_side(path):
+    with Image.open(path) as im:  # reads only the header, not the pixels
+        return min(im.size)
+
+
+def chameleon_lists(root, n, rng, out_dir):
+    classes = {0: sorted((root / "0_real").glob("*.jpg")), 1: sorted((root / "1_fake").glob("*.jpg"))}
+    source = {0: "chameleon/real", 1: "chameleon/ai"}
+
+    random_rows = []
+    for label, files in classes.items():
+        random_rows += [{"path": str(p), "label": label, "source": source[label]} for p in rng.sample(files, n)]
+    write_list(out_dir / "chameleon_random.csv", random_rows)
+
+    bins = {0: defaultdict(list), 1: defaultdict(list)}
+    for label, files in classes.items():
+        for p in files:
+            bins[label][short_side(p) // BIN].append(p)
+    matched = {0: [], 1: []}
+    for b in sorted(set(bins[0]) & set(bins[1])):
+        k = min(len(bins[0][b]), len(bins[1][b]))
+        for label in (0, 1):
+            matched[label] += rng.sample(bins[label][b], k)
+    k = min(n, len(matched[0]))
+    matched_rows = []
+    for label in (0, 1):
+        matched_rows += [{"path": str(p), "label": label, "source": source[label]} for p in rng.sample(matched[label], k)]
+    print(f"size-matched pool: {len(matched[0])} real + {len(matched[1])} AI share a short-side bin "
+          f"(of {len(classes[0])} real, {len(classes[1])} AI)")
+    write_list(out_dir / "chameleon_size_matched.csv", matched_rows)
+
+
+def sd_faces_list(root, n, rng, out_dir):
+    groups = [sorted((root / res / who).glob("*.jpg")) for res in ("512", "768", "1024") for who in ("man", "woman")]
+    per_group = n // len(groups)
+    rows = []
+    for files in groups:
+        version = {"512": "sd1.5", "768": "sd2.1", "1024": "sdxl"}[files[0].parent.parent.name]
+        rows += [{"path": str(p), "label": 1, "source": f"sd_faces/{version}"} for p in rng.sample(files, per_group)]
+    write_list(out_dir / "sd_faces.csv", rows)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--chameleon", type=Path)
+    parser.add_argument("--sd-faces", type=Path)
+    parser.add_argument("--n", type=int, default=1000, help="images per class (Chameleon) or in total (SD faces)")
+    parser.add_argument("--out-dir", type=Path, default=Path("features/lists"))
+    parser.add_argument("--seed", type=int, default=0)
+    args = parser.parse_args()
+
+    args.out_dir.mkdir(parents=True, exist_ok=True)
+    rng = random.Random(args.seed)
+    if args.chameleon:
+        chameleon_lists(args.chameleon, args.n, rng, args.out_dir)
+    if args.sd_faces:
+        sd_faces_list(args.sd_faces, args.n, rng, args.out_dir)
+
+
+if __name__ == "__main__":
+    main()
