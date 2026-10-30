@@ -54,9 +54,14 @@ def extract_file(backbone, input_path, out_path, mode, copies, seed, batch_size,
         for copy in range(copies if mode == "train" else 1):
             if mode == "train":
                 view = preprocess.train_view(row["image"], view_rng(row["img_id"], copy, seed))
+            elif mode == "app":
+                view = preprocess.inference_view(row["image"])  # exactly what the app sees
             else:
                 view = preprocess.eval_view(row["image"])
-            batch.append(preprocess.to_tensor(view))
+            tensor = preprocess.to_tensor(view)
+            if batch and tensor.shape != batch[0].shape:
+                run_batch()  # images of different shapes can't share a batch
+            batch.append(tensor)
             labels_out.append(row["label"])
             img_ids.append(row["img_id"])
             copy_ids.append(copy)
@@ -83,7 +88,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("inputs", nargs="+", type=Path, help="SID-Set .parquet files or .csv image lists")
     parser.add_argument("--out-dir", type=Path, default=Path("features"))
-    parser.add_argument("--mode", choices=["train", "eval"], default="train")
+    parser.add_argument("--mode", choices=["train", "eval", "app"], default="train",
+                        help="train = random copies; eval = fixed centre crop; app = the app's view (aspect ratio kept)")
     parser.add_argument("--copies", type=int, default=4, help="random copies per image (train mode only)")
     parser.add_argument("--labels", type=int, nargs="+", default=[0, 1], help="0 = real, 1 = synthetic, 2 = tampered")
     parser.add_argument("--batch-size", type=int, default=32)

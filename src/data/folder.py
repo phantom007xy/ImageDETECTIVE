@@ -5,7 +5,7 @@ The CSV has one row per image with the columns: path, label (0 = real, 1 = AI), 
 
 import csv
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 
 def iter_rows(list_path):
@@ -13,7 +13,7 @@ def iter_rows(list_path):
     with open(list_path, newline="") as f:
         for row in csv.DictReader(f):
             with Image.open(row["path"]) as im:
-                image = im.convert("RGB")
+                image = ImageOps.exif_transpose(im).convert("RGB")  # upright, as the app sees it
             yield {
                 "img_id": row["path"],
                 "label": int(row["label"]),
