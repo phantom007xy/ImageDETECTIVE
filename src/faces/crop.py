@@ -61,7 +61,7 @@ def train_face_view(image, face, rng):
     """One random training copy of a face. rng is a random.Random."""
     k = rng.uniform(*TRAIN_K_RANGE)
     crop = face_crop(image, face, k=k, shift=(rng.uniform(-0.1, 0.1), rng.uniform(-0.1, 0.1)))
-    crop = ImageEnhance.Brightness(crop).enhance(rng.uniform(0.8, 1.2))
+    crop = ImageEnhance.Brightness(crop).enhance(rng.uniform(0.6, 1.5))  # wide: see preprocess.train_view
     crop = ImageEnhance.Contrast(crop).enhance(rng.uniform(0.85, 1.15))
     if rng.random() < 0.3:  # like a low-resolution face: shrink and enlarge again
         small = rng.randint(64, 160)

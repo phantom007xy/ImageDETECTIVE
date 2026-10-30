@@ -6,7 +6,8 @@ can't tell the classes apart (in SID-Set, fakes are square PNGs and real photos 
   2. random downscale
   3. random square crop (cropping, never squashing)
   4. resize to the model size; this resampling also wipes out the 8x8 grid of earlier JPEG saves
-  5. small random brightness and contrast change
+  5. random brightness change (wide on purpose: x0.6-1.5, so the head can't learn "dark = AI";
+     measured 30 Oct with src/eval/brightness_check.py) and a small contrast change
   6. a final JPEG save at a random quality (like WhatsApp or a re-upload)
 
 "eval" mode is one fixed version of these steps, so test numbers are repeatable.
@@ -50,7 +51,7 @@ def train_view(image, rng, size=MODEL_SIZE):
     side = round(min(w, h) * rng.uniform(0.6, 1.0))
     image = square_crop(image, side, rng.randint(0, w - side), rng.randint(0, h - side), size)
 
-    image = ImageEnhance.Brightness(image).enhance(rng.uniform(0.85, 1.15))
+    image = ImageEnhance.Brightness(image).enhance(rng.uniform(0.6, 1.5))
     image = ImageEnhance.Contrast(image).enhance(rng.uniform(0.85, 1.15))
     return jpeg(image, rng.randint(65, 95))
 
