@@ -1,0 +1,41 @@
+Polished real photos (Wikimedia Commons) and Commons pairs, 31 Oct 2026. Frozen DINOv3-L + linear head.
+Rules from now on (plan Section 0): decisions only on dev sets, Chameleon closed until Day 8, every head
+gets its own threshold (at most 5% false alarms on every real dev pool), all numbers with the app's
+preprocessing (features made with python -m src.features.extract --mode app).
+
+== Data ==
+Commons (scripts/download_commons.py, CC0 / CC BY / public domain only, at most 20 photos per photographer,
+dev split by photographer; author, licence and link per photo in data/attribution/commons_v1.csv, commons_v2.csv):
+  v1: Quality images, Quality images of people, Portrait photographs, 4 phone-camera categories -> 1,049 photos
+  v2: Portrait photographs of men / women, Web Summit, Featured pictures of people, Quality images of people -> 940
+  train 1,659 (portrait 704, people 211, phone 218, quality 526) | polished dev set 330 (never trained on)
+Commons pairs (pairs_v2): 450 train photos picked (portrait 200, people 100, phone 80, quality 70), Muse Spark
+captions 389 ok / 61 skipped ($1.08), Muse Image 387 fakes / 2 refused ($3.87; up to $0.04 more lost in a
+stopped run). All 387 pairs are training data.
+
+== Heads ==
+C  = SID-Set files 10-29 (new brightness range) + Muse pairs v1        (results/muse_pairs_v1_heads.txt)
+C2 = C + the 1,659 Commons training photos (4 copies each)
+D  = C2 + the 387 Commons pairs (16 copies each)
+python -m src.eval.compare_heads --variant "C2:...,features/aug_v2/commons_train_train.npz" --variant "D:...,
+  features/aug_v2/pairs_v2/muse_pairs_train_train.npz" --save-dir weights/commons_v1
+
+== Fair comparison, public dev pools (python -m src.eval.fair_compare) ==
+Own threshold per head: at most 5% of the real photos in every real pool called AI.
+Real pools: polished dev (330), OpenImages val (76)
+Fake sets:  Muse test v1 (100), Muse pairs val (76), SD faces (996)
+
+                             real called AI                               AI caught
+head     threshold |    polished dev  OpenImages val |    Muse test v1  Muse pairs val        SD faces
+app          0.441 |            4.8%            0.0% |           43.0%           18.4%           88.7%
+C            0.924 |            4.8%            0.0% |           86.0%           71.1%           64.7%
+C2           0.515 |            4.8%            2.6% |           96.0%           80.3%           49.7%
+D            0.719 |            4.8%            3.9% |           94.0%           81.6%           50.9%
+
+-> With polished real photos as a dev pool, head C needs a very strict threshold (0.92): it flags polished photos.
+-> Commons real photos in training (C2) bring the threshold back to normal and raise the Muse test to 96%.
+-> The Commons pairs (D) add little on top of C2.
+-> Warning: SD faces caught falls from 89% (app) to ~50% (C2, D). The fake class has only two generators
+   (FLUX, Muse Image); with many polished real portraits in training, retouched SD portraits now look real.
+   More generator variety is needed.
+-> Still missing: my phone photos as a real pool (private; run by me, totals only).

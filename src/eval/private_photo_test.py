@@ -14,6 +14,7 @@ Every photo is first turned upright as the phone shows it (EXIF orientation).
 Heads compared (all on the same DINOv3 features):
   app = the head the app uses now (SID-Set files 0-29, old brightness range)
   A, B, C = results/muse_pairs_v1_heads.txt (C = with the Muse Image pairs)
+  C2, D = results/commons_v1_heads.txt (C2 = C + Commons real photos, D = C2 + Commons pairs)
 
 Usage (from the repo root, in your own terminal, with the venv active):
   python -m src.eval.private_photo_test
@@ -45,6 +46,8 @@ HEADS = {
     "A": "weights/muse_pairs_v1/head_A.pt",
     "B": "weights/muse_pairs_v1/head_B.pt",
     "C": "weights/muse_pairs_v1/head_C.pt",
+    "C2": "weights/commons_v1/head_C2.pt",
+    "D": "weights/commons_v1/head_D.pt",
 }
 DARK_BELOW = 80
 
