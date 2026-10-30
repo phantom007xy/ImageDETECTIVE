@@ -1,0 +1,30 @@
+Calibration of head E (weights/commons_v1/head_E.pt), 31 Oct 2026, public dev pools only.
+python -m src.calibrate.calibrate --head weights/commons_v1/head_E.pt --real "polished dev:features/commons_dev_app.npz"
+  --real "OpenImages val:features/muse_pairs_val_app.npz" --fake "Muse test v1:features/muse_image_test_v1_app.npz"
+  --fake "Muse pairs val:features/muse_pairs_val_app.npz" --fake "SDXL (unseen):features/sd_faces_app.npz@sd_faces/sdxl"
+  --out weights/commons_v1/head_E_calibration.json
+Rules (plan Section 5.6, in this order): at most 5% of every real dev pool called AI; "Uncertain" at most 15% of a
+fixed mix (real and fake weighted equally), with the authentic threshold as low as possible; missed fakes reported.
+All features made with the app's preprocessing.
+
+head head_E.pt: temperature 1.39
+  Likely AI-generated  if logit >  +0.60  (calibrated AI probability >  0.606)
+  Likely authentic     if logit <= -4.31  (calibrated AI probability <= 0.043)
+  Uncertain in between: 14.9% of the mix (cap 15%)
+
+  set                    n |  Likely AI  Uncertain  Authentic
+  REAL polished dev    330 |       4.8%      20.9%      74.2%
+  REAL OpenImages val    76 |       2.6%      18.4%      78.9%
+  AI Muse test v1      100 |      93.0%       6.0%       1.0%
+  AI Muse pairs val     76 |      73.7%      22.4%       3.9%
+  AI SDXL (unseen)     332 |      91.9%       7.8%       0.3%
+
+The app's own path on the Muse test set (python -m src.eval.app_verdicts --head weights/commons_v1/head_E.pt
+--list features/lists/muse_image_test_v1.csv): Likely AI-generated 93 | Uncertain 6 | Likely authentic 1.
+(For comparison, the first head with provisional thresholds: 30 | 17 | 53, results/muse_image_test_v1_baseline.txt.)
+
+-> These are dev numbers: the thresholds were set on the same sets, so they are optimistic. Honest numbers
+   come from the fresh Day 8 test (new Muse fakes, unseen generators, new phone photos, Chameleon).
+-> About 1 in 5 real dev photos gets "Uncertain": the price of calling very few fakes "authentic".
+-> My phone photos are not in this calibration yet (private; I run the same command with
+   --real "phone:data/private/phone_v1_app.npz" to include them).
