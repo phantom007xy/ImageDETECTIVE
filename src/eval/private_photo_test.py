@@ -3,8 +3,9 @@
 PRIVACY (plan Section 0): the photos never leave this laptop. Everything runs locally: DINOv3 and
 SAM 3 come from the local model cache in offline mode, and there are no API calls. The script
 prints only totals per group: never a file name, a picture or the score of a single photo.
-Per-photo results and the app-view features (1,024 numbers per photo, no pixels; for
-src/eval/fair_compare.py) are written to data/private/ (ignored by git) and stay on this laptop.
+Per-photo results and the app-view features of every photo and every face crop (1,024 numbers
+each, no pixels; for src/eval/fair_compare.py and src/calibrate/calibrate.py) are written to
+data/private/ (ignored by git) and stay on this laptop.
 
 Groups: every subfolder of the photo folder is a group (its name is printed, so use neutral names;
 photos directly in the folder form the group "(no subfolder)"). Two extra splits: photos with or
@@ -37,6 +38,7 @@ import numpy as np  # noqa: E402
 from PIL import Image, ImageOps  # noqa: E402
 
 from src.data import preprocess  # noqa: E402
+from src.faces import crop  # noqa: E402
 from src.faces.sam_faces import FaceFinder  # noqa: E402
 from src.inference import load_calibration  # noqa: E402
 from src.models.backbone import Backbone  # noqa: E402
@@ -68,7 +70,7 @@ def main():
     heads = {name: LinearHead.load(path) for name, path in HEADS.items() if Path(path).exists()}
     backbone, finder = Backbone(), FaceFinder()
 
-    rows, vectors, unreadable = [], [], 0
+    rows, vectors, face_vectors, face_files, unreadable = [], [], [], [], 0
     for path in files:
         try:
             with Image.open(path) as im:
@@ -80,16 +82,22 @@ def main():
         app_view = backbone.mean_patch_vector(preprocess.to_tensor(preprocess.inference_view(image)).unsqueeze(0)).cpu()
         crop_view = backbone.mean_patch_vector(preprocess.to_tensor(preprocess.eval_view(image)).unsqueeze(0)).cpu()
         vectors.append(app_view[0].numpy().astype(np.float16))
+        faces = [f for f in finder.find(image) if not f["too_small"]]
+        crops = [backbone.mean_patch_vector(preprocess.to_tensor(crop.eval_face_view(image, f)).unsqueeze(0)).cpu()
+                 for f in faces]  # the app's face crop
+        face_vectors += [c[0].numpy().astype(np.float16) for c in crops]
+        face_files += [str(relative)] * len(crops)
         row = {
             "file": str(relative),
             "group": relative.parts[0] if len(relative.parts) > 1 else "(no subfolder)",
-            "faces": sum(not f["too_small"] for f in finder.find(image)),
+            "faces": len(faces),
             "brightness": round(float(np.asarray(image.convert("L")).mean()), 1),
         }
         for name, head in heads.items():
             row[f"p_{name}"] = round(probability(head, app_view), 4)
             row[f"logit_{name}"] = round(float(head.logits(app_view)[0]), 4)
             row[f"p_{name}_centre_crop"] = round(probability(head, crop_view), 4)
+            row[f"face_max_logit_{name}"] = round(max(float(head.logits(c)[0]) for c in crops), 4) if crops else ""
         rows.append(row)
 
     if not rows:
@@ -106,6 +114,10 @@ def main():
     features_out = Path("data/private") / f"{args.folder.name}_app.npz"
     np.savez_compressed(features_out, features=np.stack(vectors), labels=np.zeros(len(rows), dtype=np.int8),
                         img_ids=np.array([r["file"] for r in rows]), sources=np.array(["private/phone"] * len(rows)))
+    if face_vectors:  # the same for every face crop, so the face threshold can be checked on my faces too
+        np.savez_compressed(Path("data/private") / f"{args.folder.name}_faces_app.npz", features=np.stack(face_vectors),
+                            labels=np.zeros(len(face_vectors), dtype=np.int8), img_ids=np.array(face_files),
+                            sources=np.array(["private/phone_face"] * len(face_vectors)))
 
     # ---- totals only from here on ----
     print(f"\n{len(rows)} photos checked, {unreadable} files could not be read. Fully offline, no API calls.")
@@ -123,14 +135,24 @@ def main():
             cells = "".join(f"{np.mean([r[f'p_{n}'] > 0.5 for r in part]):>9.0%}" for n in heads)
             print(f"  {title:<30}{len(part):>5}{cells}")
 
-    print(f"\nApp verdicts on all {len(rows)} photos (each head's own calibration if it has one):")
+    print(f"\nApp verdicts on all {len(rows)} photos (each head's own calibration if it has one; the same rules"
+          f" as src/inference.py):")
     for name in heads:
-        _, ai_logit, real_logit, calibrated = load_calibration(HEADS[name])
-        z = np.array([r[f"logit_{name}"] for r in rows])
-        print(f"  {name:<5} Likely AI-generated {int((z > ai_logit).sum()):>4} | "
-              f"Uncertain {int(((z > real_logit) & (z <= ai_logit)).sum()):>4} | "
-              f"Likely authentic {int((z <= real_logit).sum()):>4}   "
-              f"({'calibrated' if calibrated else 'provisional 0.65 / 0.35'})")
+        c = load_calibration(HEADS[name])
+        counts = {"AI": 0, "face": 0, "Uncertain": 0, "authentic": 0}
+        for r in rows:
+            face = r[f"face_max_logit_{name}"]
+            if r[f"logit_{name}"] > c["ai_logit"]:
+                counts["AI"] += 1
+            elif c["face_ai_logit"] is not None and face != "" and face > c["face_ai_logit"]:
+                counts["face"] += 1
+            elif r[f"logit_{name}"] <= c["real_logit"]:
+                counts["authentic"] += 1
+            else:
+                counts["Uncertain"] += 1
+        print(f"  {name:<5} Likely AI-generated {counts['AI']:>4} | A face looks AI-made {counts['face']:>4} | "
+              f"Uncertain {counts['Uncertain']:>4} | Likely authentic {counts['authentic']:>4}   "
+              f"({'calibrated' if c['calibrated'] else 'provisional 0.65 / 0.35'})")
 
     cells = "  ".join(f"{name} {np.mean([r[f'p_{name}_centre_crop'] > 0.5 for r in rows]):.0%}" for name in heads)
     print(f"\nFor comparison with the Chameleon numbers (centre crop), all photos called AI: {cells}")
