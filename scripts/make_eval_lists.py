@@ -5,6 +5,7 @@
     image size (which alone separates the classes with AUC 0.83) can't help.
   - SD faces: N AI images, spread evenly over SD 1.5 / 2.1 / XL and man / woman.
   - WildDeepfake (test split): a few evenly spaced frames per sequence (face swaps, ready-made crops).
+  - Muse Image: every successfully generated image of a folder made by scripts/make_muse_images.py.
 
 Usage:
   python scripts/make_eval_lists.py --chameleon D:/Datasets/Chameleon/test
@@ -85,12 +86,21 @@ def wilddeepfake_list(root, frames_per_seq, out_dir):
     write_list(out_dir / "wilddeepfake.csv", rows)
 
 
+def muse_image_list(folder, out_dir):
+    """All images in a Muse Image folder that were generated successfully (from its manifest.csv)."""
+    with open(folder / "manifest.csv", newline="", encoding="utf-8") as f:
+        rows = [{"path": str(folder / r["file"]), "label": 1, "source": f"muse_image/{r['category']}"}
+                for r in csv.DictReader(f) if r["status"] == "ok"]
+    write_list(out_dir / f"muse_image_{folder.name}.csv", rows)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--chameleon", type=Path)
     parser.add_argument("--sd-faces", type=Path)
     parser.add_argument("--wilddeepfake", type=Path, help="the extracted WildDeepfake test folder")
     parser.add_argument("--frames-per-seq", type=int, default=8)
+    parser.add_argument("--muse-image", type=Path, help="a folder made by scripts/make_muse_images.py")
     parser.add_argument("--n", type=int, default=1000, help="images per class (Chameleon) or in total (SD faces)")
     parser.add_argument("--out-dir", type=Path, default=Path("features/lists"))
     parser.add_argument("--seed", type=int, default=0)
@@ -104,6 +114,8 @@ def main():
         sd_faces_list(args.sd_faces, args.n, rng, args.out_dir)
     if args.wilddeepfake:
         wilddeepfake_list(args.wilddeepfake, args.frames_per_seq, args.out_dir)
+    if args.muse_image:
+        muse_image_list(args.muse_image, args.out_dir)
 
 
 if __name__ == "__main__":
