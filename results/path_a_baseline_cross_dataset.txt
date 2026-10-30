@@ -1,0 +1,7 @@
+﻿validation-00000-of-00034_eval       314 real   272 AI | AUC 1.000 | real called AI 0.0% | AI caught 100.0% | AI caught at 5% false alarms 100.0%
+chameleon_random_eval               1000 real  1000 AI | AUC 0.902 | real called AI 8.7% | AI caught 76.5% | AI caught at 5% false alarms 69.7%
+chameleon_size_matched_eval         1000 real  1000 AI | AUC 0.876 | real called AI 9.2% | AI caught 68.4% | AI caught at 5% false alarms 60.8%
+sd_faces_eval                          0 real   996 AI | AI caught 87.1%
+  sd_faces/sd1.5                       0 real   332 AI | AI caught 92.5%
+  sd_faces/sd2.1                       0 real   332 AI | AI caught 91.0%
+  sd_faces/sdxl                        0 real   332 AI | AI caught 78.0%
