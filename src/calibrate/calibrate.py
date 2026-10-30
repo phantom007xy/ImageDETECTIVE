@@ -11,6 +11,12 @@ The temperature T makes the probability sigmoid(logit / T) honest: it is chosen 
 probabilities fit the dev mix best (lowest log loss). It does not move the thresholds, which live
 on the logit.
 
+Faces (optional, --real-faces): the same head scores every face crop (the app crop). A face only
+changes the verdict above a very strict face threshold: at most 0.5% of the real dev faces in
+every pool may be above it. Why so strict: all checks share ONE false-alarm budget, and on fully
+generated images a face rule adds almost nothing (src/eval/shared_budget.py); its job is a clearly
+AI-made face in an otherwise real-looking photo.
+
 All feature files must be made with the app's preprocessing (src.features.extract --mode app).
 A real pool may be private (data/private/...): only saved feature vectors are read, never photos,
 and only totals are printed.
@@ -62,6 +68,8 @@ def main():
     parser.add_argument("--fake", action="append", required=True, help='"NAME:feature file[@source]"')
     parser.add_argument("--max-false-alarms", type=float, default=0.05)
     parser.add_argument("--max-uncertain", type=float, default=0.15)
+    parser.add_argument("--real-faces", action="append", default=[], help='"NAME:face feature file" (real faces)')
+    parser.add_argument("--max-face-false-alarms", type=float, default=0.005)
     parser.add_argument("--out", type=Path, help="JSON file for the app")
     args = parser.parse_args()
 
@@ -90,10 +98,20 @@ def main():
             ai, auth = (s > ai_logit).mean(), (s <= real_logit).mean()  # AI = strictly above, as in fair_compare
             print(f"  {title + ' ' + name:<18}{len(s):>6} | {ai:>10.1%} {1 - ai - auth:>10.1%} {auth:>10.1%}")
 
+    face_ai_logit = None
+    if args.real_faces:
+        real_faces = {name: head.logits(load(spec, 0)).numpy() for name, spec in map(split, args.real_faces)}
+        face_ai_logit = max(threshold_for(s, args.max_face_false_alarms) for s in real_faces.values())
+        print(f"\n  A face looks AI-made if its logit > {face_ai_logit:+.2f} "
+              f"(at most {args.max_face_false_alarms:.1%} of the real dev faces in every pool)")
+        for name, s in real_faces.items():
+            print(f"  REAL faces {name:<12}{len(s):>6} | above it: {(s > face_ai_logit).mean():.1%}")
+
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(json.dumps({
             "head": str(args.head), "temperature": temperature, "ai_logit": ai_logit, "real_logit": real_logit,
+            "face_ai_logit": face_ai_logit,
             "max_false_alarms": args.max_false_alarms, "max_uncertain": args.max_uncertain,
             "real_pools": {n: len(s) for n, s in reals.items()}, "fake_sets": {n: len(s) for n, s in fakes.items()},
         }, indent=2))
