@@ -8,9 +8,10 @@ from PIL import ImageOps
 
 from src.inference import Detector, evidence_overlay
 
-# Provisional (31 Oct): head C = SID-Set + Muse Image pairs, results/muse_pairs_v1_heads.txt.
-# The previous head was weights/head_path_a_sidset30.pt.
-HEAD_PATH = "weights/muse_pairs_v1/head_C.pt"
+# Provisional (31 Oct): head E = SID-Set + Muse pairs + Commons real photos and pairs + SD 1.5/2.1 faces
+# (results/generator_variety_v1.txt). Before: head C (weights/muse_pairs_v1/head_C.pt), and before that
+# weights/head_path_a_sidset30.pt.
+HEAD_PATH = "weights/commons_v1/head_E.pt"
 detector = Detector(HEAD_PATH)
 
 
