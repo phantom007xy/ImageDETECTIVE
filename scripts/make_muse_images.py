@@ -20,6 +20,7 @@ import csv
 import io
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import httpx
@@ -64,12 +65,19 @@ def generate(client, key, row):
     return response
 
 
+def timed_generate(client, key, row):
+    start = time.time()
+    response = generate(client, key, row)
+    return row, response, time.time() - start
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--prompts", type=Path, required=True, help="CSV with id, category, style, size, prompt")
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--limit", type=int, help="generate at most this many new images")
     parser.add_argument("--spend", action="store_true", help="really call the API (costs credits)")
+    parser.add_argument("--workers", type=int, default=1, help="requests at the same time (limit: 150 per minute)")
     args = parser.parse_args()
 
     with open(args.prompts, newline="", encoding="utf-8") as f:
@@ -89,15 +97,18 @@ def main():
     key = api_key()
     args.out_dir.mkdir(parents=True, exist_ok=True)
     new_file = not manifest.exists()
-    with open(manifest, "a", newline="", encoding="utf-8") as out, httpx.Client(timeout=300) as client:
+    with (open(manifest, "a", newline="", encoding="utf-8") as out, httpx.Client(timeout=300) as client,
+          ThreadPoolExecutor(args.workers) as pool):
         writer = csv.DictWriter(out, fieldnames=FIELDS, lineterminator="\n")
         if new_file:
             writer.writeheader()
-        for i, row in enumerate(todo, 1):
-            start = time.time()
-            response = generate(client, key, row)
+        futures = [pool.submit(timed_generate, client, key, row) for row in todo]
+        for i, future in enumerate(as_completed(futures), 1):
+            if future.cancelled():
+                continue
+            row, response, seconds = future.result()  # each result is saved as soon as it arrives
             record = {"id": row["id"], "category": row["category"], "style": row["style"],
-                      "size_requested": row["size"], "seconds": f"{time.time() - start:.1f}"}
+                      "size_requested": row["size"], "seconds": f"{seconds:.1f}"}
             if response.status_code == 200:
                 data = base64.b64decode(response.json()["data"][0]["b64_json"])
                 with Image.open(io.BytesIO(data)) as im:
@@ -116,7 +127,8 @@ def main():
                   f"{record.get('height', '')} {record['seconds']} s {record.get('error', '')}")
             if record["status"] == "error" and response.status_code in (400, 401, 402, 403):
                 print("stopping: this error will repeat for every prompt (check the key, credits or request)")
-                break
+                for f in futures:
+                    f.cancel()  # requests not started yet are dropped; running ones are still saved
 
 
 if __name__ == "__main__":
