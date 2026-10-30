@@ -1,0 +1,42 @@
+Generator variety, step 1 (31 Oct 2026): SD 1.5 / 2.1 faces in training, SDXL held out completely.
+Frozen DINOv3-L + linear head. Dev sets only; own threshold per head (at most 5% false alarms on every
+real dev pool); app preprocessing (src.features.extract --mode app).
+
+== Data ==
+1,200 SD faces for training (600 SD 1.5, 600 SD 2.1; python scripts/make_eval_lists.py --sd-faces ...
+--sd-faces-train 600), none of them in the dev list features/lists/sd_faces.csv; no SDXL at all.
+Kept small on purpose: far more AI portraits than real portraits would teach "portrait = AI".
+E = D (results/commons_v1_heads.txt) + these 1,200 faces (4 copies each).
+
+== Fair comparison, public dev pools (python -m src.eval.fair_compare, SD faces split with @source) ==
+Real pools: polished dev (330), OpenImages val (76)
+Fake sets:  Muse test v1 (100), Muse pairs val (76), SDXL (unseen) (332), SD 1.5 (332), SD 2.1 (332)
+                             real called AI                                               AI caught
+head     threshold |    polished dev  OpenImages val |    Muse test v1  Muse pairs val   SDXL (unseen)          SD 1.5          SD 2.1
+app          0.441 |            4.8%            0.0% |           43.0%           18.4%           80.4%           93.7%           91.9%
+C2           0.515 |            4.8%            2.6% |           96.0%           80.3%           34.3%           52.4%           62.3%
+D            0.719 |            4.8%            3.9% |           94.0%           81.6%           36.7%           53.0%           63.0%
+E            0.645 |            4.8%            2.6% |           93.0%           73.7%           91.9%           99.4%           99.1%
+(SD 1.5 / 2.1 are a known generator for E, only new images; SDXL is the honest "never seen" number.)
+
+== Check 1: does E flag real portraits more? (polished dev split by kind, every kind at most 5%) ==
+                                           real called AI                                    AI caught
+head     threshold |       portrait         people          phone        quality |   Muse test v1  SDXL (unseen)
+D            0.909 |           3.8%           3.3%           1.9%           2.7% |          93.0%          25.6%
+E            0.791 |           3.8%           0.0%           3.7%           2.7% |          91.0%          85.8%
+-> No: real portraits are flagged as often as with D. (Small pools -> stricter thresholds than above.)
+
+== Check 2: resolution (python -m src.eval.brightness_check --list features/lists/commons_dev.csv --view app
+   --change downscale --factors 1 0.5 0.35 0.25): SD 1.5 faces are only 512 px ==
+300 real images from commons_dev.csv (app); per downscale factor: mean logit (share called AI at 0.5)
+  head_D                   x1:  -6.88 (  6%) | x0.5:  -6.92 (  7%) | x0.35:  -6.91 (  6%) | x0.25:  -7.07 (  7%)
+  head_E                   x1:  -6.81 (  8%) | x0.5:  -6.86 (  7%) | x0.35:  -6.84 (  7%) | x0.25:  -6.98 (  7%)
+-> No "small image = AI" shortcut.
+
+== Conclusions ==
+-> Generator variety works: with 1,200 SD 1.5/2.1 faces, SDXL faces (a generator never seen) are caught 92%
+   instead of 37%, while Muse stays at 93%.
+-> Caveat: the SDXL faces come from the same dataset as the training faces (same creator, retouching and
+   framing), so part of the gain may be "knows this dataset's style". Step 2 (other open models, our own
+   prompts) and the fresh Day 8 test will show how far it carries.
+-> Still to check: my phone photos (95 of 104 with faces) with head E (private test, run by me).
