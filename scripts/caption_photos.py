@@ -1,7 +1,7 @@
 """Same-content pairs, step 1: pick real photos and let Muse Spark describe each one as a prompt.
 
-The real photos come from SID-Set training files (public OpenImages photos), never from private
-photos. Muse Spark runs in standard mode (muse-spark-1.3, not the "-contributor" variant, so Meta
+The real photos come from SID-Set training files (public OpenImages photos) or from a public image
+list such as the Commons training photos (--list), never from private photos. Muse Spark runs in standard mode (muse-spark-1.3, not the "-contributor" variant, so Meta
 does not train on them). Step 2 is scripts/make_muse_images.py with the prompts.csv written here.
 Real and fake then show the same content, so a head trained on them has to learn the generator's
 traces, not "what is in the photo".
@@ -16,6 +16,8 @@ Usage:
   python scripts/caption_photos.py --parquet "D:/Datasets/SID_Set/data/train-0000[0-9]-of-00249.parquet"
       --faces "features/faces/train-0000[0-9]-of-00249_train.npz" --out-dir D:/Datasets/MuseImage/pairs_v1
   python scripts/caption_photos.py ... --limit 5 --spend
+  python scripts/caption_photos.py --list features/lists/commons_v1_train.csv --quota commons/people=150
+      --quota commons/portrait=120 --n-val 0 --out-dir D:/Datasets/MuseImage/pairs_v2
 """
 
 import argparse
@@ -89,6 +91,31 @@ def pick_pairs(args):
     return pairs
 
 
+def pick_from_list(args):
+    """Choose real photos from a CSV image list with a quota per source, copy them unchanged."""
+    with open(args.list, newline="") as f:
+        rows = [r for r in csv.DictReader(f) if r["label"] == "0"]
+    rng = random.Random(args.seed)
+    chosen = []
+    for item in args.quota:
+        source, count = item.split("=")
+        pool = sorted((r for r in rows if r["source"] == source), key=lambda r: r["path"])
+        chosen += rng.sample(pool, min(int(count), len(pool)))
+    rng.shuffle(chosen)
+    (args.out_dir / "real").mkdir(parents=True, exist_ok=True)
+    pairs = []
+    for n, r in enumerate(chosen):
+        src = Path(r["path"])
+        name = f"{src.parent.parent.name}_{src.name}"  # e.g. v2_commons_00001.jpg: names repeat across downloads
+        (args.out_dir / "real" / name).write_bytes(src.read_bytes())  # unchanged bytes
+        with Image.open(src) as im:
+            width, height = im.size
+        pairs.append({"pair_id": f"pair_{n:04d}", "split": "val" if n < args.n_val else "train", "img_id": Path(name).stem,
+                      "real_file": f"real/{name}", "has_face": int(r["source"] in ("commons/people", "commons/portrait")),
+                      "width": width, "height": height})
+    return pairs
+
+
 def caption(client, key, image_path):
     with Image.open(image_path) as im:
         im = im.convert("RGB")
@@ -126,8 +153,10 @@ def write_prompts(out_dir, pairs):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--parquet", required=True, help="glob of SID-Set training files")
-    parser.add_argument("--faces", required=True, help="glob of face feature files of the same SID-Set files")
+    parser.add_argument("--parquet", help="glob of SID-Set training files")
+    parser.add_argument("--faces", help="glob of face feature files of the same SID-Set files")
+    parser.add_argument("--list", type=Path, help="instead of SID-Set: a CSV image list (e.g. Commons train photos)")
+    parser.add_argument("--quota", action="append", default=[], help='with --list: "source=count", e.g. commons/people=150')
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--n-faces", type=int, default=300, help="photos with at least one face")
     parser.add_argument("--n-other", type=int, default=200, help="photos without a checkable face")
@@ -143,7 +172,7 @@ def main():
         with open(pairs_csv, newline="", encoding="utf-8") as f:
             pairs = list(csv.DictReader(f))
     else:
-        pairs = pick_pairs(args)
+        pairs = pick_from_list(args) if args.list else pick_pairs(args)
         with open(pairs_csv, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=list(pairs[0]), lineterminator="\n")
             writer.writeheader()
