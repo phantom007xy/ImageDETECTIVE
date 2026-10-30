@@ -3,7 +3,8 @@
 PRIVACY (plan Section 0): the photos never leave this laptop. Everything runs locally: DINOv3 and
 SAM 3 come from the local model cache in offline mode, and there are no API calls. The script
 prints only totals per group: never a file name, a picture or the score of a single photo.
-Per-photo results are written to data/private/ (ignored by git) and stay on this laptop.
+Per-photo results and the app-view features (1,024 numbers per photo, no pixels; for
+src/eval/fair_compare.py) are written to data/private/ (ignored by git) and stay on this laptop.
 
 Groups: every subfolder of the photo folder is a group (its name is printed, so use neutral names;
 photos directly in the folder form the group "(no subfolder)"). Two extra splits: photos with or
@@ -62,7 +63,7 @@ def main():
     heads = {name: LinearHead.load(path) for name, path in HEADS.items() if Path(path).exists()}
     backbone, finder = Backbone(), FaceFinder()
 
-    rows, unreadable = [], 0
+    rows, vectors, unreadable = [], [], 0
     for path in files:
         try:
             with Image.open(path) as im:
@@ -73,6 +74,7 @@ def main():
         relative = path.relative_to(args.folder)
         app_view = backbone.mean_patch_vector(preprocess.to_tensor(preprocess.inference_view(image)).unsqueeze(0)).cpu()
         crop_view = backbone.mean_patch_vector(preprocess.to_tensor(preprocess.eval_view(image)).unsqueeze(0)).cpu()
+        vectors.append(app_view[0].numpy().astype(np.float16))
         row = {
             "file": str(relative),
             "group": relative.parts[0] if len(relative.parts) > 1 else "(no subfolder)",
@@ -93,10 +95,15 @@ def main():
         writer = csv.DictWriter(f, fieldnames=list(rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
+    # The app-view features (1,024 numbers per photo, no pixels), so new heads can be compared
+    # with src/eval/fair_compare.py without reading the photos again. Stays in data/private/.
+    features_out = Path("data/private") / f"{args.folder.name}_app.npz"
+    np.savez_compressed(features_out, features=np.stack(vectors), labels=np.zeros(len(rows), dtype=np.int8),
+                        img_ids=np.array([r["file"] for r in rows]), sources=np.array(["private/phone"] * len(rows)))
 
     # ---- totals only from here on ----
     print(f"\n{len(rows)} photos checked, {unreadable} files could not be read. Fully offline, no API calls.")
-    print(f"Per-photo results stay on this laptop: {out}\n")
+    print(f"Per-photo results and features stay on this laptop: {out}, {features_out}\n")
     splits = [("all", lambda r: True)]
     splits += [(f"folder: {g}", lambda r, g=g: r["group"] == g) for g in sorted({r["group"] for r in rows})]
     splits += [("with a face", lambda r: r["faces"] > 0), ("no face", lambda r: r["faces"] == 0),
