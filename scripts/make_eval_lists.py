@@ -4,6 +4,7 @@
   - Chameleon, size-matched: real and AI images taken in equal numbers per short-side bin, so the
     image size (which alone separates the classes with AUC 0.83) can't help.
   - SD faces: N AI images, spread evenly over SD 1.5 / 2.1 / XL and man / woman.
+  - WildDeepfake (test split): a few evenly spaced frames per sequence (face swaps, ready-made crops).
 
 Usage:
   python scripts/make_eval_lists.py --chameleon D:/Datasets/Chameleon/test
@@ -71,10 +72,25 @@ def sd_faces_list(root, n, rng, out_dir):
     write_list(out_dir / "sd_faces.csv", rows)
 
 
+def wilddeepfake_list(root, frames_per_seq, out_dir):
+    """A few evenly spaced frames per sequence (neighbouring frames are near-identical)."""
+    rows = []
+    for group in ("real_test", "fake_test"):
+        label = 0 if group == "real_test" else 1
+        for seq in sorted(p for p in (root / group).rglob("*") if p.is_dir() and any(p.glob("*.png"))):
+            frames = sorted(seq.glob("*.png"), key=lambda f: int(f.stem) if f.stem.isdigit() else f.stem)
+            picks = sorted({round(i * (len(frames) - 1) / max(1, frames_per_seq - 1)) for i in range(frames_per_seq)})
+            rows += [{"path": str(frames[i]), "label": label, "source": f"wilddeepfake/{'real' if label == 0 else 'fake'}"}
+                     for i in picks]
+    write_list(out_dir / "wilddeepfake.csv", rows)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--chameleon", type=Path)
     parser.add_argument("--sd-faces", type=Path)
+    parser.add_argument("--wilddeepfake", type=Path, help="the extracted WildDeepfake test folder")
+    parser.add_argument("--frames-per-seq", type=int, default=8)
     parser.add_argument("--n", type=int, default=1000, help="images per class (Chameleon) or in total (SD faces)")
     parser.add_argument("--out-dir", type=Path, default=Path("features/lists"))
     parser.add_argument("--seed", type=int, default=0)
@@ -86,6 +102,8 @@ def main():
         chameleon_lists(args.chameleon, args.n, rng, args.out_dir)
     if args.sd_faces:
         sd_faces_list(args.sd_faces, args.n, rng, args.out_dir)
+    if args.wilddeepfake:
+        wilddeepfake_list(args.wilddeepfake, args.frames_per_seq, args.out_dir)
 
 
 if __name__ == "__main__":
