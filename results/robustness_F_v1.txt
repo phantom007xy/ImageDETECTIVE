@@ -22,3 +22,13 @@ AI SD3.5 devcap      65.8%    47.4%   55.3%     55.3%     47.4%   57.9%      | m
 -> Weak spot: SD 3.5, the hardest generator, loses up to 19 points under compression (small sample).
 -> No retraining needed for compression now. The real WhatsApp copies of my phone photos (judge test) remain the
    honest check.
+
+== Cropped copies (31 Oct, added later; python -m src.eval.robustness_check --head weights/open_gen_v1/head_F.pt
+   --list "polished dev:features/lists/commons_dev.csv" --list "Muse test v1:features/lists/muse_image_test_v1.csv"
+   --n 150 --versions original crop) ==
+crop = the middle 70% of each side, re-saved as JPEG 85 (the copy that hid Muse images from Meta's watermark-based
+detector: it missed 55% of cropped Muse images, Reuters, July 2026). Our detector reads the pixels, not the watermark.
+REAL polished dev (150)   original: AI  5.3% | Uncertain 23.3% | authentic 71.3%   crop: AI  7.3% | Uncertain 18.0% | authentic 74.7%
+AI   Muse test v1 (100)   original: AI 94.0% | Uncertain  4.0% | authentic  2.0%   crop: AI 92.0% | Uncertain  6.0% | authentic  2.0%
+-> Cropping does not hide Muse images from the pixel check (92% still called AI, 2% authentic as before).
+   Real photos: 8 -> 11 of 150 called AI on crops (within noise at this n; watch it with the next head).
