@@ -38,23 +38,25 @@ def is_layernorm(param_name):
     return "norm" in param_name
 
 
-def load_layernorm(model, path):
-    """Put tuned LayerNorm weights (src/models/tune_layernorm.py) into a loaded DINOv3; the rest stays frozen."""
+def load_tuned(model, path):
+    """Put tuned weights (src/models/tune_backbone.py: the LayerNorms, the last blocks or all) into a loaded DINOv3.
+
+    Only the weights in the file change; every name in it must exist in DINOv3.
+    """
     state = torch.load(path, map_location="cpu")
-    if not all(is_layernorm(k) for k in state) or len(state) != sum(is_layernorm(n) for n, _ in model.named_parameters()):
-        raise ValueError(f"{path} doesn't hold exactly DINOv3's LayerNorm weights")
     missing, unexpected = model.load_state_dict(state, strict=False)
-    if unexpected:
-        raise ValueError(f"unexpected weights in {path}: {unexpected[:3]}")
+    if unexpected or not state:
+        raise ValueError(f"{path} has weights DINOv3 doesn't have: {unexpected[:3]}")
+    return len(state)
 
 
 class Backbone:
-    def __init__(self, name=MODEL_NAME, device=None, ln_path=None):
+    def __init__(self, name=MODEL_NAME, device=None, tuned_path=None):
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         self.dtype = pick_dtype(self.device)
         model = load_local_first(AutoModel.from_pretrained, name)
-        if ln_path:  # LayerNorm-tuned DINOv3 (only these 100k numbers differ from the original)
-            load_layernorm(model, ln_path)
+        if tuned_path:  # a tuned DINOv3: only the weights in this file differ from the original
+            load_tuned(model, tuned_path)
         self.model = model.to(device=self.device, dtype=self.dtype).eval()
         self.skip = 1 + self.model.config.num_register_tokens  # class token + register tokens
 

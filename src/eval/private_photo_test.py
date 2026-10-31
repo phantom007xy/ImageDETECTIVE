@@ -23,6 +23,8 @@ Heads compared (all on the same DINOv3 features):
 Usage (from the repo root, in your own terminal, with the venv active):
   python -m src.eval.private_photo_test
   python -m src.eval.private_photo_test --folder data/private/phone_v1
+  python -m src.eval.private_photo_test --folder data/private/phone_v1 --tuned weights/ln_v1/ln_step2000.pt
+      --tuned-head weights/ln_v1/head_step2000.pt   (also a tuned DINOv3: its features go to data/private too)
 """
 
 import os
@@ -37,6 +39,7 @@ import warnings  # noqa: E402
 from pathlib import Path  # noqa: E402
 
 import numpy as np  # noqa: E402
+import torch  # noqa: E402
 from PIL import Image, ImageOps  # noqa: E402
 
 from src.data import preprocess  # noqa: E402
@@ -69,6 +72,8 @@ def probability(head, vector):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--folder", type=Path, default=Path("data/private/phone_v1"))
+    parser.add_argument("--tuned", type=Path, help="also a tuned DINOv3 (src/models/tune_backbone.py) ...")
+    parser.add_argument("--tuned-head", type=Path, help="... with its head")
     args = parser.parse_args()
     warnings.filterwarnings("ignore")  # library warnings could mention a file
 
@@ -76,6 +81,10 @@ def main():
     heads = {name: LinearHead.load(path) for name, path in HEADS.items() if Path(path).exists()}
     swap = LinearHead.load(SWAP_HEAD)  # face swaps (DFDC), on the same face crops
     backbone, finder = Backbone(), FaceFinder()
+    # A tuned DINOv3 is a different backbone: its own pass over every photo (whole image, both views).
+    tuned = Backbone(tuned_path=args.tuned) if args.tuned else None
+    tuned_head = LinearHead.load(args.tuned_head) if args.tuned else None
+    tuned_vectors = {view: [] for view in VIEWS}
 
     rows, vectors, face_vectors, face_files, unreadable = [], {view: [] for view in VIEWS}, [], [], 0
     for path in files:
@@ -92,6 +101,10 @@ def main():
         crop_view = backbone.mean_patch_vector(preprocess.to_tensor(preprocess.eval_view(image)).unsqueeze(0)).cpu()
         for view, vector in views.items():
             vectors[view].append(vector[0].numpy().astype(np.float16))
+        if tuned is not None:
+            for view in VIEWS:
+                v = tuned.mean_patch_vector(preprocess.to_tensor(preprocess.inference_view(image, view)).unsqueeze(0)).cpu()
+                tuned_vectors[view].append(v[0].numpy().astype(np.float16))
         faces = [f for f in finder.find(image) if not f["too_small"]]
         crops = [backbone.mean_patch_vector(preprocess.to_tensor(crop.eval_face_view(image, f)).unsqueeze(0)).cpu()
                  for f in faces]  # the app's face crop
@@ -128,6 +141,12 @@ def main():
         np.savez_compressed(Path("data/private") / f"{args.folder.name}_app{suffix}.npz",
                             features=np.stack(vectors[view]), labels=np.zeros(len(rows), dtype=np.int8),
                             img_ids=np.array([r["file"] for r in rows]), sources=np.array(["private/phone"] * len(rows)))
+    if tuned is not None:  # e.g. data/private/phone_v1_app_short448_ln_v1-ln_step2000.npz
+        tag = f"{args.tuned.parent.name}-{args.tuned.stem}"
+        for view in VIEWS:
+            np.savez_compressed(Path("data/private") / f"{args.folder.name}_app_{view}_{tag}.npz",
+                                features=np.stack(tuned_vectors[view]), labels=np.zeros(len(rows), dtype=np.int8),
+                                img_ids=np.array([r["file"] for r in rows]), sources=np.array(["private/phone"] * len(rows)))
     if face_vectors:  # the same for every face crop, so the face threshold can be checked on my faces too
         np.savez_compressed(Path("data/private") / f"{args.folder.name}_faces_app.npz", features=np.stack(face_vectors),
                             labels=np.zeros(len(face_vectors), dtype=np.int8), img_ids=np.array(face_files),
@@ -172,6 +191,11 @@ def main():
 
     cells = "  ".join(f"{name} {np.mean([r[f'p_{name}_centre_crop'] > 0.5 for r in rows]):.0%}" for name in heads)
     print(f"\nFor comparison with the Chameleon numbers (centre crop), all photos called AI: {cells}")
+    if tuned is not None:
+        for view in VIEWS:
+            z = tuned_head.logits(torch.from_numpy(np.stack(tuned_vectors[view]).astype(np.float32))).numpy()
+            print(f"Tuned DINOv3 {args.tuned.name} + {args.tuned_head.name}, view {view}: called AI (p > 0.5) "
+                  f"{(z > 0).mean():.0%} of {len(z)} (its fair line comes from src/eval/fair_compare.py)")
 
 
 if __name__ == "__main__":

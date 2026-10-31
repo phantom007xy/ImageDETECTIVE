@@ -95,14 +95,18 @@ def main():
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--view", choices=["long448", "short448"],
                         help="app mode only: compare an app view other than preprocess.APP_VIEW (file name gets _<view>)")
+    parser.add_argument("--tuned", type=Path, help="tuned DINOv3 weights (src/models/tune_backbone.py); "
+                                                   "the file name gets _<folder>-<file>, e.g. _ln_v1-ln_step2000")
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    backbone = Backbone()
-    print(f"DINOv3 on {backbone.device} ({backbone.dtype})")
+    backbone = Backbone(tuned_path=args.tuned)
+    print(f"DINOv3 on {backbone.device} ({backbone.dtype}){', tuned: ' + str(args.tuned) if args.tuned else ''}")
     for path in args.inputs:
         suffix = f"_{args.view}" if args.mode == "app" and args.view else ""
+        if args.tuned:
+            suffix += f"_{args.tuned.parent.name}-{args.tuned.stem}"
         out_path = args.out_dir / f"{path.stem}_{args.mode}{suffix}.npz"
         extract_file(backbone, path, out_path, args.mode, args.copies, args.seed, args.batch_size, tuple(args.labels),
                      args.view)

@@ -12,7 +12,7 @@ be under data/private/ (ignored by git). Fully local: no API calls.
 Usage (from the repo root, in your own terminal):
   python -m src.eval.list_verdicts --list features/lists/muse_self_edits_v1.csv --head weights/open_gen_v1/head_F.pt
       --out data/private/self_edits_v1_app.npz
-  (a LayerNorm-tuned backbone: add --ln weights/ln_v1/ln_stepN.pt and give its head and calibration)
+  (a tuned backbone: add --tuned weights/ln_v1/ln_stepN.pt and give its head and calibration)
 """
 
 import os
@@ -41,7 +41,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--list", type=Path, required=True)
     parser.add_argument("--head", type=Path, required=True)
-    parser.add_argument("--ln", type=Path, help="LayerNorm-tuned DINOv3 weights (src/models/tune_layernorm.py)")
+    parser.add_argument("--tuned", type=Path, help="tuned DINOv3 weights (src/models/tune_backbone.py)")
     parser.add_argument("--view", choices=["long448", "short448"], help="app view other than preprocess.APP_VIEW")
     parser.add_argument("--out", type=Path, required=True, help="feature file (keep it under data/private/)")
     args = parser.parse_args()
@@ -49,7 +49,7 @@ def main():
 
     with open(args.list, newline="") as f:
         rows = list(csv.DictReader(f))
-    backbone = Backbone(ln_path=args.ln)
+    backbone = Backbone(tuned_path=args.tuned)
     head, c = LinearHead.load(args.head), load_calibration(args.head)
     vectors, verdicts, tagged = [], defaultdict(Counter), Counter()
     for row in rows:
@@ -75,7 +75,7 @@ def main():
     args.out.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(args.out, features=np.stack(vectors), labels=np.array([int(r["label"]) for r in rows], dtype=np.int8),
                         sources=np.array([r["source"] for r in rows]), img_ids=np.arange(len(rows)))
-    print(f"\n{len(rows)} pictures, head {args.head.name}{' + tuned LayerNorms ' + args.ln.name if args.ln else ''}, "
+    print(f"\n{len(rows)} pictures, head {args.head.name}{' + tuned DINOv3 ' + args.tuned.name if args.tuned else ''}, "
           f"view {args.view or preprocess.APP_VIEW} ({'calibrated' if c['calibrated'] else 'provisional thresholds'});"
           f" pixels only. Features (no pixels) -> {args.out}\n")
     names = ["AI-generated", "Likely AI-generated", "Uncertain", "Likely authentic"]
