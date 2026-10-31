@@ -24,7 +24,7 @@ INSTRUCTION = (
 )
 
 
-def facts(result, outline=None, evidence=None):
+def facts(result, outline=None, evidence=None, guess=None):
     """The detector's result as a small, plain dictionary (no pixels, no file names)."""
     faces = [f for f in result["faces"] if not f["too_small"]]
     out = {
@@ -41,12 +41,16 @@ def facts(result, outline=None, evidence=None):
     if outline and outline.get("mask") is not None and evidence:
         out["strongest_evidence"] = (f"one object was outlined; its AI evidence is about {evidence[0]:.0%}, "
                                      f"the rest of the photo about {evidence[1]:.0%}")
+    if result.get("edit") is not None:
+        out["ai_edit_check"] = "looks re-rendered by an AI editor" if result["edit"]["flagged"] else "no clear signs"
+    if guess:
+        out["second_opinion_guess_of_changed_part"] = f"{guess} (a guess, not part of the verdict)"
     return out
 
 
-def explain(result, outline=None, evidence=None):
+def explain(result, outline=None, evidence=None, guess=None):
     """2-3 sentences, or None (cap reached, no key, API error)."""
-    text = INSTRUCTION + json.dumps(facts(result, outline, evidence), indent=1)
+    text = INSTRUCTION + json.dumps(facts(result, outline, evidence, guess), indent=1)
 
     def call(key):
         body = {"model": MODEL, "reasoning_effort": "minimal", "messages": [{"role": "user", "content": text}]}

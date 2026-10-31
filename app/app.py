@@ -18,7 +18,7 @@ from huggingface_hub import snapshot_download
 from PIL import Image, ImageOps
 
 from src.inference import Detector, draw_faces, draw_outline, evidence_overlay
-from src.services import explain, metadata, muse_image, sam_outline
+from src.services import explain, investigator, metadata, muse_image, sam_outline
 
 # Provisional (31 Oct): head F = SID-Set + Muse pairs + Commons real photos and pairs + SD 1.5/2.1 faces
 # + SD 3.5 Medium and Kandinsky 2.2 fakes (results/open_gen_v1_heads.txt, calibration_F_v1.txt).
@@ -107,8 +107,21 @@ def check(path, use_meta):
     if not use_meta:
         return
 
-    outline, evidence, evidence_map = None, None, draw_faces(base_map, result["faces"])
-    if result["verdict"] != "Likely authentic":  # outlining the "hottest spot" of a real photo would mislead
+    outline, evidence, evidence_map, guess = None, None, draw_faces(base_map, result["faces"]), None
+    if result["verdict"] in ("Likely AI-edited", "Uncertain"):
+        # Investigator: Muse Spark names what an AI editor most likely changed, SAM 3.1 outlines it
+        # (results/investigator_v1.txt: rarely wrong when it names something; never decides the verdict).
+        found = investigator.investigate(image)
+        if found is None:
+            lines.append("\n*Muse Spark investigator not available right now.*")
+        elif found["guess"]:
+            guess = found["guess"]
+            if found["mask"] is not None:
+                evidence_map = draw_faces(draw_outline(base_map, found["mask"]), result["faces"])
+            lines += ["", f"**Muse Spark's guess of what was changed:** {guess}"
+                      + (" (yellow outline by SAM 3.1)" if found["mask"] is not None else "")
+                      + ". A second opinion; the verdict comes from our detectors."]
+    elif result["verdict"] != "Likely authentic":  # outlining the "hottest spot" of a real photo would mislead
         outline = sam_outline.outline(image, result["patch_logits"])
         if outline is None:
             lines.append("\n*SAM 3.1 outline not available right now; the coloured map shows the evidence.*")
@@ -124,7 +137,7 @@ def check(path, use_meta):
             lines += ["", text + "."]
     yield "\n".join(lines) + footer(result), evidence_map, "*Muse Spark is writing a short explanation ...*"
 
-    words = explain.explain(result, outline, evidence)
+    words = explain.explain(result, outline, evidence, guess)
     yield "\n".join(lines) + footer(result), evidence_map, (
         f"**In plain words (Muse Spark):** {words}" if words else
         "*No explanation right now (daily limit reached or the API is unavailable). Everything above comes from "
@@ -164,9 +177,9 @@ with gr.Blocks(title="ImageDETECTIVE", analytics_enabled=False) as demo:
             evidence = gr.Image(type="pil", label="Evidence map (red = points to AI, blue = points to real), faces "
                                                   "(red = looks AI-made, orange = some AI signs, green = no clear AI "
                                                   "signs, grey = too small) and the SAM 3.1 outline (yellow)")
-        use_meta = gr.Checkbox(value=True, label="Use Meta's SAM 3.1 outline and Muse Spark explanation (a smaller "
-                                                 "copy of the photo goes to Meta's SAM 3.1 API; Muse Spark only gets "
-                                                 "the numbers; standard mode: Meta doesn't train on them)")
+        use_meta = gr.Checkbox(value=True, label="Use Meta's SAM 3.1 outline, the Muse Spark investigator and its "
+                                                 "explanation (a smaller copy of the photo goes to Meta's SAM 3.1 and "
+                                                 "Muse Spark APIs; standard mode: Meta doesn't train on them)")
         button = gr.Button("Check", variant="primary")
         result_text = gr.Markdown()
         explanation = gr.Markdown()
