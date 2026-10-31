@@ -86,3 +86,13 @@ AI   Muse test v1 (100)      100.0%        100.0%        100.0%        100.0%   
   2 its Muse edit "add a red bicycle", forwarded   -> Likely AI-edited (edit logit +15.2)
   3 Muse group photo of 8 made-up people, forwarded -> Likely AI-generated (P(AI) 0.89), 8 faces checked
   4 Muse selfie, original file                      -> AI-generated (the file's AI label; pixels agree)
+
+== "Uncertain" share with the joint verdict (public pools only; head F's authentic line -3.84 from its calibration) ==
+Balanced mix as in src/calibrate/calibrate.py: real pools half, Muse test v1 + Muse pairs val + SDXL half.
+                                         head F alone (-0.30) | F at -0.17 OR edit check (+3.87)
+  mix, all four public real pools              14.9%           |        12.6%
+  mix, polished dev + OpenImages val only      18.0%           |        15.5%   (my phone photos, also in the
+                                                                                  calibration mix, pull it lower)
+  Muse test v1 called Likely authentic          2.0%           |         0.0%
+  Muse pairs val / SDXL called authentic     3.9% / 0.9%       |      1.3% / 0.3%
+-> The edit check turns fakes that sat in "Uncertain" into catches, so the joint verdict lowers the Uncertain share.
