@@ -60,6 +60,26 @@ def load_calibration(head_path):
             "swap_leans_logit": None, "calibrated": False}
 
 
+def load_edit_check(head_path, whole_calibration):
+    """The Muse-edit check from <head>_calibration.json (src/calibrate/calibrate_edit_check.py): its head, line and PE
+    weights (None = the original PE-Core); None if it is not calibrated. If the calibration used the joint trade
+    (--give-up), whole_calibration's AI line is raised here to the traded line, but only if whole_calibration is the
+    one the trade was computed from; otherwise the edit check stays off (run python -m src.calibrate.calibrate_app)."""
+    path = Path(head_path)
+    cal_path = path.with_name(path.stem + "_calibration.json")
+    if not (path.exists() and cal_path.exists()):
+        print(f"WARNING: edit check {path} or its calibration not found: the edit check is off")
+        return None
+    cal = json.loads(cal_path.read_text())
+    if cal.get("whole_ai_logit") is not None:
+        if abs(cal["whole_ai_logit_calibrated"] - whole_calibration["ai_logit"]) > 1e-6:
+            print(f"WARNING: {cal_path.name} was made with another whole-image calibration: the edit check is off "
+                  "(run python -m src.calibrate.calibrate_app)")
+            return None
+        whole_calibration["ai_logit"] = cal["whole_ai_logit"]
+    return {"head": LinearHead.load(path), "line": cal["edit_logit"], "pe_weights": cal.get("pe_weights")}
+
+
 class Detector:
     def __init__(self, head_path, device=None, faces=True, edit_check=None):
         self.backbone = Backbone(device=device)
@@ -67,15 +87,11 @@ class Detector:
         self.calibration = load_calibration(head_path)
         self.calibrated = self.calibration["calibrated"]
         self.finder = FaceFinder(device=device) if faces else None
-        # The Muse-edit check (src/models/pe_core.py): Meta's PE-Core on the centre square, only if it is calibrated.
-        self.edit_check = None
-        edit_cal = Path(edit_check).with_name(Path(edit_check).stem + "_calibration.json") if edit_check else None
-        if edit_cal is not None and edit_cal.exists():
-            self.pe = PECore(device=device)
-            self.edit_check = LinearHead.load(edit_check)
-            self.edit_line = json.loads(edit_cal.read_text())["edit_logit"]
-        elif edit_check:
-            print(f"WARNING: edit check {edit_check} or its calibration not found: the edit check is off")
+        # The Muse-edit check (src/models/pe_core.py): Meta's PE-Core (original or fine-tuned) on the centre square,
+        # only if it is calibrated; its calibration may raise the head's AI line (the joint trade).
+        self.edit_check = load_edit_check(edit_check, self.calibration) if edit_check else None
+        if self.edit_check is not None:
+            self.pe = PECore(device=device, tuned_path=self.edit_check["pe_weights"])
         # The face-swap head (DFDC) scores the same face features; only used if it is calibrated and present.
         swap_path = self.calibration["swap_head"] and Path(self.calibration["swap_head"].replace("\\", "/"))
         self.swap_head = LinearHead.load(swap_path) if swap_path and swap_path.exists() else None
@@ -152,8 +168,8 @@ class Detector:
         edit = None
         if self.edit_check is not None:
             features = self.pe.layer_features(self.pe.to_tensor(self.pe.view(image)).unsqueeze(0))
-            logit = float(self.edit_check.logits(features.reshape(1, -1).float())[0])
-            edit = {"logit": logit, "flagged": logit > self.edit_line}
+            logit = float(self.edit_check["head"].logits(features.reshape(1, -1).float())[0])
+            edit = {"logit": logit, "flagged": logit > self.edit_check["line"]}
         pixel_verdict = self.verdict(score, faces, edit)
         meta = metadata.check_file(file_bytes) if file_bytes is not None else None
         verdict, reason = pixel_verdict, "pixels"

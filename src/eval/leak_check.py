@@ -15,7 +15,8 @@ TRAIN = ["features/lists/muse_edits_train_*_path_a.csv", "features/lists/muse_pa
          "features/lists/pairs_v2/muse_pairs_train.csv", "features/lists/commons_train.csv",
          "features/lists/sid_10_14_reals.csv", "features/lists/sid_reals_15_29.csv", "features/lists/commons_v3_train.csv"]
 DEV_TEST = ["features/lists/commons_dev.csv", "features/lists/muse_pairs_val.csv", "features/lists/muse_edits_v1.csv",
-            "features/lists/muse_edits_test_v2.csv", "features/lists/muse_image_test_v1.csv"]
+            "features/lists/muse_edits_test_v2.csv", "features/lists/muse_image_test_v1.csv",
+            "features/lists/sid_reals_0_9_unseen.csv", "features/lists/commons_v3_dev.csv"]
 MANIFESTS = "D:/Datasets/MuseImage/edits*/manifest.csv"
 
 

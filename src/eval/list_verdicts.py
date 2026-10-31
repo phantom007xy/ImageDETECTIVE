@@ -22,7 +22,6 @@ os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 import argparse  # noqa: E402
 import csv  # noqa: E402
-import json  # noqa: E402
 import warnings  # noqa: E402
 from collections import Counter, defaultdict  # noqa: E402
 from pathlib import Path  # noqa: E402
@@ -32,7 +31,7 @@ import torch  # noqa: E402
 from PIL import Image, ImageOps  # noqa: E402
 
 from src.data import preprocess  # noqa: E402
-from src.inference import load_calibration  # noqa: E402
+from src.inference import load_calibration, load_edit_check  # noqa: E402
 from src.models.backbone import Backbone  # noqa: E402
 from src.models.linear_head import LinearHead  # noqa: E402
 from src.models.pe_core import PECore  # noqa: E402
@@ -54,11 +53,12 @@ def main():
         rows = list(csv.DictReader(f))
     backbone = Backbone(tuned_path=args.tuned)
     head, c = LinearHead.load(args.head), load_calibration(args.head)
-    pe, edit_head, edit_line, pe_vectors = None, None, None, []
+    pe, check, pe_vectors = None, None, []
     if args.edit_check:
-        pe, edit_head = PECore(), LinearHead.load(args.edit_check)
-        cal = args.edit_check.with_name(args.edit_check.stem + "_calibration.json")
-        edit_line = json.loads(cal.read_text())["edit_logit"] if cal.exists() else 0.0
+        check = load_edit_check(args.edit_check, c)  # its line, its PE; may raise c's AI line (the joint trade)
+        if check is None:
+            raise SystemExit("the edit check is not calibrated: run python -m src.calibrate.calibrate_app first")
+        pe = PECore(tuned_path=check["pe_weights"])
     vectors, verdicts, tagged = [], defaultdict(Counter), Counter()
     for row in rows:
         data = Path(row["path"]).read_bytes()
@@ -74,7 +74,7 @@ def main():
         if pe is not None:
             pe_vector = pe.layer_features(pe.to_tensor(pe.view(image)).unsqueeze(0))[0]
             pe_vectors.append(pe_vector.numpy().astype(np.float16))
-            edited = float(edit_head.logits(pe_vector.reshape(1, -1).float())[0]) > edit_line
+            edited = float(check["head"].logits(pe_vector.reshape(1, -1).float())[0]) > check["line"]
         if c["strong_ai_logit"] is not None and z > c["strong_ai_logit"]:
             verdict = "AI-generated"
         elif z > c["ai_logit"]:
@@ -90,8 +90,9 @@ def main():
     args.out.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(args.out, features=np.stack(vectors), labels=np.array([int(r["label"]) for r in rows], dtype=np.int8),
                         sources=np.array([r["source"] for r in rows]), img_ids=np.arange(len(rows)))
-    if pe_vectors:  # the PE-Core features next to it, e.g. data/private/self_edits_v1_app_pe.npz
-        np.savez_compressed(args.out.with_name(args.out.stem + "_pe.npz"), features=np.stack(pe_vectors),
+    if pe_vectors:  # the PE-Core features next to it, e.g. data/private/self_edits_v1_app_pe_EC3.npz
+        pe_name = Path(check["pe_weights"]).stem if check["pe_weights"] else "pe"
+        np.savez_compressed(args.out.with_name(f"{args.out.stem}_{pe_name}.npz"), features=np.stack(pe_vectors),
                             labels=np.array([int(r["label"]) for r in rows], dtype=np.int8),
                             sources=np.array([r["source"] for r in rows]), img_ids=np.arange(len(rows)))
     print(f"\n{len(rows)} pictures, head {args.head.name}{' + tuned DINOv3 ' + args.tuned.name if args.tuned else ''}, "

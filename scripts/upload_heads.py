@@ -5,11 +5,12 @@ must not be published, and a public Space's files are public. The Space download
 token (app/app.py, environment variables HEADS_REPO and HF_TOKEN).
 
 Uploads: the app's head, its calibration file and every head the calibration names (e.g. the DFDC swap head),
-under the same paths as in weights/. Stops if the repo exists and is not private.
+the edit check's head and calibration and, if it names one, its fine-tuned PE, under the same paths as in weights/.
+Stops if the repo exists and is not private.
 
 Usage (from the repo root, logged in with `huggingface-cli login` or with HF_TOKEN set; run it yourself):
   python scripts/upload_heads.py --repo <your HF user>/imagedetective-heads --head weights/open_gen_v1/head_F.pt
-      --edit-check weights/edit_check_v1/head_EC_both.pt
+      --edit-check weights/edit_check_v3/head_EC3.pt
 """
 
 import argparse
@@ -29,7 +30,11 @@ def main():
     calibration = args.head.with_name(args.head.stem + "_calibration.json")
     files = [args.head, calibration]
     if args.edit_check:
-        files += [args.edit_check, args.edit_check.with_name(args.edit_check.stem + "_calibration.json")]
+        edit_calibration = args.edit_check.with_name(args.edit_check.stem + "_calibration.json")
+        files += [args.edit_check, edit_calibration]
+        pe_weights = edit_calibration.exists() and json.loads(edit_calibration.read_text()).get("pe_weights")
+        if pe_weights:  # the fine-tuned PE (~1.3 GB): Meta's PE-Core weights, changed by our fine-tune
+            files.append(Path(pe_weights))
     swap = json.loads(calibration.read_text()).get("swap_head")
     if swap:
         files.append(Path(swap.replace("\\", "/")))

@@ -1,0 +1,66 @@
+Muse-edit check v3: Meta's PE-Core-L/14, fully fine-tuned (night of 31 Oct -> 1 Nov 2026)
+
+What: all 303,507,456 PE weights + the linear head over 6 layers x 1,024 (src/models/pe_core.py) trained together,
+starting from the frozen PE + head_EC_both (results/edit_check_v1.txt). src/models/tune_pe.py: batch 16, 7,000 steps
+(about 5 passes), AdamW, lr 2e-5 for the last block with layer-wise decay 0.85 (3.4e-7 for the patch embedding),
+head lr 1e-4, decoupled pull towards the pretrained weights, stochastic depth 0.1, warmup 300 + cosine, bf16 +
+gradient checkpointing; laptop RTX 5050, ~1.95 s/step (~3.8 h). Log: weights/pe_ft_v1_log.txt (private).
+Training: 22,307 pictures, 14,878 real (the edits' originals, Commons train + v3 train, SID-Set OpenImages files
+10-29, pair reals) and 7,429 rendered by Muse (training edits of people-free photos + Muse pair fakes). No dev or
+test photo in training (src/eval/leak_check.py, also checks the photos each edit was made from).
+
+== Curve (dev sets; joint line with head F, without the trade) ==
+Training loss 0.63 (step 100) -> 0.25 (3,000) -> 0.16 (7,000). Dev AUC originals v2 vs edits v2: 0.970 (step 0)
+-> 0.980 (2,000) -> 0.989 (4,000) -> 0.986-0.988 (4,500-7,000): flat from ~4,000. Rule fixed beforehand: 10,000 steps
+only if still rising at 7,000 -> not run.
+
+Why the strict line first hid the progress: the fine-tuned model gives ONE real photo (a retouched studio portrait in
+the polished dev set) an edit logit of about +13. Without the trade that photo sets the line (+13.3) and local edits
+stay at 16-17%. With the joint trade (src/calibrate/calibrate_edit_check.py --give-up 1: head F gives up its lowest
+flag in its tightest pool, polished dev; its AI line -0.30 -> -0.17) the edit check may flag that one photo instead,
+and its line drops to +3.87. False alarms per pool are unchanged (the budget is moved, not widened).
+
+== Every checkpoint re-scored the same way (python -m src.eval.rescore_pe_ft --run weights/pe_ft_v1), with the trade ==
+  candidate        line | edits v1 local / whole | edits v2 local / whole | Muse test v1 | Muse pairs val
+  frozen PE + EC2 +3.38 |      47% / 80%         |      38% / 80%         |     98%      |     93%
+  step 1,000      +4.13 |      53% / 96%         |      45% / 83%         |     98%      |     96%
+  step 2,000      +6.64 |      47% / 84%         |      50% / 85%         |     99%      |     96%
+  step 3,000      +6.25 |      57% / 88%         |      55% / 88%         |    100%      |     96%
+  step 4,000      +5.70 |      71% / 96%         |      72% / 92%         |    100%      |     97%
+  step 5,000      +4.93 |      69% / 96%         |      69% / 94%         |    100%      |     97%
+  step 6,000      +4.41 |      75% / 96%         |      74% / 94%         |    100%      |     97%
+  step 7,000      +3.87 |      76% / 96%         |      74% / 94%         |    100%      |     97%
+  (real called AI on every row: polished dev 4.8% | OpenImages val 2.6% | originals v1 2.6% | originals v2 1.0%)
+Picked: step 7,000, the end of the schedule (5,500-7,000 is flat, so no picking of the best-looking step on dev).
+Saved as weights/edit_check_v3/pe_EC3.pt + head_EC3.pt (private).
+
+== Independent check: real photos used nowhere before (lines set on the four old pools only) ==
+New pools: 576 OpenImages photos of SID-Set files 0-9 not used for pairs or test v2 ("OpenImages unseen") and the 32
+held-out Commons v3 photos (31 phone photos). Joint line with head F, as in the app:
+  real pool            n | frozen EC2 + trade: AI / edited / together | fine-tuned EC3 + trade: AI / edited / together
+  OpenImages unseen  576 |        1.7% / 0.2% / 1.9%                  |        1.7% / 0.3% / 2.1%   (edited: 2 photos)
+  Commons v3 dev      32 |        3.1% / 0.0% / 3.1%                  |        3.1% / 0.0% / 3.1%
+-> within the budget (edit check alone <= 0.5%, together <= 5%) on photos the lines never saw.
+
+== Calibration for the app (public pools incl. the two new ones; python -m src.calibrate.calibrate_app adds mine) ==
+  edit check head_EC3: edited if logit > +3.87; head F: AI if logit > -0.17 (calibrated -0.30, gives up 1 flag)
+  pool                    n | head F AI | edited | together
+  REAL polished dev      330 |   4.5%    |  0.3%  |   4.8%
+  REAL OpenImages val     76 |   2.6%    |  0.0%  |   2.6%
+  REAL originals v1       76 |   2.6%    |  0.0%  |   2.6%   (38 photos, counted once per edit)
+  REAL originals v2      198 |   1.0%    |  0.0%  |   1.0%   (99 photos, counted once per edit)
+  REAL OpenImages unseen 576 |   1.7%    |  0.3%  |   2.1%
+  REAL Commons v3 dev     32 |   3.1%    |  0.0%  |   3.1%
+  AI   edits v1 local     51 |   5.9%    | 76.5%  |  76.5%
+  AI   edits v1 whole     25 |  24.0%    | 96.0%  |  96.0%
+  AI   edits v2 local    132 |   0.0%    | 74.2%  |  74.2%
+  AI   edits v2 whole     66 |  19.7%    | 93.9%  |  93.9%
+  AI   Muse test v1      100 |  94.0%    |100.0%  | 100.0%
+  AI   Muse pairs val     76 |  75.0%    | 93.4%  |  97.4%
+  AI   SDXL (unseen)     332 |  89.5%    | 22.9%  |  92.5%
+  AI   SD 3.5 Medium      38 |  63.2%    |  0.0%  |  63.2%   (head F alone before the trade: 65.8% = 1 image more)
+  AI   Kandinsky 2.2      77 | 100.0%    |  0.0%  | 100.0%
+  AI   PixArt-Sigma      396 |  99.0%    |  0.3%  |  99.0%
+The edit check is Muse-specific (0% of SD 3.5 and Kandinsky); other generators stay head F's job.
+Before (frozen EC v1 in the app): edits v1 local 35% / whole 76%, v2 local 21% / whole 62%, Muse pairs 92%.
+App path = calibration features: same edit logit for the same picture (e.g. -14.41 / -14.41, +8.58 / +8.57).

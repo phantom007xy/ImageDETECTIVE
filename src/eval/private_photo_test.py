@@ -25,6 +25,8 @@ Usage (from the repo root, in your own terminal, with the venv active):
   python -m src.eval.private_photo_test --folder data/private/phone_v1
   python -m src.eval.private_photo_test --folder data/private/phone_v1 --tuned weights/ln_v1/ln_step2000.pt
       --tuned-head weights/ln_v1/head_step2000.pt   (also a tuned DINOv3: its features go to data/private too)
+  python -m src.eval.private_photo_test --folder data/private/phone_v1 --edit-check weights/edit_check_v3/head_EC3.pt
+      --pe-weights weights/edit_check_v3/pe_EC3.pt   (also the Muse-edit check on the fine-tuned PE)
 """
 
 import os
@@ -34,7 +36,6 @@ os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 import argparse  # noqa: E402
 import csv  # noqa: E402
-import json  # noqa: E402
 import math  # noqa: E402
 import warnings  # noqa: E402
 from pathlib import Path  # noqa: E402
@@ -46,7 +47,7 @@ from PIL import Image, ImageOps  # noqa: E402
 from src.data import preprocess  # noqa: E402
 from src.faces import crop  # noqa: E402
 from src.faces.sam_faces import FaceFinder  # noqa: E402
-from src.inference import load_calibration  # noqa: E402
+from src.inference import load_calibration, load_edit_check  # noqa: E402
 from src.models.backbone import Backbone  # noqa: E402
 from src.models.linear_head import LinearHead  # noqa: E402
 from src.models.pe_core import PECore  # noqa: E402
@@ -77,6 +78,8 @@ def main():
     parser.add_argument("--tuned", type=Path, help="also a tuned DINOv3 (src/models/tune_backbone.py) ...")
     parser.add_argument("--tuned-head", type=Path, help="... with its head")
     parser.add_argument("--edit-check", type=Path, help="also the Muse-edit check: its head (src/models/train_edit_check.py)")
+    parser.add_argument("--pe-weights", type=Path, help="the edit check's fine-tuned PE (src/models/tune_pe.py); "
+                                                        "its features go to data/private/<folder>_<weights name>.npz")
     args = parser.parse_args()
     warnings.filterwarnings("ignore")  # library warnings could mention a file
 
@@ -89,7 +92,7 @@ def main():
     tuned_head = LinearHead.load(args.tuned_head) if args.tuned else None
     tuned_vectors = {view: [] for view in VIEWS}
     # The Muse-edit check: Meta's PE-Core on the centre square of every photo (its own pass).
-    pe = PECore() if args.edit_check else None
+    pe = PECore(tuned_path=args.pe_weights) if args.edit_check else None
     pe_vectors = []
 
     rows, vectors, face_vectors, face_files, unreadable = [], {view: [] for view in VIEWS}, [], [], 0
@@ -156,7 +159,8 @@ def main():
                                 features=np.stack(tuned_vectors[view]), labels=np.zeros(len(rows), dtype=np.int8),
                                 img_ids=np.array([r["file"] for r in rows]), sources=np.array(["private/phone"] * len(rows)))
     if pe is not None:  # PE-Core features of every photo (6 x 1,024 numbers, no pixels) for the edit check's line
-        np.savez_compressed(Path("data/private") / f"{args.folder.name}_pe.npz", features=np.stack(pe_vectors),
+        pe_name = args.pe_weights.stem if args.pe_weights else "pe"  # e.g. phone_v1_pe.npz, phone_v1_pe_EC3.npz
+        np.savez_compressed(Path("data/private") / f"{args.folder.name}_{pe_name}.npz", features=np.stack(pe_vectors),
                             labels=np.zeros(len(rows), dtype=np.int8), img_ids=np.array([r["file"] for r in rows]),
                             sources=np.array(["private/phone"] * len(rows)))
     if face_vectors:  # the same for every face crop, so the face threshold can be checked on my faces too
@@ -206,10 +210,16 @@ def main():
     if pe is not None:
         x = np.stack(pe_vectors).astype(np.float32)
         z = LinearHead.load(args.edit_check).logits(torch.from_numpy(x.reshape(len(x), -1))).numpy()
-        cal = args.edit_check.with_name(args.edit_check.stem + "_calibration.json")
-        line = json.loads(cal.read_text())["edit_logit"] if cal.exists() else 0.0
+        f = load_calibration(HEADS["F"])  # the app's head, with the joint trade if the edit check uses one
+        check = load_edit_check(args.edit_check, f)
+        same_pe = check is not None and check["pe_weights"] == (args.pe_weights.as_posix() if args.pe_weights else None)
+        line = check["line"] if same_pe else 0.0
         print(f"Muse-edit check {args.edit_check.name}: called edited {(z > line).mean():.0%} of {len(z)} real photos "
-              f"({'its calibrated line' if cal.exists() else 'p > 0.5, not calibrated yet'})")
+              f"({'its calibrated line' if same_pe else 'p > 0.5, not calibrated for this PE yet'})")
+        if same_pe:
+            logit_f = np.array([r["logit_F"] for r in rows])
+            print(f"  as in the app (head F, AI line {f['ai_logit']:+.2f}, OR the edit check): called AI or edited "
+                  f"{((logit_f > f['ai_logit']) | (z > line)).mean():.0%} of {len(z)}")
     if tuned is not None:
         for view in VIEWS:
             z = tuned_head.logits(torch.from_numpy(np.stack(tuned_vectors[view]).astype(np.float32))).numpy()

@@ -16,9 +16,13 @@ Versions:
   screenshot  scaled to a phone screen 1080 px wide, saved as PNG
   crop        the middle 70% of each side, JPEG quality 85 (the cropped-copy test)
 
+With --edit-check, the calibrated Muse-edit check runs on the same damaged copy (its own view), as in the app:
+then "AI" counts head F's AI verdicts or the edit check's "Likely AI-edited".
+
 Usage (from the repo root):
   python -m src.eval.robustness_check --head weights/open_gen_v1/head_F.pt
       --list "polished dev:features/lists/commons_dev.csv" --list "SDXL:features/lists/sd_faces.csv@sd_faces/sdxl"
+      [--edit-check weights/edit_check_v3/head_EC3.pt]
 """
 
 import argparse
@@ -31,9 +35,10 @@ import numpy as np
 from PIL import Image, ImageOps
 
 from src.data import preprocess
-from src.inference import load_calibration
+from src.inference import load_calibration, load_edit_check
 from src.models.backbone import Backbone
 from src.models.linear_head import LinearHead
+from src.models.pe_core import PECore
 
 
 def jpeg_bytes(image, quality):
@@ -80,6 +85,7 @@ def read_list(spec, n, seed):
     path, _, source = spec.partition("@")
     with open(path, newline="") as f:
         rows = [r for r in csv.DictReader(f) if not source or r["source"] == source]
+    rows = list({r["path"]: r for r in rows}.values())  # each picture once (edit lists repeat their originals)
     return random.Random(seed).sample(rows, min(n, len(rows)))
 
 
@@ -90,31 +96,39 @@ def main():
     parser.add_argument("--n", type=int, default=150, help="images per list (random sample)")
     parser.add_argument("--versions", nargs="+", default=list(VERSIONS))
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--edit-check", type=Path, help="also the calibrated Muse-edit check, as in the app (joint verdict)")
     args = parser.parse_args()
 
     head, c = LinearHead.load(args.head), load_calibration(args.head)
+    check = load_edit_check(args.edit_check, c) if args.edit_check else None  # may raise c's AI line (the joint trade)
+    pe = PECore(tuned_path=check["pe_weights"]) if check else None
     backbone = Backbone()
-    print(f"head {args.head.name} ({'calibrated' if c['calibrated'] else 'provisional thresholds'}); "
-          f"shares: AI (likely or clear) | Uncertain | Likely authentic\n")
+    print(f"head {args.head.name} ({'calibrated' if c['calibrated'] else 'provisional thresholds'})"
+          + (f" + edit check {args.edit_check.name}" if check else "") + "; shares: AI (likely or clear)"
+          + (" or edited" if check else "") + " | Uncertain | Likely authentic\n")
     for item in args.list:
         name, spec = item.split(":", 1)
         rows = read_list(spec, args.n, args.seed)
         labels = {int(r["label"]) for r in rows}
-        kind = "REAL" if labels == {0} else "AI" if labels == {1} else "MIXED"
-        logits = {v: [] for v in args.versions}
+        kind = "REAL" if labels == {0} else "AI" if 0 not in labels else "MIXED"
+        logits, edits = {v: [] for v in args.versions}, {v: [] for v in args.versions}
         for row in rows:
             with Image.open(row["path"]) as im:
                 image = ImageOps.exif_transpose(im).convert("RGB")
             for version in args.versions:
-                view = preprocess.inference_view(VERSIONS[version](image))
-                vector = backbone.mean_patch_vector(preprocess.to_tensor(view).unsqueeze(0)).cpu()
+                damaged = VERSIONS[version](image)
+                vector = backbone.mean_patch_vector(preprocess.to_tensor(preprocess.inference_view(damaged)).unsqueeze(0)).cpu()
                 logits[version].append(float(head.logits(vector)[0]))
+                if pe is not None:  # the edit check's own view of the same damaged copy
+                    features = pe.layer_features(pe.to_tensor(pe.view(damaged)).unsqueeze(0))
+                    edits[version].append(float(check["head"].logits(features.reshape(1, -1).float())[0]))
         print(f"{kind} {name} ({len(rows)} images)")
         for version in args.versions:
             z = np.array(logits[version])
-            ai, auth = (z > c["ai_logit"]).mean(), (z <= c["real_logit"]).mean()
+            edited = np.array(edits[version]) > check["line"] if pe is not None else np.zeros(len(z), dtype=bool)
+            ai, auth = ((z > c["ai_logit"]) | edited).mean(), ((z <= c["real_logit"]) & ~edited).mean()
             print(f"  {version:<11} AI {ai:6.1%} | Uncertain {1 - ai - auth:6.1%} | Likely authentic {auth:6.1%} "
-                  f"| mean logit {z.mean():+6.2f}")
+                  f"| mean logit {z.mean():+6.2f}" + (f" | edit check alone {edited.mean():6.1%}" if pe is not None else ""))
         print()
 
 

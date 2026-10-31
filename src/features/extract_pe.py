@@ -10,6 +10,7 @@ Output per list: <out-dir>/<list name>_<mode>.npz with features [N, 6, 1024] (fl
 
 Usage (from the repo root):
   python -m src.features.extract_pe features/lists/commons_train.csv ... --mode train --copies 2 --out-dir features/pe
+  fine-tuned PE: ... --pe-weights weights/edit_check_v3/pe_EC3.pt --out-dir features/pe_ec3
 """
 
 import argparse
@@ -64,9 +65,10 @@ def main():
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--pe-weights", type=Path, help="a fine-tuned PE (src/models/tune_pe.py); default: the original")
     args = parser.parse_args()
 
-    pe = PECore()
+    pe = PECore(tuned_path=args.pe_weights)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     for path in args.inputs:
         with open(path, newline="") as f:

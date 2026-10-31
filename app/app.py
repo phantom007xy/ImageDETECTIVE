@@ -25,9 +25,9 @@ from src.inference import Detector, draw_faces, draw_outline, evidence_overlay
 from src.services import explain, investigator, muse_image, sam_outline
 
 # Whole-image head F (results/open_gen_v1_heads.txt, calibration_F_v1.txt) and the Muse-edit check on Meta's
-# Perception Encoder (results/edit_check_v1.txt), its line calibrated jointly with head F.
+# Perception Encoder, fine-tuned (results/edit_check_v3.txt), its line calibrated jointly with head F.
 HEAD_PATH = "weights/open_gen_v1/head_F.pt"
-EDIT_CHECK_PATH = "weights/edit_check_v1/head_EC_both.pt"
+EDIT_CHECK_PATH = "weights/edit_check_v3/head_EC3.pt"
 # On the hosted demo the trained heads are not in the public code: they come from a PRIVATE Hugging Face model
 # repo (scripts/upload_heads.py), read with the Space's token (DFDC: the weights are never published).
 if os.environ.get("HEADS_REPO") and not Path(HEAD_PATH).exists():
