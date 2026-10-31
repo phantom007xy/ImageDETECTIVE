@@ -65,8 +65,10 @@ class Detector:
         self.calibrated = self.calibration["calibrated"]
         self.finder = FaceFinder(device=device) if faces else None
         # The face-swap head (DFDC) scores the same face features; only used if it is calibrated and present.
-        swap_path = self.calibration["swap_head"]
-        self.swap_head = LinearHead.load(swap_path) if swap_path and Path(swap_path).exists() else None
+        swap_path = self.calibration["swap_head"] and Path(self.calibration["swap_head"].replace("\\", "/"))
+        self.swap_head = LinearHead.load(swap_path) if swap_path and swap_path.exists() else None
+        if swap_path and self.swap_head is None:
+            print(f"WARNING: face-swap head {swap_path} not found: the face-swap check is off")
 
     def probability(self, logit):
         return 1 / (1 + math.exp(-logit / self.calibration["temperature"]))

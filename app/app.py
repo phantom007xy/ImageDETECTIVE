@@ -10,9 +10,11 @@ Run from the repo root:  python -m app.app   (then open http://127.0.0.1:7860)
 """
 
 import io
+import os
 from pathlib import Path
 
 import gradio as gr
+from huggingface_hub import snapshot_download
 from PIL import Image, ImageOps
 
 from src.inference import Detector, draw_faces, draw_outline, evidence_overlay
@@ -22,6 +24,10 @@ from src.services import explain, metadata, muse_image, sam_outline
 # + SD 3.5 Medium and Kandinsky 2.2 fakes (results/open_gen_v1_heads.txt, calibration_F_v1.txt).
 # Before: head E (weights/commons_v1/head_E.pt), C (weights/muse_pairs_v1/head_C.pt), weights/head_path_a_sidset30.pt.
 HEAD_PATH = "weights/open_gen_v1/head_F.pt"
+# On the hosted demo the trained heads are not in the public code: they come from a PRIVATE Hugging Face model
+# repo (scripts/upload_heads.py), read with the Space's token (DFDC: the weights are never published).
+if os.environ.get("HEADS_REPO") and not Path(HEAD_PATH).exists():
+    snapshot_download(os.environ["HEADS_REPO"], local_dir="weights", token=os.environ.get("HF_TOKEN"))
 detector = Detector(HEAD_PATH)
 
 
