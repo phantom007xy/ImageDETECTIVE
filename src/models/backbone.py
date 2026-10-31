@@ -10,6 +10,18 @@ from transformers import AutoModel
 MODEL_NAME = "facebook/dinov3-vitl16-pretrain-lvd1689m"
 
 
+def load_local_first(loader, name, **kwargs):
+    """Load from the local Hugging Face cache; go online only if something is missing there.
+
+    Online, gated models (DINOv3, SAM 3) also check for optional extra files, which needs a token;
+    from the cache the app starts without internet and without a token.
+    """
+    try:
+        return loader(name, local_files_only=True, **kwargs)
+    except OSError:
+        return loader(name, **kwargs)
+
+
 def pick_dtype(device):
     """bf16 on GPUs that support it natively (RTX 30xx and newer, A100, L4), otherwise fp32.
 
@@ -25,7 +37,7 @@ class Backbone:
     def __init__(self, name=MODEL_NAME, device=None):
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         self.dtype = pick_dtype(self.device)
-        self.model = AutoModel.from_pretrained(name).to(device=self.device, dtype=self.dtype).eval()
+        self.model = load_local_first(AutoModel.from_pretrained, name).to(device=self.device, dtype=self.dtype).eval()
         self.skip = 1 + self.model.config.num_register_tokens  # class token + register tokens
 
     @torch.no_grad()

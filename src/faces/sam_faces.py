@@ -8,7 +8,7 @@ It works on a 1008 x 1008 version of the photo; boxes come back in original-phot
 import torch
 from transformers import Sam3Model, Sam3Processor
 
-from src.models.backbone import pick_dtype
+from src.models.backbone import load_local_first, pick_dtype
 
 MODEL_NAME = "facebook/sam3"
 PROMPT = "face"
@@ -20,8 +20,9 @@ class FaceFinder:
     def __init__(self, device=None):
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         self.dtype = pick_dtype(self.device)  # bf16 gave the same faces as fp32 (checked 29 Oct)
-        self.processor = Sam3Processor.from_pretrained(MODEL_NAME)
-        self.model = Sam3Model.from_pretrained(MODEL_NAME).to(device=self.device, dtype=self.dtype).eval()
+        self.processor = load_local_first(Sam3Processor.from_pretrained, MODEL_NAME)
+        model = load_local_first(Sam3Model.from_pretrained, MODEL_NAME)
+        self.model = model.to(device=self.device, dtype=self.dtype).eval()
 
     @torch.no_grad()
     def find(self, image):
