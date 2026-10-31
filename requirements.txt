@@ -11,3 +11,7 @@ opencv-python-headless==5.0.0.93
 gradio==6.31.0
 # pandas stays below 3: on the laptop, Windows Smart App Control blocks a DLL of pandas 3.1.0.
 pandas==2.3.3
+# Meta's parser for SAM 3.1 API output (SAM Licence, no dependencies); used by src/services/sam_outline.py.
+meta-sam-parser==0.1.0
+# HTTP client for the Meta Model API (already installed with gradio; pinned here because we use it directly).
+httpx==0.28.1
