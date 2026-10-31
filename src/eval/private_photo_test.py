@@ -56,6 +56,8 @@ HEADS = {
     "F": "weights/open_gen_v1/head_F.pt",
 }
 DARK_BELOW = 80
+VIEWS = ("long448", "short448")  # both app views are saved, so they can be compared (preprocess.APP_VIEW)
+SWAP_HEAD = "weights/dfdc_v1/head_dfdc.pt"
 
 
 def probability(head, vector):
@@ -70,9 +72,10 @@ def main():
 
     files = sorted(p for p in args.folder.rglob("*") if p.is_file())
     heads = {name: LinearHead.load(path) for name, path in HEADS.items() if Path(path).exists()}
+    swap = LinearHead.load(SWAP_HEAD)  # face swaps (DFDC), on the same face crops
     backbone, finder = Backbone(), FaceFinder()
 
-    rows, vectors, face_vectors, face_files, unreadable = [], [], [], [], 0
+    rows, vectors, face_vectors, face_files, unreadable = [], {view: [] for view in VIEWS}, [], [], 0
     for path in files:
         try:
             with Image.open(path) as im:
@@ -81,9 +84,12 @@ def main():
             unreadable += 1  # e.g. HEIC files or videos; counted, never named
             continue
         relative = path.relative_to(args.folder)
-        app_view = backbone.mean_patch_vector(preprocess.to_tensor(preprocess.inference_view(image)).unsqueeze(0)).cpu()
+        views = {view: backbone.mean_patch_vector(preprocess.to_tensor(preprocess.inference_view(image, view))
+                                                  .unsqueeze(0)).cpu() for view in VIEWS}
+        app_view = views[preprocess.APP_VIEW]
         crop_view = backbone.mean_patch_vector(preprocess.to_tensor(preprocess.eval_view(image)).unsqueeze(0)).cpu()
-        vectors.append(app_view[0].numpy().astype(np.float16))
+        for view, vector in views.items():
+            vectors[view].append(vector[0].numpy().astype(np.float16))
         faces = [f for f in finder.find(image) if not f["too_small"]]
         crops = [backbone.mean_patch_vector(preprocess.to_tensor(crop.eval_face_view(image, f)).unsqueeze(0)).cpu()
                  for f in faces]  # the app's face crop
@@ -95,6 +101,7 @@ def main():
             "faces": len(faces),
             "brightness": round(float(np.asarray(image.convert("L")).mean()), 1),
         }
+        row["face_max_swap_logit"] = round(max(float(swap.logits(c)[0]) for c in crops), 4) if crops else ""
         for name, head in heads.items():
             row[f"p_{name}"] = round(probability(head, app_view), 4)
             row[f"logit_{name}"] = round(float(head.logits(app_view)[0]), 4)
@@ -113,9 +120,12 @@ def main():
         writer.writerows(rows)
     # The app-view features (1,024 numbers per photo, no pixels), so new heads can be compared
     # with src/eval/fair_compare.py without reading the photos again. Stays in data/private/.
+    # _app.npz = the app's current view; _app_<view>.npz = both views, to compare them (size fix, 31 Oct).
     features_out = Path("data/private") / f"{args.folder.name}_app.npz"
-    np.savez_compressed(features_out, features=np.stack(vectors), labels=np.zeros(len(rows), dtype=np.int8),
-                        img_ids=np.array([r["file"] for r in rows]), sources=np.array(["private/phone"] * len(rows)))
+    for suffix, view in [("", preprocess.APP_VIEW)] + [(f"_{v}", v) for v in VIEWS]:
+        np.savez_compressed(Path("data/private") / f"{args.folder.name}_app{suffix}.npz",
+                            features=np.stack(vectors[view]), labels=np.zeros(len(rows), dtype=np.int8),
+                            img_ids=np.array([r["file"] for r in rows]), sources=np.array(["private/phone"] * len(rows)))
     if face_vectors:  # the same for every face crop, so the face threshold can be checked on my faces too
         np.savez_compressed(Path("data/private") / f"{args.folder.name}_faces_app.npz", features=np.stack(face_vectors),
                             labels=np.zeros(len(face_vectors), dtype=np.int8), img_ids=np.array(face_files),
@@ -143,10 +153,12 @@ def main():
         c = load_calibration(HEADS[name])
         counts = {"AI": 0, "face": 0, "Uncertain": 0, "authentic": 0}
         for r in rows:
-            face = r[f"face_max_logit_{name}"]
+            face, swap_face = r[f"face_max_logit_{name}"], r["face_max_swap_logit"]
             if r[f"logit_{name}"] > c["ai_logit"]:
                 counts["AI"] += 1
             elif c["face_ai_logit"] is not None and face != "" and face > c["face_ai_logit"]:
+                counts["face"] += 1
+            elif c["swap_ai_logit"] is not None and swap_face != "" and swap_face > c["swap_ai_logit"]:
                 counts["face"] += 1
             elif r[f"logit_{name}"] <= c["real_logit"]:
                 counts["authentic"] += 1

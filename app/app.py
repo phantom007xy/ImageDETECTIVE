@@ -43,10 +43,12 @@ def face_lines(faces):
         else:
             label = {"ai": "🔴 looks AI-made or AI-changed", "leans_ai": "🟠 shows some AI signs (not enough on its own)",
                      "clear": "🟢 no clear AI signs in this face"}[face["level"]]
+            if face.get("kind") == "swapped":
+                label += " (face-swap check)"
             p = face["probability_ai"]
             lines.append(f"- Face {n}: {label}" + (f" (face AI probability {p:.0%})" if p is not None else ""))
-    lines.append("<small>The face check is weaker than the whole-image check: green means no clear AI signs, "
-                 "not proof that the face is real.</small>")
+    lines.append("<small>The face checks (AI-made faces and face swaps) are weaker than the whole-image check: green "
+                 "means no clear AI signs, not proof that the face is real.</small>")
     return lines
 
 

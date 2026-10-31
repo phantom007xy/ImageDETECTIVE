@@ -22,6 +22,10 @@ With --fake-faces, a face probability is fitted by Platt scaling on real and AI 
 generated images a face rule adds almost nothing (src/eval/shared_budget.py); its job is a clearly
 AI-made face in an otherwise real-looking photo.
 
+Face swaps (optional, --swap-head): a second face head (DFDC, results/dfdc_face_v1.txt) scores the same
+face crops (no extra DINOv3 pass). It gets its own two lines on the same real face pools, plus any extra
+real pools given with --swap-real-faces (e.g. real DFDC video faces, which are blurrier than photo faces).
+
 All feature files must be made with the app's preprocessing (src.features.extract --mode app).
 A real pool may be private (data/private/...): only saved feature vectors are read, never photos,
 and only totals are printed.
@@ -77,6 +81,9 @@ def main():
     parser.add_argument("--real-faces", action="append", default=[], help='"NAME:face feature file" (real faces)')
     parser.add_argument("--max-face-false-alarms", type=float, default=0.005)
     parser.add_argument("--fake-faces", action="append", default=[], help='"NAME:face feature file" (AI faces)')
+    parser.add_argument("--swap-head", type=Path, help="face-swap head (DFDC) for the same face crops")
+    parser.add_argument("--swap-real-faces", action="append", default=[], help='extra real faces for the swap head only')
+    parser.add_argument("--swap-fakes", action="append", default=[], help='"NAME:face feature file" (swapped faces)')
     parser.add_argument("--out", type=Path, help="JSON file for the app")
     args = parser.parse_args()
 
@@ -134,12 +141,27 @@ def main():
                 print(f"  AI faces {name:<14}{len(s):>6} | looks AI-made: {(s > face_ai_logit).mean():.1%} | "
                       f"some AI signs: {(s > face_leans_logit).mean():.1%}")
 
+    swap_ai_logit = swap_leans_logit = None
+    if args.swap_head:
+        swap = LinearHead.load(args.swap_head)
+        pools = {name: swap.logits(load(spec, 0)).numpy() for name, spec in map(split, args.real_faces + args.swap_real_faces)}
+        swap_ai_logit = max(threshold_for(s, args.max_face_false_alarms) for s in pools.values())
+        swap_leans_logit = max(threshold_for(s, 0.05) for s in pools.values())
+        print(f"\n  Face-swap head {args.swap_head.name}: swapped if logit > {swap_ai_logit:+.2f} (changes the verdict), "
+              f"some swap signs if > {swap_leans_logit:+.2f}")
+        for title, specs, label in (("REAL faces", args.real_faces + args.swap_real_faces, 0), ("SWAPS", args.swap_fakes, 1)):
+            for name, spec in map(split, specs):
+                s = swap.logits(load(spec, label)).numpy()
+                print(f"  {title} {name:<20}{len(s):>6} | swapped: {(s > swap_ai_logit).mean():.1%} | "
+                      f"some swap signs: {(s > swap_leans_logit).mean():.1%}")
+
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(json.dumps({
             "head": str(args.head), "temperature": temperature, "ai_logit": ai_logit, "real_logit": real_logit,
             "strong_ai_logit": strong_ai_logit, "face_ai_logit": face_ai_logit, "face_leans_logit": face_leans_logit,
-            "face_platt": face_platt,
+            "face_platt": face_platt, "swap_head": str(args.swap_head) if args.swap_head else None,
+            "swap_ai_logit": swap_ai_logit, "swap_leans_logit": swap_leans_logit,
             "max_false_alarms": args.max_false_alarms, "max_uncertain": args.max_uncertain,
             "real_pools": {n: len(s) for n, s in reals.items()}, "fake_sets": {n: len(s) for n, s in fakes.items()},
         }, indent=2))

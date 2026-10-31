@@ -2,7 +2,8 @@
 
 Whole image: DINOv3 patch features -> linear head per patch -> score and evidence map.
 Faces: SAM 3 finds them, each face crop (src/faces/crop.py) goes through the same DINOv3 and the
-same head. If the head has a calibration file next to it (<head>_calibration.json, from
+same head (AI-made faces) and, if calibrated, the DFDC face-swap head on the same features (swapped
+faces). If the head has a calibration file next to it (<head>_calibration.json, from
 src/calibrate/calibrate.py), the verdict uses its thresholds and temperature; otherwise the
 provisional thresholds below are used and the verdict is only a preview. Edited regions, SAM 3.1
 and Muse come later.
@@ -47,10 +48,13 @@ def load_calibration(head_path):
         c = json.loads(path.read_text())
         return {"temperature": c["temperature"], "ai_logit": c["ai_logit"], "real_logit": c["real_logit"],
                 "strong_ai_logit": c.get("strong_ai_logit"), "face_ai_logit": c.get("face_ai_logit"),
-                "face_leans_logit": c.get("face_leans_logit"), "face_platt": c.get("face_platt"), "calibrated": True}
+                "face_leans_logit": c.get("face_leans_logit"), "face_platt": c.get("face_platt"),
+                "swap_head": c.get("swap_head"), "swap_ai_logit": c.get("swap_ai_logit"),
+                "swap_leans_logit": c.get("swap_leans_logit"), "calibrated": True}
     return {"temperature": 1.0, "ai_logit": math.log(AI_ABOVE / (1 - AI_ABOVE)),
             "real_logit": math.log(REAL_BELOW / (1 - REAL_BELOW)), "strong_ai_logit": None, "face_ai_logit": None,
-            "face_leans_logit": None, "face_platt": None, "calibrated": False}
+            "face_leans_logit": None, "face_platt": None, "swap_head": None, "swap_ai_logit": None,
+            "swap_leans_logit": None, "calibrated": False}
 
 
 class Detector:
@@ -60,6 +64,9 @@ class Detector:
         self.calibration = load_calibration(head_path)
         self.calibrated = self.calibration["calibrated"]
         self.finder = FaceFinder(device=device) if faces else None
+        # The face-swap head (DFDC) scores the same face features; only used if it is calibrated and present.
+        swap_path = self.calibration["swap_head"]
+        self.swap_head = LinearHead.load(swap_path) if swap_path and Path(swap_path).exists() else None
 
     def probability(self, logit):
         return 1 / (1 + math.exp(-logit / self.calibration["temperature"]))
@@ -92,14 +99,22 @@ class Detector:
             if face["too_small"]:
                 continue
             pixels = preprocess.to_tensor(crop.eval_face_view(image, face)).unsqueeze(0)
-            logit = float(self.head.logits(self.backbone.mean_patch_vector(pixels).cpu())[0])
+            vector = self.backbone.mean_patch_vector(pixels).cpu()
+            logit = float(self.head.logits(vector)[0])
             face["logit"] = logit
             face["probability_ai"] = self.face_probability(logit)  # None without a face calibration
-            limit, leans = self.calibration["face_ai_logit"], self.calibration["face_leans_logit"]
-            face["flagged"] = limit is not None and logit > limit  # only this changes the verdict
-            # "leans_ai": more AI-like than 95% of real dev faces; "clear": no clear AI signs in this face
-            # (which is not proof that the face is real: the face check misses some AI faces).
-            face["level"] = "ai" if face["flagged"] else ("leans_ai" if leans is not None and logit > leans else "clear")
+            c = self.calibration
+            made = c["face_ai_logit"] is not None and logit > c["face_ai_logit"]
+            leans = c["face_leans_logit"] is not None and logit > c["face_leans_logit"]
+            swapped = swap_leans = False
+            if self.swap_head is not None:  # face swaps: the DFDC head on the same face features
+                face["swap_logit"] = swap = float(self.swap_head.logits(vector)[0])
+                swapped, swap_leans = swap > c["swap_ai_logit"], swap > c["swap_leans_logit"]
+            face["flagged"] = made or swapped  # only this changes the verdict
+            face["kind"] = "AI-made" if made else ("swapped" if swapped else None)
+            # "leans_ai": more AI-like (or swap-like) than 95% of real dev faces; "clear": no clear signs in
+            # this face (which is not proof that the face is real: the face checks miss some AI faces).
+            face["level"] = "ai" if face["flagged"] else ("leans_ai" if leans or swap_leans else "clear")
         return faces
 
     def analyze(self, image, file_bytes=None):

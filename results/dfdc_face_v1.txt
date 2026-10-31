@@ -1,0 +1,43 @@
+DFDC face head v1: face swaps (type b), frozen DINOv3 + linear head on face crops (31 Oct 2026)
+
+Data (src/features/extract_dfdc_faces.py; frames, crops and features stay on the laptop, never published):
+  DFDC training parts 0-2: 424 real videos, up to 2 fakes each, 6 frames per video, SAM 3 faces on the
+  real frame, the SAME box on the fake frame (true pairs: only the face differs), 4 random copies each.
+  A fake crop counts only if the face really changed (inner SAM box difference > 2x the frame's).
+  -> 2,814 real faces, 3,525 fake faces (1,312 unchanged fake crops dropped; e.g. the other, unswapped person).
+  DFDC part 3 (held out, dev): 968 real / 964 fake faces (app crop, k = 4.0), 495 videos.
+  WildDeepfake test: its own ready-made (tighter) crops, 806 sequences.
+
+Learning curve (python -m src.eval.dfdc_face_curve --weight-decay 1e-3 1e-2):
+  "5% line" = threshold where 5% of DFDC part 3 real faces are flagged.
+
+  head                     DFDC p3 AUC  caught@5%  per video | WildDeepfake AUC  per seq | Commons real faces flagged
+  head F (app now)            0.438       1.6%       0.477   |      0.405         0.393  |   (other scale)
+  DFDC part 0     (wd 1e-3)   0.551       8.2%       0.531   |      0.655         0.671  |   4.9%
+  DFDC parts 0-1  (wd 1e-3)   0.676      25.2%       0.685   |      0.686         0.705  |   3.9%
+  DFDC parts 0-2  (wd 1e-3)   0.716      25.1%       0.708   |      0.738         0.762  |   2.1%
+  DFDC part 0     (wd 1e-2)   0.574      11.5%       0.569   |      0.671         0.687  |   2.5%
+  DFDC parts 0-1  (wd 1e-2)   0.677      29.3%       0.676   |      0.677         0.693  |   0.4%
+  DFDC parts 0-2  (wd 1e-2)   0.720      29.3%       0.704   |      0.727         0.749  |   0.7%
+
+  Chosen: parts 0-2, weight decay 1e-2 (same AUC, fewer false alarms on clean photo faces)
+  -> weights/dfdc_v1/head_dfdc.pt (private; never published).
+  The DFDC head does not notice fully AI-generated faces (Muse test faces 1.1%, SD faces 0.0% at the 5% line):
+  that stays head F's job. The two face checks are complementary.
+
+Strict app-style lines (the highest of: Commons dev faces, SID-Set val real faces, Muse pairs real faces,
+DFDC part 3 real faces; DFDC video frames always set the line):
+  line                        DFDC p3 swaps caught  WildDeepfake fakes caught  WildDeepfake reals flagged  clean photo faces flagged
+  <= 0.5% real (logit +6.12)        14.7%                  20.6%                      4.2%                       0.0%
+  <= 2%   real (logit +5.36)        22.1%                  26.7%                      6.6%                     0.0-0.3%
+  <= 5%   real (logit +4.76)        29.3%                  31.8%                      8.2%                     0.7-1.2%
+
+Findings:
+  1. Head F (the app's face check until now) cannot see face swaps at all (AUC 0.44, below chance).
+  2. The DFDC head learns real swap traces (WildDeepfake, never seen, AUC 0.73), but frozen features
+     are weak for swaps: at a strict line it catches only ~15-20% of swaps. This matches GenD
+     (frozen DINOv3 linear probe 74.9 mean AUROC; LayerNorm-tuning 91.3).
+  3. The curve still rises (part 3 AUC 0.55 -> 0.68 -> 0.72): more DFDC parts would help a little;
+     the big step would be LayerNorm-tuning, which does not fit the time left.
+  -> Face swaps (b) are "limited" in this version, stated openly with these numbers.
+  Caveat: DFDC part 3 is a dev set (used to pick the weight decay); WildDeepfake is the untouched test.
