@@ -17,6 +17,7 @@ Heads compared (all on the same DINOv3 features):
   A, B, C = results/muse_pairs_v1_heads.txt (C = with the Muse Image pairs)
   C2, D = results/commons_v1_heads.txt (C2 = C + Commons real photos, D = C2 + Commons pairs)
   E = D + SD 1.5 / 2.1 faces (results/generator_variety_v1.txt)
+  F = E + SD 3.5 Medium and Kandinsky 2.2 fakes (results/open_gen_v1_heads.txt)
 
 Usage (from the repo root, in your own terminal, with the venv active):
   python -m src.eval.private_photo_test
@@ -52,6 +53,7 @@ HEADS = {
     "C2": "weights/commons_v1/head_C2.pt",
     "D": "weights/commons_v1/head_D.pt",
     "E": "weights/commons_v1/head_E.pt",
+    "F": "weights/open_gen_v1/head_F.pt",
 }
 DARK_BELOW = 80
 

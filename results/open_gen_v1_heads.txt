@@ -1,0 +1,41 @@
+Generator variety, step 2 (31 Oct 2026): fakes from open models, made on Kaggle from the 792 pair captions.
+Frozen DINOv3-L + linear head. Dev sets only; own threshold per head (at most 5% false alarms on every real
+dev pool); app preprocessing.
+
+== Data (scripts/generate_open_models.py, notebooks/kaggle_open_gen*.ipynb; lists: scripts/make_open_gen_lists.py) ==
+SD 3.5 Medium (Stability AI Community License; MMDiT, 16-channel decoder): 396 images, 28 steps, ~55 s each on a T4
+Kandinsky 2.2 (Apache 2.0; its own MoVQ decoder): 792 images, 30 steps, ~11 s each
+PixArt-Sigma (OpenRAIL++): 396 images, ~23 s each. It uses SDXL's decoder (same VAE settings, checked), so it is a
+  DEV TEST ONLY: training on it would make SDXL partly "seen".
+All 1,584 images ok (no black fp16 images). Training: fakes of training pair captions, cropped and resized to their
+real photo's size: SD 3.5 358, Kandinsky 715 (4 copies each). Dev: PixArt 396 (as generated) and the SD 3.5 /
+Kandinsky fakes of dev pair captions (38 / 77, as generated; a known generator for F, new content).
+F = E (results/generator_variety_v1.txt) + these 1,073 training fakes.
+
+== Fair comparison, public dev pools (python -m src.eval.fair_compare) ==
+Real pools: polished dev (330), OpenImages val (76)
+                              real called AI                                                           AI caught
+head     threshold |     polished dev   OpenImages val |     Muse test v1   Muse pairs val    SDXL (unseen)  PixArt (unseen)     SD3.5 devcap      K2.2 devcap
+D            0.719 |             4.8%             3.9% |            94.0%            81.6%            36.7%            94.9%            28.9%            92.2%
+E            0.645 |             4.8%             2.6% |            93.0%            73.7%            91.9%            96.5%            34.2%            93.5%
+F            0.425 |             4.8%             2.6% |            94.0%            75.0%            90.1%            99.2%            65.8%           100.0%
+
+== Polished dev split by kind (every kind at most 5%; small pools -> stricter thresholds) ==
+                                           real called AI                                            AI caught
+head     threshold |       portrait         people          phone        quality |   Muse test v1  SDXL (unseen)   SD3.5 devcap
+E            0.791 |           3.8%           0.0%           3.7%           2.7% |          91.0%          85.8%          31.6%
+F            0.767 |           2.4%           0.0%           3.7%           2.7% |          88.0%          78.6%          42.1%
+
+== Shortcut checks on real photos (python -m src.eval.brightness_check --list features/lists/commons_dev.csv --view app) ==
+downscale: head_E x1: -6.81 (8%) | x0.25: -6.98 (7%)     head_F x1: -5.78 (4%) | x0.25: -5.92 (4%)
+brightness: head_E x0.5: -6.79 (6%) | x1: -6.81 (8%)     head_F x0.5: -5.65 (6%) | x1: -5.78 (4%)
+
+== Conclusions ==
+-> The key finding: E, which never saw SD 3.5, catches only 34% of SD 3.5 images (dev captions, n = 38). A modern
+   generator outside training can be missed badly: the risk for ChatGPT / Gemini / Midjourney at the judge test.
+-> F (with SD 3.5 and Kandinsky): SD 3.5 66%, Kandinsky 100%, PixArt (unseen) 99%, Muse 94%; SDXL (unseen) slightly
+   lower (90% vs. 92%; under the per-kind pools 79% vs. 86%). Fewer false alarms on real portraits (2.4% vs. 3.8%),
+   no resolution shortcut, the darkness bias is small on these photos.
+-> PixArt is easy for every head (95-99%), so as an "unseen" test it says little.
+-> Choice rule (plan): false alarms first, then fakes per type, then the unseen generator -> F is the candidate,
+   after my phone check (private test).
