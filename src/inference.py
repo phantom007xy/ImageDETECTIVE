@@ -25,7 +25,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 from src.data import preprocess
 from src.faces import crop
@@ -137,6 +137,18 @@ def evidence_overlay(image, patch_logits, scale=4.0):
     heat[..., 3] = (np.abs(strength) * np.where(strength > 0, 160, 90)).astype(np.uint8)
     heat_image = Image.fromarray(heat, "RGBA").resize(image.size, Image.BILINEAR)
     return Image.alpha_composite(image.convert("RGBA"), heat_image).convert("RGB")
+
+
+def draw_outline(image, mask, colour=(255, 215, 0)):
+    """The SAM 3.1 outline: a light fill and a thick edge around the object (mask = bool array, image size)."""
+    shape = Image.fromarray(mask.astype(np.uint8) * 255)
+    width = max(3, round(min(image.size) / 250))
+    edge = np.asarray(shape.filter(ImageFilter.MaxFilter(2 * width + 1))) > 0
+    edge &= ~(np.asarray(shape.filter(ImageFilter.MinFilter(2 * width + 1))) > 0)
+    layer = np.zeros((image.size[1], image.size[0], 4), dtype=np.uint8)
+    layer[mask] = colour + (60,)
+    layer[edge] = colour + (255,)
+    return Image.alpha_composite(image.convert("RGBA"), Image.fromarray(layer, "RGBA")).convert("RGB")
 
 
 FACE_COLOURS = {"ai": (220, 30, 30), "leans_ai": (245, 150, 20), "real": (30, 170, 70), "too_small": (150, 150, 150)}
