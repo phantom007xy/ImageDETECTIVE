@@ -11,9 +11,14 @@ The temperature T makes the probability sigmoid(logit / T) honest: it is chosen 
 probabilities fit the dev mix best (lowest log loss). It does not move the thresholds, which live
 on the logit.
 
+The clear level "AI-generated" (without "likely") is used only above the highest score of any real
+dev photo. There is no clear "real" level on purpose: a generator the head has never seen can score
+very low (30 Oct: 1 in 10 SD 3.5 fakes did), and that can't be measured in advance.
+
 Faces (optional, --real-faces): the same head scores every face crop (the app crop). A face only
 changes the verdict above a very strict face threshold: at most 0.5% of the real dev faces in
-every pool may be above it. Why so strict: all checks share ONE false-alarm budget, and on fully
+every pool may be above it. "Shows some AI signs" (shown, never deciding): at most 5% of real faces.
+With --fake-faces, a face probability is fitted by Platt scaling on real and AI dev faces. Why so strict: all checks share ONE false-alarm budget, and on fully
 generated images a face rule adds almost nothing (src/eval/shared_budget.py); its job is a clearly
 AI-made face in an otherwise real-looking photo.
 
@@ -33,6 +38,7 @@ import math
 from pathlib import Path
 
 import numpy as np
+import torch
 
 from src.eval.fair_compare import load, threshold_for
 from src.models.linear_head import LinearHead
@@ -70,6 +76,7 @@ def main():
     parser.add_argument("--max-uncertain", type=float, default=0.15)
     parser.add_argument("--real-faces", action="append", default=[], help='"NAME:face feature file" (real faces)')
     parser.add_argument("--max-face-false-alarms", type=float, default=0.005)
+    parser.add_argument("--fake-faces", action="append", default=[], help='"NAME:face feature file" (AI faces)')
     parser.add_argument("--out", type=Path, help="JSON file for the app")
     args = parser.parse_args()
 
@@ -86,32 +93,53 @@ def main():
     real_logit = authentic_threshold(logits, weights, ai_logit, args.max_uncertain)
     temperature = fit_temperature(logits, is_ai, weights)
     prob = lambda z: 1 / (1 + math.exp(-z / temperature))  # noqa: E731
+    # The clear level "AI-generated": above every real dev photo (none of them reaches it).
+    strong_ai_logit = float(max(s.max() for s in reals.values()))
 
     print(f"head {args.head.name}: temperature {temperature:.2f}")
+    print(f"  AI-generated (clear) if logit >  {strong_ai_logit:+.2f}  (calibrated AI probability >  "
+          f"{prob(strong_ai_logit):.3f}; no real dev photo is above it)")
     print(f"  Likely AI-generated  if logit >  {ai_logit:+.2f}  (calibrated AI probability >  {prob(ai_logit):.3f})")
     print(f"  Likely authentic     if logit <= {real_logit:+.2f}  (calibrated AI probability <= {prob(real_logit):.3f})")
     print(f"  Uncertain in between: {weights[(logits > real_logit) & (logits < ai_logit)].sum():.1%} of the mix "
           f"(cap {args.max_uncertain:.0%})\n")
-    print(f"  {'set':<18}{'n':>6} | {'Likely AI':>10} {'Uncertain':>10} {'Authentic':>10}")
+    print(f"  {'set':<18}{'n':>6} | {'AI (clear)':>10} {'Likely AI':>10} {'Uncertain':>10} {'Authentic':>10}")
     for title, groups in (("REAL", reals), ("AI", fakes)):
         for name, s in groups.items():
             ai, auth = (s > ai_logit).mean(), (s <= real_logit).mean()  # AI = strictly above, as in fair_compare
-            print(f"  {title + ' ' + name:<18}{len(s):>6} | {ai:>10.1%} {1 - ai - auth:>10.1%} {auth:>10.1%}")
+            clear = (s > strong_ai_logit).mean()
+            print(f"  {title + ' ' + name:<18}{len(s):>6} | {clear:>10.1%} {ai - clear:>10.1%} {1 - ai - auth:>10.1%} "
+                  f"{auth:>10.1%}")
 
-    face_ai_logit = None
+    face_ai_logit = face_leans_logit = face_platt = None
     if args.real_faces:
         real_faces = {name: head.logits(load(spec, 0)).numpy() for name, spec in map(split, args.real_faces)}
         face_ai_logit = max(threshold_for(s, args.max_face_false_alarms) for s in real_faces.values())
+        face_leans_logit = max(threshold_for(s, 0.05) for s in real_faces.values())
         print(f"\n  A face looks AI-made if its logit > {face_ai_logit:+.2f} "
-              f"(at most {args.max_face_false_alarms:.1%} of the real dev faces in every pool)")
+              f"(at most {args.max_face_false_alarms:.1%} of the real dev faces in every pool; changes the verdict)")
+        print(f"  A face shows some AI signs if its logit > {face_leans_logit:+.2f} (at most 5% of the real dev faces)")
         for name, s in real_faces.items():
-            print(f"  REAL faces {name:<12}{len(s):>6} | above it: {(s > face_ai_logit).mean():.1%}")
+            print(f"  REAL faces {name:<12}{len(s):>6} | looks AI-made: {(s > face_ai_logit).mean():.1%} | "
+                  f"some AI signs: {(s > face_leans_logit).mean():.1%}")
+        if args.fake_faces:
+            # Platt scaling: a 1-number logistic regression from the face logit to an honest face probability
+            # (the whole-image temperature doesn't fit face crops, whose scores sit lower).
+            fake_faces = {name: head.logits(load(spec, 1)).numpy() for name, spec in map(split, args.fake_faces)}
+            x = np.concatenate(list(real_faces.values()) + list(fake_faces.values()))
+            y = np.concatenate([np.zeros(sum(map(len, real_faces.values()))), np.ones(sum(map(len, fake_faces.values())))])
+            platt = LinearHead().fit(torch.from_numpy(x[:, None]).float(), torch.from_numpy(y).float())
+            face_platt = [float(platt.weight[0]), float(platt.bias)]
+            for name, s in fake_faces.items():
+                print(f"  AI faces {name:<14}{len(s):>6} | looks AI-made: {(s > face_ai_logit).mean():.1%} | "
+                      f"some AI signs: {(s > face_leans_logit).mean():.1%}")
 
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(json.dumps({
             "head": str(args.head), "temperature": temperature, "ai_logit": ai_logit, "real_logit": real_logit,
-            "face_ai_logit": face_ai_logit,
+            "strong_ai_logit": strong_ai_logit, "face_ai_logit": face_ai_logit, "face_leans_logit": face_leans_logit,
+            "face_platt": face_platt,
             "max_false_alarms": args.max_false_alarms, "max_uncertain": args.max_uncertain,
             "real_pools": {n: len(s) for n, s in reals.items()}, "fake_sets": {n: len(s) for n, s in fakes.items()},
         }, indent=2))

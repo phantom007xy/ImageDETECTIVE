@@ -41,9 +41,12 @@ def face_lines(faces):
         if face["too_small"]:
             lines.append(f"- Face {n}: too small to check")
         else:
-            label = {"ai": "🔴 looks AI-made or AI-changed", "leans_ai": "🟠 leans AI-made (not enough on its own)",
-                     "real": "🟢 looks real"}[face["level"]]
-            lines.append(f"- Face {n}: {label} (AI probability {face['probability_ai']:.0%})")
+            label = {"ai": "🔴 looks AI-made or AI-changed", "leans_ai": "🟠 shows some AI signs (not enough on its own)",
+                     "clear": "🟢 no clear AI signs in this face"}[face["level"]]
+            p = face["probability_ai"]
+            lines.append(f"- Face {n}: {label}" + (f" (face AI probability {p:.0%})" if p is not None else ""))
+    lines.append("<small>The face check is weaker than the whole-image check: green means no clear AI signs, "
+                 "not proof that the face is real.</small>")
     return lines
 
 
@@ -52,7 +55,8 @@ def verdict_lines(result):
     if result["verdict_reason"] == "metadata":
         confidence = f"**Reason:** {metadata.describe(result['metadata'])}"
     else:
-        confidence = {"Likely AI-generated": f"**Confidence:** {p:.0%} AI",
+        confidence = {"AI-generated": f"**Confidence:** {p:.0%} AI (no real test photo scored this high)",
+                      "Likely AI-generated": f"**Confidence:** {p:.0%} AI",
                       "Likely authentic": f"**Confidence:** {1 - p:.0%} real"}.get(
             result["verdict"], f"**Whole-image AI probability:** {p:.0%}")
     lines = [f"## {result['verdict']}", confidence]
@@ -111,6 +115,9 @@ def check(path, use_meta):
 
 
 def fool(prompt):
+    if muse_image.asks_for_real_people(prompt or ""):
+        return None, ("This demo doesn't make pictures of real or famous people, or lookalikes of them: that is "
+                      "exactly the kind of fake ImageDETECTIVE is built against. Try a made-up person or a scene."), None
     data = muse_image.generate(prompt or "")
     if data is None:
         return None, ("Muse Image couldn't make this image: Meta's safety filter refused it, the daily limit is "
@@ -138,8 +145,8 @@ with gr.Blocks(title="ImageDETECTIVE", analytics_enabled=False) as demo:
             # filepath + image_mode=None: Gradio hands over the uploaded file unchanged (with its metadata).
             photo = gr.Image(type="filepath", image_mode=None, label="Photo")
             evidence = gr.Image(type="pil", label="Evidence map (red = points to AI, blue = points to real), faces "
-                                                  "(red = looks AI-made, orange = leans AI, green = looks real, "
-                                                  "grey = too small) and the SAM 3.1 outline (yellow)")
+                                                  "(red = looks AI-made, orange = some AI signs, green = no clear AI "
+                                                  "signs, grey = too small) and the SAM 3.1 outline (yellow)")
         use_meta = gr.Checkbox(value=True, label="Use Meta's SAM 3.1 outline and Muse Spark explanation (a smaller "
                                                  "copy of the photo goes to Meta's SAM 3.1 API; Muse Spark only gets "
                                                  "the numbers; standard mode: Meta doesn't train on them)")
@@ -150,7 +157,7 @@ with gr.Blocks(title="ImageDETECTIVE", analytics_enabled=False) as demo:
     with gr.Tab("Try to fool it (Muse Image)"):
         gr.Markdown("Type a prompt, Meta's **Muse Image** makes a picture, and ImageDETECTIVE checks it right away. "
                     "Then crop and re-save it, like a forwarded copy, and check again. Text prompts only: this app "
-                    "never edits uploaded photos.")
+                    "never edits uploaded photos, and it doesn't make pictures of real or famous people.")
         prompt = gr.Textbox(label="Prompt", placeholder="e.g. a selfie of a young woman at a train station")
         made = gr.State(None)
         with gr.Row():

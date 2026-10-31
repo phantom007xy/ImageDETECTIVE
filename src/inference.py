@@ -8,12 +8,13 @@ provisional thresholds below are used and the verdict is only a preview. Edited 
 and Muse come later.
 
 Verdict from the pixels (plan Section 5.6; Path B not built yet):
+  0. whole-image score above every real dev photo    -> "AI-generated" (the clear level)
   1. whole-image score above the AI threshold        -> "Likely AI-generated"
   2. otherwise a face above the (very strict) face threshold -> "This face looks AI-made or AI-changed"
   3. otherwise whole-image score at or below the authentic threshold -> "Likely authentic"
   4. everything else                                 -> "Uncertain"
 If the file's own metadata says AI (src/services/metadata.py, only when the file bytes are given), that
-decides: "made by AI" -> "Likely AI-generated"; "partly changed by AI" -> "Part of this photo looks AI-made
+decides: "made by AI" -> "AI-generated"; "partly changed by AI" -> "Part of this photo looks AI-made
 or AI-changed" (unless the pixels already say "Likely AI-generated"). The pixel verdict is always kept as
 well, and test numbers are always made from the pixels alone.
 """
@@ -45,9 +46,11 @@ def load_calibration(head_path):
     if path.exists():
         c = json.loads(path.read_text())
         return {"temperature": c["temperature"], "ai_logit": c["ai_logit"], "real_logit": c["real_logit"],
-                "face_ai_logit": c.get("face_ai_logit"), "calibrated": True}
+                "strong_ai_logit": c.get("strong_ai_logit"), "face_ai_logit": c.get("face_ai_logit"),
+                "face_leans_logit": c.get("face_leans_logit"), "face_platt": c.get("face_platt"), "calibrated": True}
     return {"temperature": 1.0, "ai_logit": math.log(AI_ABOVE / (1 - AI_ABOVE)),
-            "real_logit": math.log(REAL_BELOW / (1 - REAL_BELOW)), "face_ai_logit": None, "calibrated": False}
+            "real_logit": math.log(REAL_BELOW / (1 - REAL_BELOW)), "strong_ai_logit": None, "face_ai_logit": None,
+            "face_leans_logit": None, "face_platt": None, "calibrated": False}
 
 
 class Detector:
@@ -61,8 +64,17 @@ class Detector:
     def probability(self, logit):
         return 1 / (1 + math.exp(-logit / self.calibration["temperature"]))
 
+    def face_probability(self, logit):
+        """Face crops score lower than whole images, so faces get their own fitted scale (Platt scaling)."""
+        if self.calibration["face_platt"] is None:
+            return None
+        w, b = self.calibration["face_platt"]
+        return 1 / (1 + math.exp(-(w * logit + b)))
+
     def verdict(self, score, faces):
         c = self.calibration
+        if c["strong_ai_logit"] is not None and score > c["strong_ai_logit"]:  # no real dev photo scores this high
+            return "AI-generated"
         if score > c["ai_logit"]:  # strictly above, as in the calibration
             return "Likely AI-generated"
         if any(f.get("flagged") for f in faces):
@@ -82,10 +94,12 @@ class Detector:
             pixels = preprocess.to_tensor(crop.eval_face_view(image, face)).unsqueeze(0)
             logit = float(self.head.logits(self.backbone.mean_patch_vector(pixels).cpu())[0])
             face["logit"] = logit
-            face["probability_ai"] = self.probability(logit)
-            limit = self.calibration["face_ai_logit"]
+            face["probability_ai"] = self.face_probability(logit)  # None without a face calibration
+            limit, leans = self.calibration["face_ai_logit"], self.calibration["face_leans_logit"]
             face["flagged"] = limit is not None and logit > limit  # only this changes the verdict
-            face["level"] = "ai" if face["flagged"] else ("leans_ai" if face["probability_ai"] >= 0.5 else "real")
+            # "leans_ai": more AI-like than 95% of real dev faces; "clear": no clear AI signs in this face
+            # (which is not proof that the face is real: the face check misses some AI faces).
+            face["level"] = "ai" if face["flagged"] else ("leans_ai" if leans is not None and logit > leans else "clear")
         return faces
 
     def analyze(self, image, file_bytes=None):
@@ -108,8 +122,8 @@ class Detector:
         meta = metadata.check_file(file_bytes) if file_bytes is not None else None
         verdict, reason = pixel_verdict, "pixels"
         if meta and meta["ai_label"] == "generated":
-            verdict, reason = "Likely AI-generated", "metadata"
-        elif meta and meta["ai_label"] == "edited" and pixel_verdict != "Likely AI-generated":
+            verdict, reason = "AI-generated", "metadata"
+        elif meta and meta["ai_label"] == "edited" and "AI-generated" not in pixel_verdict:
             verdict, reason = "Part of this photo looks AI-made or AI-changed", "metadata"
         return {
             "score": score,
@@ -151,12 +165,12 @@ def draw_outline(image, mask, colour=(255, 215, 0)):
     return Image.alpha_composite(image.convert("RGBA"), Image.fromarray(layer, "RGBA")).convert("RGB")
 
 
-FACE_COLOURS = {"ai": (220, 30, 30), "leans_ai": (245, 150, 20), "real": (30, 170, 70), "too_small": (150, 150, 150)}
+FACE_COLOURS = {"ai": (220, 30, 30), "leans_ai": (245, 150, 20), "clear": (30, 170, 70), "too_small": (150, 150, 150)}
 
 
 def draw_faces(image, faces):
-    """A numbered box per face: red = looks AI-made (changes the verdict), orange = leans AI-made,
-    green = looks real, grey = too small to check.
+    """A numbered box per face: red = looks AI-made (changes the verdict), orange = some AI signs,
+    green = no clear AI signs, grey = too small to check.
 
     A white edge around every box keeps it visible on the red/blue evidence map.
     """
