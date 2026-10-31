@@ -127,8 +127,9 @@ def crop(data):
             ui.checks_html(result))
 
 
-# analytics_enabled=False: Gradio sends no usage statistics.
-with gr.Blocks(title="ImageDETECTIVE", analytics_enabled=False) as demo:
+# analytics_enabled=False: Gradio sends no usage statistics. delete_cache: every 30 minutes, uploaded and generated
+# files older than 30 minutes are deleted from the server.
+with gr.Blocks(title="ImageDETECTIVE", analytics_enabled=False, delete_cache=(1800, 1800)) as demo:
     gr.HTML(ui.HERO)
     with gr.Tabs():
         with gr.Tab("Check a photo"):

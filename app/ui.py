@@ -128,8 +128,8 @@ def verdict_card(result):
     elif v == "Likely AI-generated":
         reason = f"The whole image looks AI-made ({p:.0%} AI evidence)."
     elif v == "Likely AI-edited":
-        reason = ("Meta's Perception Encoder sees the traces an AI editor leaves when it re-renders a photo. "
-                  "Very few real test photos reach this level.")
+        reason = ("Meta's Perception Encoder, fine-tuned on Muse edits, sees the traces an AI image model leaves when it "
+                  "re-renders a photo; a fully AI-made picture can show them too. Very few real test photos reach this level.")
     elif v == "This face looks AI-made or AI-changed":
         reason = "At least one face looks AI-made or swapped, although the photo as a whole does not (see Faces)."
     elif v == "Likely authentic":
