@@ -26,9 +26,12 @@ LAYERS = (4, 8, 12, 16, 20)  # blocks after which the middle-layer features are 
 NUM_FEATURES = len(LAYERS) + 1  # + the last layer
 
 
-def load_pe(**kwargs):
+def load_pe(pretrained=True, **kwargs):
     """PE-Core-L from the local Hugging Face cache if it is there (the app then starts offline), else online.
+    pretrained=False: the network only (a fine-tuned PE brings all its own weights, so nothing is downloaded).
     kwargs go to timm.create_model (e.g. drop_path_rate for fine-tuning)."""
+    if not pretrained:
+        return timm.create_model(PE_NAME, pretrained=False, num_classes=0, **kwargs)
     try:
         weights = hf_hub_download(PE_REPO, "model.safetensors", local_files_only=True)
     except Exception:  # not in the cache yet
@@ -42,8 +45,8 @@ class PECore:
         # bf16 on GPUs that support it, else fp32 (as for DINOv3; fp16 is not used)
         cuda_bf16 = self.device.type == "cuda" and torch.cuda.get_device_capability(self.device)[0] >= 8
         self.dtype = torch.bfloat16 if cuda_bf16 else torch.float32
-        model = load_pe()
-        if tuned_path:  # a fine-tuned PE (src/models/tune_pe.py): all its weights replace the original ones
+        model = load_pe(pretrained=tuned_path is None)
+        if tuned_path:  # a fine-tuned PE (src/models/tune_pe.py) brings all its weights (strict: none may be missing)
             model.load_state_dict(torch.load(tuned_path, map_location="cpu"))
         self.model = model.to(self.device, self.dtype).eval()
         cfg = resolve_data_config({}, model=self.model)
