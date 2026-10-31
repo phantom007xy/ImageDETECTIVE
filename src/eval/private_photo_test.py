@@ -34,6 +34,7 @@ os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 import argparse  # noqa: E402
 import csv  # noqa: E402
+import json  # noqa: E402
 import math  # noqa: E402
 import warnings  # noqa: E402
 from pathlib import Path  # noqa: E402
@@ -48,6 +49,7 @@ from src.faces.sam_faces import FaceFinder  # noqa: E402
 from src.inference import load_calibration  # noqa: E402
 from src.models.backbone import Backbone  # noqa: E402
 from src.models.linear_head import LinearHead  # noqa: E402
+from src.models.pe_core import PECore  # noqa: E402
 
 HEADS = {
     "app": "weights/head_path_a_sidset30.pt",
@@ -74,6 +76,7 @@ def main():
     parser.add_argument("--folder", type=Path, default=Path("data/private/phone_v1"))
     parser.add_argument("--tuned", type=Path, help="also a tuned DINOv3 (src/models/tune_backbone.py) ...")
     parser.add_argument("--tuned-head", type=Path, help="... with its head")
+    parser.add_argument("--edit-check", type=Path, help="also the Muse-edit check: its head (src/models/train_edit_check.py)")
     args = parser.parse_args()
     warnings.filterwarnings("ignore")  # library warnings could mention a file
 
@@ -85,6 +88,9 @@ def main():
     tuned = Backbone(tuned_path=args.tuned) if args.tuned else None
     tuned_head = LinearHead.load(args.tuned_head) if args.tuned else None
     tuned_vectors = {view: [] for view in VIEWS}
+    # The Muse-edit check: Meta's PE-Core on the centre square of every photo (its own pass).
+    pe = PECore() if args.edit_check else None
+    pe_vectors = []
 
     rows, vectors, face_vectors, face_files, unreadable = [], {view: [] for view in VIEWS}, [], [], 0
     for path in files:
@@ -105,6 +111,8 @@ def main():
             for view in VIEWS:
                 v = tuned.mean_patch_vector(preprocess.to_tensor(preprocess.inference_view(image, view)).unsqueeze(0)).cpu()
                 tuned_vectors[view].append(v[0].numpy().astype(np.float16))
+        if pe is not None:
+            pe_vectors.append(pe.layer_features(pe.to_tensor(pe.view(image)).unsqueeze(0))[0].numpy().astype(np.float16))
         faces = [f for f in finder.find(image) if not f["too_small"]]
         crops = [backbone.mean_patch_vector(preprocess.to_tensor(crop.eval_face_view(image, f)).unsqueeze(0)).cpu()
                  for f in faces]  # the app's face crop
@@ -147,6 +155,10 @@ def main():
             np.savez_compressed(Path("data/private") / f"{args.folder.name}_app_{view}_{tag}.npz",
                                 features=np.stack(tuned_vectors[view]), labels=np.zeros(len(rows), dtype=np.int8),
                                 img_ids=np.array([r["file"] for r in rows]), sources=np.array(["private/phone"] * len(rows)))
+    if pe is not None:  # PE-Core features of every photo (6 x 1,024 numbers, no pixels) for the edit check's line
+        np.savez_compressed(Path("data/private") / f"{args.folder.name}_pe.npz", features=np.stack(pe_vectors),
+                            labels=np.zeros(len(rows), dtype=np.int8), img_ids=np.array([r["file"] for r in rows]),
+                            sources=np.array(["private/phone"] * len(rows)))
     if face_vectors:  # the same for every face crop, so the face threshold can be checked on my faces too
         np.savez_compressed(Path("data/private") / f"{args.folder.name}_faces_app.npz", features=np.stack(face_vectors),
                             labels=np.zeros(len(face_vectors), dtype=np.int8), img_ids=np.array(face_files),
@@ -191,6 +203,13 @@ def main():
 
     cells = "  ".join(f"{name} {np.mean([r[f'p_{name}_centre_crop'] > 0.5 for r in rows]):.0%}" for name in heads)
     print(f"\nFor comparison with the Chameleon numbers (centre crop), all photos called AI: {cells}")
+    if pe is not None:
+        x = np.stack(pe_vectors).astype(np.float32)
+        z = LinearHead.load(args.edit_check).logits(torch.from_numpy(x.reshape(len(x), -1))).numpy()
+        cal = args.edit_check.with_name(args.edit_check.stem + "_calibration.json")
+        line = json.loads(cal.read_text())["edit_logit"] if cal.exists() else 0.0
+        print(f"Muse-edit check {args.edit_check.name}: called edited {(z > line).mean():.0%} of {len(z)} real photos "
+              f"({'its calibrated line' if cal.exists() else 'p > 0.5, not calibrated yet'})")
     if tuned is not None:
         for view in VIEWS:
             z = tuned_head.logits(torch.from_numpy(np.stack(tuned_vectors[view]).astype(np.float32))).numpy()

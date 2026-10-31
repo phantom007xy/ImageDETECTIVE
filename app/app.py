@@ -1,7 +1,7 @@
 """ImageDETECTIVE: check a photo -> verdict, confidence, evidence map, faces, SAM 3.1 outline, explanation.
 
-Tab 1 "Check a photo": our detector (DINOv3 + calibrated head, SAM 3 faces, metadata check) gives the
-verdict first; then, if switched on, Meta's SAM 3.1 outlines the object with the strongest AI evidence
+Tab 1 "Check a photo": our detector (DINOv3 + calibrated head, the Muse-edit check on Meta's Perception Encoder,
+SAM 3 faces, metadata check) gives the verdict first; then, if switched on, Meta's SAM 3.1 outlines the object with the strongest AI evidence
 and Muse Spark writes 2-3 plain sentences from the numbers. The verdict never waits on an API.
 Tab 2 "Try to fool it": Muse Image makes a picture from a text prompt, the detector checks it, and a
 crop + re-save shows what happens when the file's AI label is lost.
@@ -24,11 +24,14 @@ from src.services import explain, metadata, muse_image, sam_outline
 # + SD 3.5 Medium and Kandinsky 2.2 fakes (results/open_gen_v1_heads.txt, calibration_F_v1.txt).
 # Before: head E (weights/commons_v1/head_E.pt), C (weights/muse_pairs_v1/head_C.pt), weights/head_path_a_sidset30.pt.
 HEAD_PATH = "weights/open_gen_v1/head_F.pt"
+# The Muse-edit check (31 Oct): Meta's Perception Encoder on the centre square + a linear head over its middle layers
+# (results/backbone_probe_v1.txt), its line calibrated jointly with head F (src/calibrate/calibrate_edit_check.py).
+EDIT_CHECK_PATH = "weights/edit_check_v1/head_EC_both.pt"
 # On the hosted demo the trained heads are not in the public code: they come from a PRIVATE Hugging Face model
 # repo (scripts/upload_heads.py), read with the Space's token (DFDC: the weights are never published).
 if os.environ.get("HEADS_REPO") and not Path(HEAD_PATH).exists():
     snapshot_download(os.environ["HEADS_REPO"], local_dir="weights", token=os.environ.get("HF_TOKEN"))
-detector = Detector(HEAD_PATH)
+detector = Detector(HEAD_PATH, edit_check=EDIT_CHECK_PATH)
 
 
 def analyze_bytes(data):
@@ -65,9 +68,14 @@ def verdict_lines(result):
     else:
         confidence = {"AI-generated": f"**Confidence:** {p:.0%} AI (no real test photo scored this high)",
                       "Likely AI-generated": f"**Confidence:** {p:.0%} AI",
+                      "Likely AI-edited": "**Reason:** Meta's Perception Encoder sees the traces an AI editor leaves "
+                                          "when it re-renders a photo (very few real test photos reach this level)",
                       "Likely authentic": f"**Confidence:** {1 - p:.0%} real"}.get(
             result["verdict"], f"**Whole-image AI probability:** {p:.0%}")
     lines = [f"## {result['verdict']}", confidence]
+    if result["edit"] is not None and result["verdict"] != "Likely AI-edited":
+        lines.append("**Edit check (Perception Encoder):** " + (
+            "also looks re-rendered by an AI editor" if result["edit"]["flagged"] else "no clear signs of an AI edit"))
     if result["verdict_reason"] == "metadata":
         lines.append(f"*The detector alone, from the pixels: {result['pixel_verdict']} ({p:.0%} AI). "
                      "A forwarded or edited copy loses this label, so the pixel check is what still works then.*")
@@ -82,7 +90,8 @@ def footer(result):
     status = ("Thresholds calibrated on development photos: at most 5% of real dev photos are called AI, and at "
               "most 15% of a real/fake mix is Uncertain." if detector.calibrated else
               "**Preview:** thresholds are not calibrated yet.")
-    return f"\n\n<small>Checked in {result['seconds']:.1f} s. {status} Edited regions are not checked yet.</small>"
+    return (f"\n\n<small>Checked in {result['seconds']:.1f} s. {status} The edit check looks at the whole photo; it "
+            "doesn't mark the edited spot.</small>")
 
 
 def check(path, use_meta):
@@ -176,7 +185,8 @@ with gr.Blocks(title="ImageDETECTIVE", analytics_enabled=False) as demo:
             fake_text = gr.Markdown()
         make.click(fool, inputs=prompt, outputs=[fake_map, fake_text, made])
         cut.click(crop, inputs=made, outputs=[fake_map, fake_text])
-    gr.Markdown("<small>Built with DINOv3 · SAM 3 and SAM 3.1 · Muse Image · Muse Spark (Meta). A result is evidence, "
+    gr.Markdown("<small>Built with DINOv3 · Perception Encoder · SAM 3 and SAM 3.1 · Muse Image · Muse Spark (Meta). "
+                "A result is evidence, "
                 "not proof; it can't check when or where a photo was taken, or classic manual edits.</small>")
 
 if __name__ == "__main__":

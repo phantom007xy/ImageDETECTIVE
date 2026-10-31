@@ -9,6 +9,7 @@ under the same paths as in weights/. Stops if the repo exists and is not private
 
 Usage (from the repo root, logged in with `huggingface-cli login` or with HF_TOKEN set; run it yourself):
   python scripts/upload_heads.py --repo <your HF user>/imagedetective-heads --head weights/open_gen_v1/head_F.pt
+      --edit-check weights/edit_check_v1/head_EC_both.pt
 """
 
 import argparse
@@ -22,10 +23,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--repo", required=True, help="model repo id, e.g. user/imagedetective-heads")
     parser.add_argument("--head", type=Path, required=True, help="the app's head (weights/...)")
+    parser.add_argument("--edit-check", type=Path, help="the edit check's head (weights/...), uploaded with its calibration")
     args = parser.parse_args()
 
     calibration = args.head.with_name(args.head.stem + "_calibration.json")
     files = [args.head, calibration]
+    if args.edit_check:
+        files += [args.edit_check, args.edit_check.with_name(args.edit_check.stem + "_calibration.json")]
     swap = json.loads(calibration.read_text()).get("swap_head")
     if swap:
         files.append(Path(swap.replace("\\", "/")))

@@ -11,9 +11,11 @@ and Muse come later.
 Verdict from the pixels (plan Section 5.6; Path B not built yet):
   0. whole-image score above every real dev photo    -> "AI-generated" (the clear level)
   1. whole-image score above the AI threshold        -> "Likely AI-generated"
-  2. otherwise a face above the (very strict) face threshold -> "This face looks AI-made or AI-changed"
-  3. otherwise whole-image score at or below the authentic threshold -> "Likely authentic"
-  4. everything else                                 -> "Uncertain"
+  2. otherwise the Muse-edit check above its line    -> "Likely AI-edited" (Meta's PE-Core, src/models/pe_core.py;
+     its line is calibrated jointly with the head: src/calibrate/calibrate_edit_check.py)
+  3. otherwise a face above the (very strict) face threshold -> "This face looks AI-made or AI-changed"
+  4. otherwise whole-image score at or below the authentic threshold -> "Likely authentic"
+  5. everything else                                 -> "Uncertain"
 If the file's own metadata says AI (src/services/metadata.py, only when the file bytes are given), that
 decides: "made by AI" -> "AI-generated"; "partly changed by AI" -> "Part of this photo looks AI-made
 or AI-changed" (unless the pixels already say "Likely AI-generated"). The pixel verdict is always kept as
@@ -34,6 +36,7 @@ from src.faces import crop
 from src.faces.sam_faces import FaceFinder
 from src.models.backbone import Backbone
 from src.models.linear_head import LinearHead
+from src.models.pe_core import PECore
 from src.services import metadata
 
 # Provisional thresholds on the AI probability, only for heads without a calibration file.
@@ -58,12 +61,21 @@ def load_calibration(head_path):
 
 
 class Detector:
-    def __init__(self, head_path, device=None, faces=True):
+    def __init__(self, head_path, device=None, faces=True, edit_check=None):
         self.backbone = Backbone(device=device)
         self.head = LinearHead.load(head_path)
         self.calibration = load_calibration(head_path)
         self.calibrated = self.calibration["calibrated"]
         self.finder = FaceFinder(device=device) if faces else None
+        # The Muse-edit check (src/models/pe_core.py): Meta's PE-Core on the centre square, only if it is calibrated.
+        self.edit_check = None
+        edit_cal = Path(edit_check).with_name(Path(edit_check).stem + "_calibration.json") if edit_check else None
+        if edit_cal is not None and edit_cal.exists():
+            self.pe = PECore(device=device)
+            self.edit_check = LinearHead.load(edit_check)
+            self.edit_line = json.loads(edit_cal.read_text())["edit_logit"]
+        elif edit_check:
+            print(f"WARNING: edit check {edit_check} or its calibration not found: the edit check is off")
         # The face-swap head (DFDC) scores the same face features; only used if it is calibrated and present.
         swap_path = self.calibration["swap_head"] and Path(self.calibration["swap_head"].replace("\\", "/"))
         self.swap_head = LinearHead.load(swap_path) if swap_path and swap_path.exists() else None
@@ -80,12 +92,14 @@ class Detector:
         w, b = self.calibration["face_platt"]
         return 1 / (1 + math.exp(-(w * logit + b)))
 
-    def verdict(self, score, faces):
+    def verdict(self, score, faces, edit=None):
         c = self.calibration
         if c["strong_ai_logit"] is not None and score > c["strong_ai_logit"]:  # no real dev photo scores this high
             return "AI-generated"
         if score > c["ai_logit"]:  # strictly above, as in the calibration
             return "Likely AI-generated"
+        if edit is not None and edit["flagged"]:  # the Muse-edit check, calibrated jointly with the head
+            return "Likely AI-edited"
         if any(f.get("flagged") for f in faces):
             return "This face looks AI-made or AI-changed"
         if score <= c["real_logit"]:
@@ -135,7 +149,12 @@ class Detector:
         patch_logits = (tokens @ self.head.weight + self.head.bias).reshape(grid_h, grid_w)
         score = patch_logits.mean().item()
         faces = self.check_faces(image)
-        pixel_verdict = self.verdict(score, faces)
+        edit = None
+        if self.edit_check is not None:
+            features = self.pe.layer_features(self.pe.to_tensor(self.pe.view(image)).unsqueeze(0))
+            logit = float(self.edit_check.logits(features.reshape(1, -1).float())[0])
+            edit = {"logit": logit, "flagged": logit > self.edit_line}
+        pixel_verdict = self.verdict(score, faces, edit)
         meta = metadata.check_file(file_bytes) if file_bytes is not None else None
         verdict, reason = pixel_verdict, "pixels"
         if meta and meta["ai_label"] == "generated":
@@ -151,6 +170,7 @@ class Detector:
             "metadata": meta,
             "patch_logits": patch_logits.numpy(),
             "faces": faces,
+            "edit": edit,  # the Muse-edit check: {"logit", "flagged"}, or None if it is off
             "seconds": time.perf_counter() - start,
         }
 
