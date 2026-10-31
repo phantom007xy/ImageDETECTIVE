@@ -1,0 +1,24 @@
+Robustness of the app's verdict to forwarding damage, head F with its calibration (31 Oct 2026). Dev sets only.
+python -m src.eval.robustness_check --head weights/open_gen_v1/head_F.pt --list "polished dev:features/lists/commons_dev.csv"
+  --list "OpenImages val:features/lists/muse_pairs_val.csv@muse_pairs/real" --list "Muse test v1:features/lists/muse_image_test_v1.csv"
+  --list "Muse pairs val:features/lists/muse_pairs_val.csv@muse_pairs/muse" --list "SDXL (unseen):features/lists/sd_faces.csv@sd_faces/sdxl"
+  --list "PixArt (unseen):features/lists/open_gen_v1/open_gen_dev.csv@open_gen/pixart"
+  --list "SD3.5 devcap:features/lists/open_gen_v1/open_gen_dev.csv@open_gen/sd35m_devcaption"
+Versions: original | jpeg70 (JPEG q70) | whatsapp (long side <= 1600, q75) | whatsapp2 (that twice) |
+small (long side <= 800, q60) | screenshot (1080 px wide, PNG). Whole image only, app view, at most 150 images per set.
+
+Share called AI (Likely AI-generated or AI-generated); for real photos this is the false-alarm rate.
+set                 original  jpeg70  whatsapp  whatsapp2  small  screenshot | Likely authentic (original -> worst)
+REAL polished dev     5.3%     4.7%    4.7%      4.7%      4.7%    6.0%      | 71.3% -> 70.7%
+REAL OpenImages val   2.6%     2.6%    2.6%      2.6%      2.6%    3.9%      | 76.3% -> 75.0%
+AI Muse test v1      94.0%    94.0%   95.0%     95.0%     93.0%   94.0%      | missed 2.0% everywhere
+AI Muse pairs val    75.0%    76.3%   75.0%     76.3%     75.0%   75.0%      | missed 3.9% everywhere
+AI SDXL (unseen)     88.7%    89.3%   88.7%     88.0%     88.7%   88.7%      | missed 0.7% -> 0.0%
+AI PixArt (unseen)  100.0%    98.0%   98.7%     98.0%     97.3%  100.0%      | missed 0.0%
+AI SD3.5 devcap      65.8%    47.4%   55.3%     55.3%     47.4%   57.9%      | missed 15.8% -> 18.4% (n = 38)
+
+-> No collapse under compression (the DINOv3 paper saw 87% -> 70% at JPEG q70): the random JPEG and resize steps in
+   training work. No extra false alarms from compression; screenshots add about one point (1-2 photos).
+-> Weak spot: SD 3.5, the hardest generator, loses up to 19 points under compression (small sample).
+-> No retraining needed for compression now. The real WhatsApp copies of my phone photos (judge test) remain the
+   honest check.
