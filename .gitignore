@@ -35,3 +35,5 @@ wandb/
 runs/
 flagged/
 .gradio/
+# the app's API spending counter (src/services/meta_api.py)
+.app_state/
