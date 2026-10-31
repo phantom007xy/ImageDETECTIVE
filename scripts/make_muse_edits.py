@@ -149,10 +149,15 @@ def main():
             edited_path = Path(f"{stem}_edited.png")
             if not edited_path.exists() or not Path(f"{stem}_mask.png").exists():
                 continue
-            with Image.open(f"{stem}_original.jpg") as o, Image.open(edited_path) as e, Image.open(f"{stem}_mask.png") as m:
-                recovered.append({**job, "width": o.width, "height": o.height, "edited_width": e.width,
-                                  "edited_height": e.height, "status": "ok",
-                                  "changed_share": round(float((np.asarray(m.convert("L")) > 0).mean()), 4)})
+            try:  # every file must load completely: a run stopped mid-write leaves truncated files
+                with Image.open(f"{stem}_original.jpg") as o, Image.open(edited_path) as e, \
+                        Image.open(f"{stem}_mask.png") as m, Image.open(f"{stem}_edited_matched.png") as em:
+                    o.load(), e.load(), m.load(), em.load()
+                    recovered.append({**job, "width": o.width, "height": o.height, "edited_width": e.width,
+                                      "edited_height": e.height, "status": "ok",
+                                      "changed_share": round(float((np.asarray(m.convert("L")) > 0).mean()), 4)})
+            except Exception:
+                print(f"  {job['id']}: a file is damaged or missing, not recorded")
         new_file = not manifest.exists() or manifest.stat().st_size == 0
         with open(manifest, "a", newline="") as out:
             writer = csv.DictWriter(out, fieldnames=FIELDS, lineterminator="\n")
