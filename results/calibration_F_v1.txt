@@ -52,6 +52,20 @@ python -m src.calibrate.calibrate ... (as above without my phone pools) --fake-f
 -> Without my phone photos in the mix, the authentic threshold moves (-3.50 vs. -3.84): I re-run the calibration
    with my pools before release.
 
+== The app's calibration now (31 Oct, re-run by me with my phone photos and faces; the file the app loads) ==
+  AI-generated (clear) if logit > +4.95 (p > 0.980) | Likely AI-generated if > -0.30 (p > 0.441)
+  Likely authentic if <= -3.84 (p <= 0.047) | Uncertain 14.9% of the mix | temperature 1.27
+  set                    n | AI (clear)  Likely AI  Uncertain  Authentic
+  REAL phone           104 |       0.0%       0.0%       2.9%      97.1%
+  REAL polished dev    330 |       0.0%       4.8%      25.5%      69.7%
+  REAL OpenImages val    76 |       0.0%       2.6%      21.1%      76.3%
+  AI Muse test v1      100 |      51.0%      43.0%       4.0%       2.0%
+  AI Muse pairs val     76 |      26.3%      48.7%      21.1%       3.9%
+  AI SDXL (unseen)     332 |      30.7%      59.3%       9.0%       0.9%
+  Faces: looks AI-made if > +3.63, some AI signs if > -3.21
+  REAL faces phone 148: 0.0% / 2.7% | polished 285: 0.4% / 4.9% | OpenImages 81: 0.0% / 2.5%
+  AI faces Muse test 184: 32.6% / 71.2% | Muse val 98: 23.5% / 70.4% | SDXL 338: 22.5% / 78.4%
+
 -> My phone photos are never the strictest pool; the polished dev set sets the threshold.
 -> On my phone photos F says: 0 AI, 3 Uncertain, 101 Likely authentic; none of my 148 faces is flagged.
 -> The cost: about 1 in 4 professional real photos (polished dev) gets "Uncertain".
