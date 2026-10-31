@@ -1,0 +1,16 @@
+Metadata check (src/services/metadata.py), 31 Oct 2026: does the file itself say it was made or changed by AI?
+Searches the file's bytes for the IPTC digital source types trainedAlgorithmicMedia (made by AI) and
+compositeWithTrainedAlgorithmicMedia (partly AI), in XMP or inside a C2PA manifest; notes C2PA manifests.
+
+files                                      result (AI label, C2PA)
+Muse test v1, original API PNGs     100    generated 100
+Muse pairs v2 fakes, cropped/resized 200   no label 200   (any re-save drops the label)
+Commons polished dev (real)         330    no label 330
+OpenImages pair photos (real)       300    no label 300
+SD 3.5 Medium PNGs (diffusers)      100    no label 100   (open models write no label)
+
+End-to-end through the app's real upload route (gradio_client, local app):
+  mi_test_002.png (Muse original) -> Likely AI-generated, reason: metadata; pixels alone: Likely AI-generated (52% AI)
+  a real Commons portrait          -> Likely authentic, 98% real
+-> Catches unchanged Muse downloads with certainty and never touched a real photo here. It only ever points to AI;
+   all test numbers stay pixels-only (python -m src.eval.app_verdicts passes no file bytes).
