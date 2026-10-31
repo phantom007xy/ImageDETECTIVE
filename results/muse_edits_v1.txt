@@ -1,0 +1,34 @@
+Muse Image edits of real photos: held-out test set v1 and what head F does with them (31 Oct 2026)
+
+Test set (python scripts/make_muse_edits.py ... --prompts test --n 38 --edits-per-photo 2 --spend):
+  38 photos from the Commons polished dev set (never trained on) with NO person in them (SAM 3 "person",
+  threshold 0.3, plus a visual check of all 38), 2 edits each with different test prompts.
+  76 edits, 0 refused, $0.76: 51 local ("add a parked blue car", "remove the most prominent object ...")
+  and 25 whole-image ("make it look like a snowy winter day", "turn it into a night scene ...").
+  Sent at long side 1536 (JPEG q95); Muse returns ~2.5 MP PNG (1824x1376, 1920x1280, ...), aspect ratio
+  within 2% of the original. Files: D:/Datasets/MuseImage/edits_v1 (never git).
+
+1. Muse re-renders EVERY pixel of an edit.
+   Changed area (pixel difference > 25 after a 5x5 median, edit resized to the original):
+     local edits median 17% (10th-90th percentile 5%-37%), whole-image edits median 84%.
+     3 "local" edits redrew and reframed the whole picture (72-91% changed; e.g. "add a few birds" zoomed out).
+   Fine detail OUTSIDE the change (high-pass correlation with the original, >= 15 px away from any change),
+   on the 38 local edits that kept the framing: median 0.59; a plain resize of the original: 0.98.
+   -> Even the "untouched" part of an edit is an AI re-rendering, not camera pixels. So for Path A an edit
+      is AI as a whole (no "real patches labelled fake" problem, unlike SID-Set's pasted edits), and the
+      original next to it is a perfect same-content real example. The pixel-difference masks are rough
+      (misalignment, re-rendered texture), fine for showing "where", weak as exact region truth.
+
+2. Metadata: all 76 edited files carry IPTC DigitalSourceType trainedAlgorithmicMedia ("generated", not
+   "composite"); 0 of 76 originals. The app's metadata check catches unchanged files; a WhatsApp copy or a
+   screenshot loses the label, so the pixel check must work on its own (all numbers below: pixels only).
+
+3. Head F (the app's head) on the edits, app view long448, app calibration (head_F_calibration.json):
+     set                  n | AI (clear)  likely AI  uncertain  authentic | median logit
+     originals (real)    76 |    0.0%       2.6%      18.4%      78.9%    |   -4.92
+     local edits (c)     51 |    0.0%       5.9%      19.6%      74.5%    |   -4.80
+     whole edits (c+)    25 |    4.0%      20.0%      28.0%      48.0%    |   -3.71
+   -> FAILS: Muse edits of real photos look real to head F (text-to-image Muse fakes: 94% caught).
+      A judge editing their own photo in Meta AI is exactly this case. Fix: train Path A on Muse training
+      edits (people-free Commons training photos + OpenImages photos, other prompts) as AI next to their
+      originals as real; test on this set (and the person-edit test with my own selfies).
