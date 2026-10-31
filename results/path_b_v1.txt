@@ -1,0 +1,26 @@
+Path B v1: edited-region head (type c, local AI edits), frozen DINOv3 + linear head per patch (31 Oct 2026)
+
+Training (python -m src.features.extract_patches ... --mode train --labels 0 2 --per-image 48 --view short448):
+  SID-Set train files 10-14: 2,681 pictures (tampered with masks + real; 96 skipped: mask of another size
+  or no mask), 2 copies each (as is + shrunk/JPEG 65-85), 257,310 patches, 50,793 inside an edit (>= half
+  inside the mask); border patches left out; real photos all unedited; fully AI images not used.
+  python -m src.models.train_patch_head --train features/patches/sid_10_14_train.npz -> weights/path_b/head_B_sid.pt
+
+Test (python -m src.eval.region_eval; patch scores smoothed 3x3, picture score = strongest spot,
+line set on every real pool):
+  patch level (edited pictures): AUC 0.739 over 157,640 patches (25,980 edited)
+
+  line (real pools)     | real flagged: SID val real  polished dev  edit originals | SID val edited: found  IoU | Muse local edits: found
+  <= 1% (logit +6.16)   |                 0.0%           1.0%          0.0%        |                24.2%   0.19 |  0.0%
+  <= 2% (logit +5.46)   |                 0.0%           2.0%          0.0%        |                35.6%   0.22 |  0.0%
+  <= 5% (logit +4.83)   |                 1.9%           5.0%          2.6%        |                46.2%   0.25 |  2.0%
+  (n: SID val real 158, polished dev 200, originals 76 | SID val edited 132, Muse local edits 51)
+
+Reading:
+  1. Path B finds about 1 in 4 SID-Set-style edits (a small AI patch pasted into an untouched photo) at a
+     strict line, with a rough region (IoU ~0.2). Weak, but a real signal.
+  2. It finds NO Muse edits: Muse re-renders the whole photo (results/muse_edits_v1.txt), so there is no
+     "edited inside vs. camera-pixel outside" contrast to find. Muse edits are Path A's job (head G).
+  -> Path B stays out of the verdict in this version (the shared 5% false-alarm budget is better spent on
+     Path A). Local pasted-in AI edits (e.g. generative fill that keeps the rest untouched) are "limited",
+     stated openly. "Where" comes from the evidence map and the SAM 3.1 outline.

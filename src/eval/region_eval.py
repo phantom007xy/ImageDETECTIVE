@@ -32,8 +32,13 @@ def smooth(grid):
     return np.nanmean(stack, axis=0)
 
 
-def pictures(head, path):
-    """{picture: (smoothed score grid, true edited grid)} for one eval feature file."""
+def pictures(head, spec):
+    """{picture: (smoothed score grid, true edited grid)} for one eval feature file.
+
+    spec = "path", "path@text" (only pictures whose id contains text) or "path@!text" (only those without it),
+    e.g. "features/patches/sid_val_eval.npz@tampered_" for SID-Set's edited pictures.
+    """
+    path, _, text = spec.partition("@")
     data = np.load(path)
     shapes = dict(zip(data["grid_ids"], map(tuple, data["grid_shapes"])))
     scores = head.logits(torch.from_numpy(data["features"].astype(np.float32))).numpy()
@@ -42,6 +47,8 @@ def pictures(head, path):
         by_pic[str(img_id).rsplit("#", 1)[0]].append(i)
     out = {}
     for pic, idx in by_pic.items():
+        if text and ((text[1:] in pic) if text.startswith("!") else (text not in pic)):
+            continue
         rows, cols = shapes[pic]
         grid = np.full(rows * cols, np.nan, dtype=np.float32)
         truth = np.zeros(rows * cols, dtype=bool)
