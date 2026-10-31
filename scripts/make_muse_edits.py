@@ -34,6 +34,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
+import httpx
 import numpy as np
 from PIL import Image, ImageFilter, ImageOps
 
@@ -152,8 +153,11 @@ def main():
         body = {"model": "muse-image-1.0", "prompt": job["prompt"], "n": 1, "response_format": "b64_json",
                 "output_format": "png", "images": [{"image_url": "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode()}],
                 "tool_enablement": {"enable_image_search": False, "enable_web_search": False, "enable_shell": False}}
-        response = meta_api.client().post("/images/edits", headers={"Authorization": f"Bearer {key}"}, json=body)
         row = {**job, "width": original.width, "height": original.height}
+        try:
+            response = meta_api.client().post("/images/edits", headers={"Authorization": f"Bearer {key}"}, json=body)
+        except httpx.HTTPError as error:  # e.g. a timeout: recorded, and retried on the next run (only ok/refused count as done)
+            return {**row, "status": f"error {type(error).__name__}"}
         if response.status_code != 200:
             code = response.json().get("error", {}).get("code", "") if "json" in response.headers.get("content-type", "") else ""
             return {**row, "status": "refused" if code == "content_policy_violation" else f"error {response.status_code}"}
@@ -170,12 +174,20 @@ def main():
         return {**row, "edited_width": edited.width, "edited_height": edited.height,
                 "changed_share": round(float(mask.mean()), 4), "status": "ok"}
 
+    def safe_edit(job):
+        """One failed edit (network error, odd reply, unreadable picture) must not stop the run: it is recorded as an
+        error and retried on the next run (only ok and refused count as done)."""
+        try:
+            return edit(job)
+        except Exception as error:
+            return {**job, "status": f"error {type(error).__name__}"}
+
     new_file = not manifest.exists() or manifest.stat().st_size == 0
     with open(manifest, "a", newline="") as out, ThreadPoolExecutor(args.workers) as pool:
         writer = csv.DictWriter(out, fieldnames=FIELDS, lineterminator="\n")
         if new_file:
             writer.writeheader()
-        for future in as_completed([pool.submit(edit, j) for j in todo]):
+        for future in as_completed([pool.submit(safe_edit, j) for j in todo]):
             row = future.result()
             writer.writerow({k: row.get(k, "") for k in FIELDS})
             out.flush()
