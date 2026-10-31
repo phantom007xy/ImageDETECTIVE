@@ -1,0 +1,42 @@
+Which frozen backbone and layer sees Muse Image edits? (31 Oct 2026; python -m src.eval.backbone_probe)
+
+Linear probe (logistic regression, src/models/linear_head.py) trained on the 2,242 Muse TRAINING edits (edit = 1, its
+own real original = 0; people-free Commons and OpenImages photos, training prompts) and tested on held-out Muse TEST
+edits vs. their own originals (different photos, different prompts): the hardest pairing, same content, only the
+rendering differs. Same view for every model: the centre square at the model's input size, JPEG 90. Frozen weights.
+Only Meta models are candidates for the app: DINOv3 ViT-L/16 (448 px) and PE-Core-L/14 (336 px, Apache 2.0, timm).
+
+Test v2: 198 edits (132 local, 66 whole-image) of 99 new people-free OpenImages photos (SID-Set files 0-9, used nowhere
+else) + their 198 originals. Weight decay 0.01 (0.001 and 0.1 give the same picture).
+
+  features (mean patch tokens)   train AUC | test AUC all  local  whole | caught at 5% of originals flagged
+  DINOv3 last layer (our heads)    0.924   |     0.745     0.698  0.837 |   19.2%
+  DINOv3 after block 4             0.849   |     0.789     0.713  0.941 |   41.4%
+  DINOv3 after block 8             0.960   |     0.869     0.830  0.947 |   54.0%
+  DINOv3 after block 12            0.995   |     0.935     0.920  0.964 |   79.3%
+  DINOv3 after block 16            0.992   |     0.899     0.872  0.951 |   62.1%
+  DINOv3 after block 20            0.977   |     0.786     0.746  0.866 |   38.4%
+  DINOv3 all 6 layers              1.000   |     0.933     0.914  0.971 |   70.2%
+  PE-Core last layer               0.977   |     0.846     0.799  0.939 |   57.1%
+  PE-Core pooled embedding         0.996   |     0.928     0.906  0.970 |   74.2%
+  PE-Core after block 8            0.993   |     0.914     0.891  0.961 |   68.2%
+  PE-Core after block 12           0.999   |     0.952     0.938  0.978 |   73.7%
+  PE-Core after block 16           0.998   |     0.940     0.921  0.977 |   76.8%
+  PE-Core all 6 layers             1.000   |     0.972     0.962  0.993 |   88.9%
+  DINOv3 + PE-Core, all layers     1.000   |     0.969     0.959  0.988 |   89.4%
+  anomaly-style (Gaussian fit on real photos only, Mahalanobis distance; the idea behind PaDiM / FastFlow):
+  every layer of both models       0.44-0.52 test AUC: no better than chance
+
+Test v1 (76 edits of 38 people-free Commons dev photos) agrees: DINOv3 last 0.786, DINOv3 all layers 0.918, PE-Core
+all layers 0.955 (local 0.937, whole 0.991), anomaly-style 0.44-0.59.
+
+Reading:
+  1. The edit trace is there, but not in the last layer: middle layers (around block 12) keep how a picture was
+     rendered, the last layer mostly what it shows. Matches RINE (ECCV 2024: intermediate CLIP blocks detect generated
+     images better) and the PE paper ("the best visual embeddings are not at the output of the network").
+  2. PE-Core (Meta) with all its layers is the best single model, also on local edits (0.96).
+  3. Modelling only real photos (anomaly detection) does not work here: real photos are far too varied.
+  4. Frozen PE beats the tuning runs (results/tuning_v1.txt: last-4 blocks reached 0.85 real vs. edits) and leaves
+     head F untouched -> next: a separate Muse-edit check on PE-Core (src/models/train_edit_check.py).
+  Caveat: an edits-only probe; the check still has to keep real photos (incl. my phone photos and selfies) under its
+  line, survive WhatsApp copies and screenshots, and be measured together with head F (one false-alarm budget).
