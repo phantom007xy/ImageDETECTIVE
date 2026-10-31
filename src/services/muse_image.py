@@ -1,7 +1,8 @@
 """Muse Image "Try to fool it" (Meta Model API): make an image from a visitor's text prompt, then check it.
 
 Safety rule (plan Section 5.7): only text prompts, never edits of uploaded photos, so the app cannot
-be used to make fakes of real people. Meta's own safety filter also refuses some prompts (not billed).
+be used to make fakes of real people; prompts that ask for real or famous people (or lookalikes) are
+refused before any call. Meta's own safety filter also refuses some prompts (not billed).
 Standard mode (muse-image-1.0), search tools off. $0.01 per image; it goes through
 src/services/meta_api.py (daily cap, cache: the same prompt returns the same image without a new cost).
 """
@@ -15,12 +16,22 @@ from src.services import meta_api
 
 MODEL = "muse-image-1.0"
 COST = 0.01
+# Our own rule, before Meta's filter: no pictures of real or famous people, and no lookalikes. A word
+# list can't catch every name, but it refuses the obvious requests (and Meta's filter is a second layer).
+REAL_PEOPLE_WORDS = ["looks like", "look like", "lookalike", "look-alike", "resembl", "celebrity", "famous",
+                     "actor", "actress", "singer", "cricketer", "footballer", "politician", "president",
+                     "prime minister", "minister", "influencer", "youtuber", "real person"]
+
+
+def asks_for_real_people(prompt):
+    text = prompt.lower()
+    return any(word in text for word in REAL_PEOPLE_WORDS)
 
 
 def generate(prompt):
     """PNG bytes of a new Muse Image picture (with Muse's own AI label in its metadata), or None."""
     prompt = " ".join(prompt.split())[:500]
-    if not prompt:
+    if not prompt or asks_for_real_people(prompt):
         return None
 
     def call(key):
