@@ -14,6 +14,7 @@ Versions:
   whatsapp2   the same step twice (forwarded again)
   small       long side at most 800 px, JPEG quality 60 (old forwards, thumbnails)
   screenshot  scaled to a phone screen 1080 px wide, saved as PNG
+  crop        the middle 70% of each side, JPEG quality 85 (the cropped-copy test)
 
 Usage (from the repo root):
   python -m src.eval.robustness_check --head weights/open_gen_v1/head_F.pt
@@ -55,6 +56,15 @@ def screenshot(image, width=1080):
     return Image.open(io.BytesIO(buffer.getvalue())).convert("RGB")
 
 
+def crop(image, keep=0.7):
+    """The middle 70% of each side, re-saved as JPEG 85: the "cropped copy" that hid Muse images from
+    Meta's watermark-based detector (Reuters, July 2026). Our detector reads pixels, not the watermark."""
+    w, h = image.size
+    cw, ch = round(w * keep), round(h * keep)
+    left, top = (w - cw) // 2, (h - ch) // 2
+    return jpeg_bytes(image.crop((left, top, left + cw, top + ch)), 85)
+
+
 VERSIONS = {
     "original": lambda im: im,
     "jpeg70": lambda im: jpeg_bytes(im, 70),
@@ -62,6 +72,7 @@ VERSIONS = {
     "whatsapp2": lambda im: jpeg_bytes(shrink(jpeg_bytes(shrink(im, 1600), 75), 1600), 75),
     "small": lambda im: jpeg_bytes(shrink(im, 800), 60),
     "screenshot": screenshot,
+    "crop": crop,
 }
 
 

@@ -19,7 +19,10 @@ Usage:
   python scripts/make_muse_edits.py --list features/lists/commons_dev_no_people.csv
       --out-dir D:/Datasets/MuseImage/edits_v1 --n 40 --spend --workers 4
   python scripts/make_muse_edits.py --list features/lists/commons_train_no_people.csv --prompts train
-      --edits-per-photo 2 --n 700 --out-dir D:/Datasets/MuseImage/edits_train_v1 --spend --workers 4
+      --edits-per-photo 3 --n 9999 --out-dir D:/Datasets/MuseImage/edits_train_commons --spend --workers 4
+  python scripts/make_muse_edits.py --list D:/Datasets/SelfEdits/originals --prompts person --edits-per-photo 2
+      --n 20 --out-dir D:/Datasets/SelfEdits/self_edits_v1 --spend   (my own selfies, test only)
+  The image list is written to features/lists/muse_<out-dir name>.csv, so every out-dir needs its own name.
 """
 
 import argparse
@@ -67,6 +70,15 @@ PROMPTS = {
                   "change the background to a sandy beach", "change the background to a busy city street",
                   "make it look like a sunny day with a clear blue sky", "make it look like it was taken at night"],
     },
+    # Test only, for my own selfies (D:/Datasets/SelfEdits/originals; nobody else in the frame; never published):
+    # what a judge might do to their own photo.
+    "person": {
+        "local": ["add sunglasses", "change the colour of my shirt to bright red", "add a cap on my head",
+                  "add a small dog next to me", "make me smile", "remove the object behind me and fill in the background"],
+        "whole": ["change the background to a sandy beach at sunset", "put me in a busy city street at night",
+                  "make it look like it is snowing", "change the background to a mountain landscape",
+                  "make it look like a professional studio portrait"],
+    },
 }
 FIELDS = ["id", "source", "kind", "prompt", "width", "height", "edited_width", "edited_height", "changed_share", "status"]
 
@@ -81,7 +93,8 @@ def changed_mask(original, edited):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--list", type=Path, required=True, help="photos without people (scripts/find_people_free.py)")
+    parser.add_argument("--list", type=Path, required=True,
+                        help="photos without people (scripts/find_people_free.py), or a folder (--prompts person)")
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--n", type=int, default=40, help="photos to edit")
     parser.add_argument("--edits-per-photo", type=int, default=1, help="different prompts per photo")
@@ -92,8 +105,11 @@ def main():
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
-    with open(args.list, newline="") as f:
-        photos = sorted(r["path"] for r in csv.DictReader(f) if r["label"] == "0")
+    if args.list.is_dir():  # a folder of photos, e.g. my selfies for the person-edit test
+        photos = sorted(str(p) for p in args.list.iterdir() if p.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp"))
+    else:
+        with open(args.list, newline="") as f:
+            photos = sorted(r["path"] for r in csv.DictReader(f) if r["label"] == "0")
     rng = random.Random(args.seed)
     picked = rng.sample(photos, min(args.n, len(photos)))
     jobs = []
@@ -114,7 +130,7 @@ def main():
         with open(manifest, newline="") as f:
             done = {r["id"] for r in csv.DictReader(f) if r["status"] in ("ok", "refused")}
     todo = [j for j in jobs if j["id"] not in done][: args.limit]
-    print(f"{len(photos)} dev photos without people; {len(jobs)} edits planned ({sum(j['kind'] == 'local' for j in jobs)} "
+    print(f"{len(photos)} photos without people; {len(jobs)} edits planned ({sum(j['kind'] == 'local' for j in jobs)} "
           f"local, {sum(j['kind'] == 'whole' for j in jobs)} whole-image); {len(todo)} to do -> at most ${len(todo) * COST:.2f}")
     if not args.spend:
         print("dry run: nothing was sent. Add --spend to edit.")
@@ -158,7 +174,8 @@ def main():
             row = future.result()
             writer.writerow({k: row.get(k, "") for k in FIELDS})
             out.flush()
-            print(f"  {row['id']} {row['kind']:<5} {row['status']:<8} changed {row.get('changed_share', '')} | {row['prompt'][:50]}")
+            print(f"  {row['id']} {row['kind']:<5} {row['status']:<8} changed {row.get('changed_share', '')} | {row['prompt'][:50]}",
+                  flush=True)
 
     # Image list for the tests: originals (real, 0), local edits (2, with mask), whole-image edits (1).
     with open(manifest, newline="") as f:
