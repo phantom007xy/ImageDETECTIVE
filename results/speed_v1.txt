@@ -1,0 +1,12 @@
+Speed of the full app pipeline per photo (1 Nov 2026): DINOv3 whole image + PE edit check + SAM 3 faces + each face
+through DINOv3 + metadata; without the optional Meta API investigator. The four app samples (app/examples), laptop
+(i7-14HX, RTX 5050 8 GB); the same verdicts on GPU and CPU.
+
+  device                     per photo      model load (local cache)
+  GPU, bf16                  0.6-0.8 s      (first photo 2.3 s)
+  CPU fp32, 8 threads        16-20 s        10 s
+  CPU fp32, 2 threads        33-38 s
+
+SAM 3 (1008 px) takes most of the CPU time (10.7 s of it on 8 threads, measured 29 Oct). Hugging Face Space CPUs are
+usually slower than this laptop's cores: expect roughly 25-35 s on "CPU Upgrade" (8 vCPU) and about a minute on the
+free tier (2 vCPU). Fine-tuned PE weights are loaded directly (the original PE weights are no longer downloaded).
