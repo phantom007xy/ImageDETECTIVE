@@ -64,3 +64,25 @@ held-out Commons v3 photos (31 phone photos). Joint line with head F, as in the 
 The edit check is Muse-specific (0% of SD 3.5 and Kandinsky); other generators stay head F's job.
 Before (frozen EC v1 in the app): edits v1 local 35% / whole 76%, v2 local 21% / whole 62%, Muse pairs 92%.
 App path = calibration features: same edit logit for the same picture (e.g. -14.41 / -14.41, +8.58 / +8.57).
+
+== Robustness with the edit check (python -m src.eval.robustness_check --head weights/open_gen_v1/head_F.pt
+   --edit-check weights/edit_check_v3/head_EC3.pt --n 150, lists as below; versions as in robustness_F_v1.txt) ==
+Share called AI or edited by the app's joint verdict (head F at its traded line OR the edit check); for real photos
+this is the false-alarm rate. In brackets: the edit check alone.
+set (n)                        original      jpeg70        whatsapp      whatsapp2     small         screenshot    crop
+REAL originals v2 (150)        1.3% (0.0)    0.0% (0.0)    0.0% (0.0)    0.0% (0.0)    0.0% (0.0)    1.3% (0.0)    1.3% (0.0)
+REAL polished dev (150)        6.0% (0.7)    5.3% (0.7)    5.3% (0.7)    5.3% (0.7)    5.3% (0.7)    6.7% (0.7)    8.7% (1.3)
+REAL OpenImages unseen (150)   0.7% (0.7)    0.7% (0.0)    0.0% (0.0)    0.0% (0.0)    0.7% (0.0)    0.7% (0.7)    0.7% (0.0)
+AI   edits v2 local (132)     74.2%         75.0%         70.5%         68.9%         62.9%         75.8%         59.8%
+AI   edits v2 whole (66)      93.9%         93.9%         93.9%         93.9%         92.4%         95.5%         90.9%
+AI   Muse test v1 (100)      100.0%        100.0%        100.0%        100.0%        100.0%        100.0%        100.0%
+(originals v2: the 99 photos appear as one file per edit, so a 150 sample holds some twice)
+-> Forwarding creates no false alarms from the edit check (at most 2 of 150 photos, on crops of polished photos);
+   the rise on cropped polished photos comes from head F, as before. Muse text-to-image stays at 100% in every
+   version, whole edits at 91-96%; local edits lose ground on small copies (63%) and crops (60%).
+
+== The app's sample photos (python scripts/make_examples.py; app/examples, credits in app/examples/CREDITS.md) ==
+  1 real phone photo (Commons, CC0)                -> Likely authentic (P(AI) 0.01, edit logit -0.1)
+  2 its Muse edit "add a red bicycle", forwarded   -> Likely AI-edited (edit logit +15.2)
+  3 Muse group photo of 8 made-up people, forwarded -> Likely AI-generated (P(AI) 0.89), 8 faces checked
+  4 Muse selfie, original file                      -> AI-generated (the file's AI label; pixels agree)
