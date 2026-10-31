@@ -8,10 +8,10 @@ from PIL import ImageOps
 
 from src.inference import Detector, draw_faces, evidence_overlay
 
-# Provisional (31 Oct): head E = SID-Set + Muse pairs + Commons real photos and pairs + SD 1.5/2.1 faces
-# (results/generator_variety_v1.txt). Before: head C (weights/muse_pairs_v1/head_C.pt), and before that
-# weights/head_path_a_sidset30.pt.
-HEAD_PATH = "weights/commons_v1/head_E.pt"
+# Provisional (31 Oct): head F = SID-Set + Muse pairs + Commons real photos and pairs + SD 1.5/2.1 faces
+# + SD 3.5 Medium and Kandinsky 2.2 fakes (results/open_gen_v1_heads.txt, calibration_F_v1.txt).
+# Before: head E (weights/commons_v1/head_E.pt), C (weights/muse_pairs_v1/head_C.pt), weights/head_path_a_sidset30.pt.
+HEAD_PATH = "weights/open_gen_v1/head_F.pt"
 detector = Detector(HEAD_PATH)
 
 

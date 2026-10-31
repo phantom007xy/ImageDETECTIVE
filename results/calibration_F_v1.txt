@@ -1,0 +1,38 @@
+Calibration of head F (weights/open_gen_v1/head_F.pt), 31 Oct 2026, run by me on my laptop because it includes my
+private phone photos (only these totals leave the laptop; per-photo results stay in data/private/).
+python -m src.calibrate.calibrate --head weights/open_gen_v1/head_F.pt --real "phone:data/private/phone_v1_app.npz"
+  --real "polished dev:features/commons_dev_app.npz" --real "OpenImages val:features/muse_pairs_val_app.npz"
+  --fake "Muse test v1:features/muse_image_test_v1_app.npz" --fake "Muse pairs val:features/muse_pairs_val_app.npz"
+  --fake "SDXL (unseen):features/sd_faces_app.npz@sd_faces/sdxl" --real-faces "phone faces:data/private/phone_v1_faces_app.npz"
+  --real-faces "polished faces:features/faces/commons_dev_eval.npz" --real-faces "OpenImages faces:features/faces/muse_pairs_val_eval.npz"
+  --out weights/open_gen_v1/head_F_calibration.json
+
+head head_F.pt: temperature 1.27
+  Likely AI-generated  if logit >  -0.30  (calibrated AI probability >  0.441)
+  Likely authentic     if logit <= -3.84  (calibrated AI probability <= 0.047)
+  Uncertain in between: 14.9% of the mix (cap 15%)
+
+  set                    n |  Likely AI  Uncertain  Authentic
+  REAL phone           104 |       0.0%       2.9%      97.1%
+  REAL polished dev    330 |       4.8%      25.5%      69.7%
+  REAL OpenImages val    76 |       2.6%      21.1%      76.3%
+  AI Muse test v1      100 |      94.0%       4.0%       2.0%
+  AI Muse pairs val     76 |      75.0%      21.1%       3.9%
+  AI SDXL (unseen)     332 |      90.1%       9.0%       0.9%
+
+  A face looks AI-made if its logit > +3.63 (at most 0.5% of the real dev faces in every pool)
+  REAL faces phone faces    148 | above it: 0.0%
+  REAL faces polished faces   285 | above it: 0.4%
+  REAL faces OpenImages faces    81 | above it: 0.0%
+
+Fair comparison with my phone photos as a real pool (python -m src.eval.fair_compare, own threshold per head):
+                                     real called AI                                       AI caught
+head     threshold |           phone    polished dev  OpenImages val |    Muse test v1   SDXL (unseen)    SD3.5 devcap
+E            0.645 |            0.0%            4.8%            2.6% |           93.0%           91.9%           34.2%
+F            0.425 |            0.0%            4.8%            2.6% |           94.0%           90.1%           65.8%
+
+-> My phone photos are never the strictest pool; the polished dev set sets the threshold.
+-> On my phone photos F says: 0 AI, 3 Uncertain, 101 Likely authentic; none of my 148 faces is flagged.
+-> The cost: about 1 in 4 professional real photos (polished dev) gets "Uncertain".
+-> The app now uses head F with this calibration (31 Oct). These are dev numbers (thresholds set on the same sets);
+   the honest numbers come from the Day 8 judge test.
