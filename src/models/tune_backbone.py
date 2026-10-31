@@ -98,7 +98,8 @@ class TrainImages(torch.utils.data.Dataset):
     def __getitem__(self, i):
         row = self.rows[i]
         view = preprocess.train_view(open_upright(row["path"]), random)
-        return preprocess.to_tensor(view), torch.tensor(1.0 if int(row["label"]) else 0.0)
+        is_edit_pair = row["source"].startswith("muse_edits")  # a Muse edit or its real original
+        return preprocess.to_tensor(view), torch.tensor(1.0 if int(row["label"]) else 0.0), torch.tensor(is_edit_pair)
 
 
 def dev_views(rng):
@@ -210,14 +211,15 @@ def main():
 
     loader = torch.utils.data.DataLoader(TrainImages(rows), batch_size=args.batch_size, shuffle=True, drop_last=True,
                                          num_workers=args.workers, persistent_workers=True, pin_memory=True)
-    step, t0, running = 0, time.time(), []
+    step, t0, running, edit_losses = 0, time.time(), [], []
     while step < args.steps:
-        for pixels, y in loader:
+        for pixels, y, is_edit_pair in loader:
             pixels, y = pixels.cuda(non_blocking=True), y.cuda(non_blocking=True)
             with torch.autocast("cuda", dtype=torch.bfloat16):
                 tokens = model(pixel_values=pixels).last_hidden_state[:, skip:]
             logit = tokens.float().mean(1) @ w + b
-            loss = F.binary_cross_entropy_with_logits(logit, y, weight=class_weight.cuda()[y.long()])
+            per_picture = F.binary_cross_entropy_with_logits(logit, y, reduction="none")
+            loss = (per_picture * class_weight.cuda()[y.long()]).mean()
             pull = sum(((p - start[n]) ** 2).sum() for n, p in model.named_parameters() if p.requires_grad)
             optimizer.zero_grad(set_to_none=True)
             (loss + args.pull * pull).backward()
@@ -225,10 +227,12 @@ def main():
             schedule.step()
             step += 1
             running.append(loss.item())
+            # Plain loss on the Muse edit pairs alone: ~0.69 = can't tell edits from their originals; lower = learning it.
+            edit_losses += per_picture[is_edit_pair.cuda()].tolist()
             if step % 100 == 0:
-                print(f"step {step}: loss {np.mean(running):.4f}, drift {pull.item() ** 0.5:.3f}, "
-                      f"{(time.time() - t0) / step:.2f} s/step", flush=True)
-                running = []
+                print(f"step {step}: loss {np.mean(running):.4f}, edit pairs {np.mean(edit_losses):.4f}, "
+                      f"drift {pull.item() ** 0.5:.3f}, {(time.time() - t0) / step:.2f} s/step", flush=True)
+                running, edit_losses = [], []
             if step % args.eval_every == 0 or step == args.steps:
                 save(args.out_dir, step, model, w, b, args.tune)
                 print_report(step, validate(model, w, b, dev, skip))
