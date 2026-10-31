@@ -48,8 +48,20 @@ class PECore:
         self.std = torch.tensor(cfg["std"]).view(3, 1, 1)
 
     def view(self, image):
-        """The app's view for the edit check: centre square at 336 x 336, JPEG 90."""
+        """The centre square at 336 x 336, JPEG 90 (how the edit check is trained)."""
         return preprocess.eval_view(image, self.size)
+
+    def views(self, image):
+        """The app's view for the edit check: three squares along the long side (start, centre, end), each at
+        336 x 336, JPEG 90, so the whole photo is seen. The linear head's score of the photo is the average of the
+        three crops' scores (= the head on the averaged features)."""
+        w, h = image.size
+        side = min(w, h)
+        out = []
+        for f in (0.0, 0.5, 1.0):
+            left, top = round((w - side) * f), round((h - side) * f)
+            out.append(preprocess.jpeg(preprocess.square_crop(image, side, left, top, self.size), 90))
+        return out
 
     def to_tensor(self, view):
         pixels = torch.from_numpy(np.asarray(view, dtype=np.float32) / 255.0).permute(2, 0, 1)

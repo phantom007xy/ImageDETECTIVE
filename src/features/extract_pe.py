@@ -1,7 +1,8 @@
 """PE-Core-L features (6 layers x 1,024 numbers) for the Muse-edit check (src/models/pe_core.py).
 
 Views:
-  eval   the app's view of the edit check: the centre square at 336 x 336, JPEG 90; one per picture
+  eval   the centre square at 336 x 336, JPEG 90; one per picture (how the edit check is trained)
+  three  the app's view: three squares along the long side (start, centre, end), features averaged
   train  random training views at 336 (src/data/preprocess.train_view: random shrink, crop, brightness, JPEG;
          identical for real and AI), --copies per picture; the same copy on every run
 Inputs: CSV image lists (path, label, source); --labels keeps only these labels.
@@ -40,17 +41,23 @@ class Views(torch.utils.data.Dataset):
         with Image.open(row["path"]) as im:
             image = ImageOps.exif_transpose(im).convert("RGB")
         if self.mode == "train":
-            view = preprocess.train_view(image, view_rng(row["path"], copy, self.seed), size=self.size)
+            views = [preprocess.train_view(image, view_rng(row["path"], copy, self.seed), size=self.size)]
+        elif self.mode == "three":  # the app's three squares along the long side (src/models/pe_core.PECore.views)
+            w, h = image.size
+            side = min(w, h)
+            views = [preprocess.jpeg(preprocess.square_crop(image, side, round((w - side) * f), round((h - side) * f),
+                                                             self.size), 90) for f in (0.0, 0.5, 1.0)]
         else:
-            view = preprocess.eval_view(image, self.size)
-        pixels = torch.from_numpy(np.asarray(view, dtype=np.float32) / 255.0).permute(2, 0, 1)
+            views = [preprocess.eval_view(image, self.size)]
+        pixels = torch.stack([torch.from_numpy(np.asarray(v, dtype=np.float32) / 255.0).permute(2, 0, 1) for v in views])
         return (pixels - self.mean) / self.std, i
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("inputs", nargs="+", type=Path, help="CSV image lists")
-    parser.add_argument("--mode", choices=["train", "eval"], default="eval")
+    parser.add_argument("--mode", choices=["train", "eval", "three"], default="eval",
+                        help="three = the app's three squares along the long side, features averaged")
     parser.add_argument("--copies", type=int, default=2, help="random views per picture (train mode)")
     parser.add_argument("--labels", type=int, nargs="+", help="keep only these labels (default: all)")
     parser.add_argument("--out-dir", type=Path, default=Path("features/pe"))
@@ -67,8 +74,10 @@ def main():
         data = Views(rows, args.mode, args.copies, pe.size, pe.mean, pe.std, args.seed)
         loader = torch.utils.data.DataLoader(data, batch_size=args.batch_size, num_workers=args.workers)
         feats, order, start = [], [], time.time()
-        for pixels, index in loader:
-            feats.append(pe.layer_features(pixels).numpy().astype(np.float16))
+        for pixels, index in loader:  # pixels: [B, views, 3, 336, 336]
+            b, v = pixels.shape[:2]
+            f = pe.layer_features(pixels.flatten(0, 1)).reshape(b, v, -1, 1024).mean(1)  # average over the views
+            feats.append(f.numpy().astype(np.float16))
             order.append(index.numpy())
         items = [data.items[i] for i in np.concatenate(order)]
         out = args.out_dir / f"{path.stem}_{args.mode}.npz"
