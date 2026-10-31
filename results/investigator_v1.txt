@@ -1,0 +1,27 @@
+Muse Spark as an "investigator": can it detect Muse edits, and can it point at what was changed? (31 Oct 2026)
+
+python scripts/investigator_test.py --spend --workers 8; $1.05 (313k input + 137k output tokens + 28 SAM 3.1 calls).
+Muse Spark (muse-spark-1.3, standard mode, reasoning_effort low) sees each photo (long side 1024) and answers in JSON:
+AI-edited yes/no + confidence (0-100) + the single object or area most likely added or changed (1-4 words, or none).
+If it names something on a local edit, SAM 3.1 outlines that text (text prompt) and the outline is compared with the
+true changed area. Held-out test edits only (never trained on); originals = their real photos.
+
+  set            n  | Muse Spark says AI-edited | AUC of its confidence vs. real originals
+  v2 local      100 |          20.0%            |   0.641
+  v2 whole       40 |          17.5%            |   0.688
+  v1 local       51 |          15.7%            |   0.610
+  v2 originals   99 |           1.0%  (false "yes" on real photos)
+
+  local edits where it named something (outlined by SAM 3.1): 28 of 151
+    hit (at least 30% of SAM's outline inside the true change): 96.4%; mean IoU 0.20 (the true-change masks also
+    contain re-rendering noise, so IoU stays low even for a correct outline)
+  "add a ..." edits: its guess names the added object in 20.4% of 108
+
+Reading:
+  1. As a detector Muse Spark is weak (AUC 0.61-0.69; our PE edit check: 0.97 on the same kind of test). It must not
+     decide the verdict (plan Section 0), and this confirms it.
+  2. It is very precise when it speaks: 1% false "yes" on real photos, and when it names a changed object on a local
+     edit, SAM 3.1's outline of it lands on the truly changed area 96% of the time.
+  -> Role in the app: an investigator step AFTER our verdict: Muse Spark names what was most likely changed, SAM 3.1
+     outlines it, the app shows it as Muse Spark's guess (only when it names something). This adds "where" for local
+     edits, which the pixel checks cannot localise (results/path_b_v1.txt).

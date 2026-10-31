@@ -16,6 +16,7 @@ Writes:
 
 Usage:
   python scripts/download_commons.py --out-dir D:/Datasets/Commons/v1
+  python scripts/download_commons.py --plan v3 --out-dir D:/Datasets/Commons/v3
 """
 
 import argparse
@@ -48,6 +49,19 @@ PLANS = {
         ("Web Summit", "people", 300, True),
         ("Featured pictures of people", "people", 200, True),
         ("Quality images of people", "people", 200, True),
+    ],
+    # v3 (31 Oct): sources for more Muse training edits (only photos without people are edited) and more real photos:
+    # modern phone photos first (closest to what judges upload), then more Quality images.
+    "v3": [
+        ("Taken with Apple iPhone 15 Pro", "phone", 200, False),
+        ("Taken with Apple iPhone 14 Pro", "phone", 200, False),
+        ("Taken with Apple iPhone 13", "phone", 150, False),
+        ("Taken with Google Pixel 8", "phone", 150, False),
+        ("Taken with Google Pixel 8 Pro", "phone", 150, False),
+        ("Taken with Samsung Galaxy S24 Ultra", "phone", 150, False),
+        ("Taken with Samsung Galaxy S22 Ultra", "phone", 150, False),
+        ("Taken with Xiaomi 13", "phone", 100, False),
+        ("Quality images", "quality", 600, False),
     ],
 }
 FIELDS = ["file", "split", "kind", "category", "title", "page_url", "author", "licence", "licence_url"]
