@@ -61,7 +61,12 @@ PROMPTS = {
                   "remove a small object and fill in the background naturally", "replace one object with a large vase",
                   "change the colour of the most prominent object to bright red", "add a shop sign with no text",
                   "add a puddle of water on the ground", "add a laptop on a table or surface", "add a horse",
-                  "add some fallen autumn leaves on the ground"],
+                  "add some fallen autumn leaves on the ground",
+                  # added 31 Oct for the second round (more variety; no people, which would only appear in fakes)
+                  "add a red balloon", "add a small boat on the water or the ground", "add a cup of coffee",
+                  "add a vase of flowers", "add a rainbow in the sky", "remove any text or sign and fill in naturally",
+                  "add a small white cloud in the sky", "replace the most prominent object with a wooden crate",
+                  "add a street sign", "change the colour of a car or wall to blue"],
         "whole": ["make it look like a foggy morning", "make it look like a hot summer midday",
                   "turn it into a dusk scene with a purple sky", "make it look like it is snowing heavily",
                   "make it look like after heavy rain with wet surfaces", "make it look like a cloudy winter afternoon",

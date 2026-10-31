@@ -26,22 +26,26 @@ LAYERS = (4, 8, 12, 16, 20)  # blocks after which the middle-layer features are 
 NUM_FEATURES = len(LAYERS) + 1  # + the last layer
 
 
-def load_pe():
-    """PE-Core-L from the local Hugging Face cache if it is there (the app then starts offline), else online."""
+def load_pe(**kwargs):
+    """PE-Core-L from the local Hugging Face cache if it is there (the app then starts offline), else online.
+    kwargs go to timm.create_model (e.g. drop_path_rate for fine-tuning)."""
     try:
         weights = hf_hub_download(PE_REPO, "model.safetensors", local_files_only=True)
-        return timm.create_model(PE_NAME, pretrained=True, num_classes=0, pretrained_cfg_overlay={"file": weights})
     except Exception:  # not in the cache yet
-        return timm.create_model(PE_NAME, pretrained=True, num_classes=0)
+        return timm.create_model(PE_NAME, pretrained=True, num_classes=0, **kwargs)
+    return timm.create_model(PE_NAME, pretrained=True, num_classes=0, pretrained_cfg_overlay={"file": weights}, **kwargs)
 
 
 class PECore:
-    def __init__(self, device=None):
+    def __init__(self, device=None, tuned_path=None):
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         # bf16 on GPUs that support it, else fp32 (as for DINOv3; fp16 is not used)
         cuda_bf16 = self.device.type == "cuda" and torch.cuda.get_device_capability(self.device)[0] >= 8
         self.dtype = torch.bfloat16 if cuda_bf16 else torch.float32
-        self.model = load_pe().to(self.device, self.dtype).eval()
+        model = load_pe()
+        if tuned_path:  # a fine-tuned PE (src/models/tune_pe.py): all its weights replace the original ones
+            model.load_state_dict(torch.load(tuned_path, map_location="cpu"))
+        self.model = model.to(self.device, self.dtype).eval()
         cfg = resolve_data_config({}, model=self.model)
         self.size = cfg["input_size"][1]  # 336
         self.mean = torch.tensor(cfg["mean"]).view(3, 1, 1)
