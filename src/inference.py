@@ -7,11 +7,15 @@ src/calibrate/calibrate.py), the verdict uses its thresholds and temperature; ot
 provisional thresholds below are used and the verdict is only a preview. Edited regions, SAM 3.1
 and Muse come later.
 
-Verdict (plan Section 5.6; Path B not built yet):
+Verdict from the pixels (plan Section 5.6; Path B not built yet):
   1. whole-image score above the AI threshold        -> "Likely AI-generated"
   2. otherwise a face above the (very strict) face threshold -> "This face looks AI-made or AI-changed"
   3. otherwise whole-image score at or below the authentic threshold -> "Likely authentic"
   4. everything else                                 -> "Uncertain"
+If the file's own metadata says AI (src/services/metadata.py, only when the file bytes are given), that
+decides: "made by AI" -> "Likely AI-generated"; "partly changed by AI" -> "Part of this photo looks AI-made
+or AI-changed" (unless the pixels already say "Likely AI-generated"). The pixel verdict is always kept as
+well, and test numbers are always made from the pixels alone.
 """
 
 import json
@@ -28,6 +32,7 @@ from src.faces import crop
 from src.faces.sam_faces import FaceFinder
 from src.models.backbone import Backbone
 from src.models.linear_head import LinearHead
+from src.services import metadata
 
 # Provisional thresholds on the AI probability, only for heads without a calibration file.
 AI_ABOVE = 0.65
@@ -83,7 +88,8 @@ class Detector:
             face["level"] = "ai" if face["flagged"] else ("leans_ai" if face["probability_ai"] >= 0.5 else "real")
         return faces
 
-    def analyze(self, image):
+    def analyze(self, image, file_bytes=None):
+        """image: PIL image. file_bytes: the original file (optional), for the metadata check."""
         start = time.perf_counter()
         # Phones often store photos sideways plus an EXIF "rotate" tag: turn the photo upright first.
         image = ImageOps.exif_transpose(image).convert("RGB")
@@ -98,10 +104,20 @@ class Detector:
         patch_logits = (tokens @ self.head.weight + self.head.bias).reshape(grid_h, grid_w)
         score = patch_logits.mean().item()
         faces = self.check_faces(image)
+        pixel_verdict = self.verdict(score, faces)
+        meta = metadata.check_file(file_bytes) if file_bytes is not None else None
+        verdict, reason = pixel_verdict, "pixels"
+        if meta and meta["ai_label"] == "generated":
+            verdict, reason = "Likely AI-generated", "metadata"
+        elif meta and meta["ai_label"] == "edited" and pixel_verdict != "Likely AI-generated":
+            verdict, reason = "Part of this photo looks AI-made or AI-changed", "metadata"
         return {
             "score": score,
             "probability_ai": self.probability(score),  # calibrated, if a calibration exists
-            "verdict": self.verdict(score, faces),
+            "verdict": verdict,
+            "verdict_reason": reason,  # "pixels" or "metadata"
+            "pixel_verdict": pixel_verdict,  # what the detector alone says
+            "metadata": meta,
             "patch_logits": patch_logits.numpy(),
             "faces": faces,
             "seconds": time.perf_counter() - start,

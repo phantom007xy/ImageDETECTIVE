@@ -1,8 +1,9 @@
 """Run the app's detector (src/inference.py) on an image list and count its verdicts.
 
 Unlike evaluate_head (fixed centre crop), this uses exactly what the app does: the whole image
-with its aspect ratio kept, and the app's verdict thresholds. This is the number a judge sees.
-Results are given per source, real and AI separately.
+with its aspect ratio kept, faces, and the app's verdict thresholds. Results are given per source,
+real and AI separately. Pixels only: the metadata check is left out on purpose, so the numbers show
+what the detector itself can do (a forwarded or edited copy has lost its metadata anyway).
 
 Usage (from the repo root):
   python -m src.eval.app_verdicts --head weights/head_path_a_sidset30.pt --list features/lists/muse_image_test_v1.csv
