@@ -39,7 +39,7 @@ def read_input(path, labels):
     return sid_set.iter_rows(path, labels=labels)
 
 
-def extract_file(backbone, input_path, out_path, mode, copies, seed, batch_size, labels):
+def extract_file(backbone, input_path, out_path, mode, copies, seed, batch_size, labels, app_view=None):
     features, labels_out, img_ids, copy_ids, sources = [], [], [], [], []
     batch = []
 
@@ -55,7 +55,7 @@ def extract_file(backbone, input_path, out_path, mode, copies, seed, batch_size,
             if mode == "train":
                 view = preprocess.train_view(row["image"], view_rng(row["img_id"], copy, seed))
             elif mode == "app":
-                view = preprocess.inference_view(row["image"])  # exactly what the app sees
+                view = preprocess.inference_view(row["image"], app_view)  # exactly what the app sees
             else:
                 view = preprocess.eval_view(row["image"])
             tensor = preprocess.to_tensor(view)
@@ -93,6 +93,8 @@ def main():
     parser.add_argument("--copies", type=int, default=4, help="random copies per image (train mode only)")
     parser.add_argument("--labels", type=int, nargs="+", default=[0, 1], help="0 = real, 1 = synthetic, 2 = tampered")
     parser.add_argument("--batch-size", type=int, default=32)
+    parser.add_argument("--view", choices=["long448", "short448"],
+                        help="app mode only: compare an app view other than preprocess.APP_VIEW (file name gets _<view>)")
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
@@ -100,8 +102,10 @@ def main():
     backbone = Backbone()
     print(f"DINOv3 on {backbone.device} ({backbone.dtype})")
     for path in args.inputs:
-        out_path = args.out_dir / f"{path.stem}_{args.mode}.npz"
-        extract_file(backbone, path, out_path, args.mode, args.copies, args.seed, args.batch_size, tuple(args.labels))
+        suffix = f"_{args.view}" if args.mode == "app" and args.view else ""
+        out_path = args.out_dir / f"{path.stem}_{args.mode}{suffix}.npz"
+        extract_file(backbone, path, out_path, args.mode, args.copies, args.seed, args.batch_size, tuple(args.labels),
+                     args.view)
 
 
 if __name__ == "__main__":

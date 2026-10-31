@@ -1,0 +1,19 @@
+App view (size fix), 31 Oct 2026: how big does the app show a photo to DINOv3?
+
+Why: training shows square crops of 60-100% of the short side, resized to 448 x 448. The app showed the whole
+photo with the LONG side at 448 ("long448"), so a 4:3 photo was 1.33x and a 16:9 photo 1.78x more zoomed out
+than anything the head saw in training. "short448" = short side 448, long side at most 896 (the training
+scale; up to 2x the patches, so up to 2x the DINOv3 time). Square images look the same in both views.
+
+Head F, own threshold per view (at most 5% of every real pool called AI; python -m src.eval.fair_compare,
+features from python -m src.features.extract --mode app [--view short448]):
+
+  view       threshold | real called AI: polished dev  OpenImages val  edit originals | AI caught: Muse test v1  Muse pairs val   SDXL   PixArt  SD3.5 dev  edits local  edits whole
+  long448      0.425   |                   4.8%           2.6%           2.6%         |              94.0%          75.0%       90.1%   99.2%    65.8%       5.9%        24.0%
+  short448     0.654   |                   4.8%           1.3%           2.6%         |              96.0%          78.9%       84.0%  100.0%    71.1%       5.9%        32.0%
+  (n: polished 330, OpenImages 76, originals 76 | Muse 100, pairs 76, SDXL 332, PixArt 396, SD3.5 38, local 51, whole 25)
+
+Reading: short448 is better or equal on every non-square set (+2 to +8 points, small n), worse on SDXL (-6),
+which is square (identical in both views): its drop comes only from the stricter line that the real photos
+set in short448. Not decided yet: the phone pool decides (phone photos keep more of their noise reduction and
+sharpening in short448: a risk for priority #1). Re-checked with the next head (G) before switching.

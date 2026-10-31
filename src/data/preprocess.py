@@ -63,15 +63,29 @@ def eval_view(image, size=MODEL_SIZE):
     return jpeg(square_crop(image, side, (w - side) // 2, (h - side) // 2, size), 90)
 
 
-def inference_view(image, long_side=MODEL_SIZE):
+# How big the app shows a photo to DINOv3. "long448": long side 448 (the first app view, 30 Oct).
+# "short448": short side 448, long side at most 896 (31 Oct): training shows square crops of 60-100% of
+# the short side at 448 x 448, so "long side 448" showed the app's photos more zoomed out than anything
+# the head saw in training. The one setting used by the app, the evaluation and Path B.
+APP_VIEW = "long448"
+
+
+def view_size(w, h, view=None):
+    """The size a w x h photo is resized to for the app view (before trimming to whole patches)."""
+    if (view or APP_VIEW) == "short448":
+        scale = min(MODEL_SIZE / min(w, h), 2 * MODEL_SIZE / max(w, h))
+    else:
+        scale = MODEL_SIZE / max(w, h)
+    return max(16, round(w * scale)), max(16, round(h * scale))
+
+
+def inference_view(image, view=None):
     """For the app: the whole image with its aspect ratio kept, so the evidence map covers all of it.
 
-    The long side becomes `long_side`; both sides are then trimmed (at most 15 px) to a multiple
-    of 16, so every pixel belongs to a whole patch. Same JPEG step as eval_view.
+    The size follows APP_VIEW (or `view`, to compare both); both sides are then trimmed (at most
+    15 px) to a multiple of 16, so every pixel belongs to a whole patch. Same JPEG step as eval_view.
     """
-    w, h = image.size
-    scale = long_side / max(w, h)
-    w, h = max(16, round(w * scale)), max(16, round(h * scale))
+    w, h = view_size(*image.size, view)
     image = image.resize((w, h), Image.BICUBIC)
     keep_w, keep_h = w - w % 16, h - h % 16
     left, top = (w - keep_w) // 2, (h - keep_h) // 2
