@@ -51,7 +51,12 @@ def main():
 
     for item in args.variant:
         name, patterns = item.split(":", 1)
-        files = sorted({f for pattern in patterns.split(",") for f in glob.glob(pattern)})
+        times = {}  # "file~K" shows that file K times (a small new source among 100k vectors would barely count)
+        for pattern in patterns.split(","):
+            pattern, _, k = pattern.partition("~")
+            for f in glob.glob(pattern):
+                times[f] = max(times.get(f, 1), int(k or 1))
+        files = [f for f in sorted(times) for _ in range(times[f])]
         x, y = load(files)
         head = LinearHead().fit(x, y, weight_decay=args.weight_decay)
         print(f"{name}: {len(files)} files, {len(y)} training vectors ({int(y.sum())} AI)")

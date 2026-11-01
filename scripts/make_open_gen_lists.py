@@ -27,7 +27,7 @@ def main():
     parser.add_argument("--gen-dir", type=Path, required=True)
     parser.add_argument("--pairs-dir", action="append", required=True, help='"v1=path": pair round and its folder')
     parser.add_argument("--train-models", nargs="+", default=["sd35m", "k22"])
-    parser.add_argument("--dev-models", nargs="+", default=["pixart"])
+    parser.add_argument("--dev-models", nargs="*", default=["pixart"])
     parser.add_argument("--out-dir", type=Path, default=Path("features/lists/open_gen_v1"))
     args = parser.parse_args()
 

@@ -38,7 +38,10 @@ from pathlib import Path
 
 from PIL import Image, ImageFilter, ImageOps
 
-PRICE = {"imagen-4.0-fast": 0.02, "imagen-4.0-generate": 0.04, "imagen-4.0-ultra": 0.06, "gemini": 0.039}
+# $ per picture (1 Nov 2026; Google pricing page and aggregators; gemini-3.1-flash-image is an estimate). The first
+# matching prefix wins, so the dry run shows an honest maximum.
+PRICE = {"imagen-4.0-fast": 0.02, "imagen-4.0-generate": 0.04, "imagen-4.0-ultra": 0.06, "gemini-3-pro-image": 0.134,
+         "gemini-3.1-flash-lite-image": 0.077, "gemini-3.1-flash-image": 0.077, "gemini-2.5-flash-image": 0.039, "gemini": 0.134}
 ASPECTS = {"1:1": 1.0, "4:3": 4 / 3, "3:4": 3 / 4, "16:9": 16 / 9, "9:16": 9 / 16}
 FIELDS = ["id", "file", "width", "height", "seconds", "status"]
 EDIT_PROMPTS = ["add a black cat sitting somewhere in the scene", "add a white delivery van", "add a yellow umbrella",
@@ -90,7 +93,8 @@ def main():
     rng = random.Random(args.seed)
     if args.mode == "t2i":
         rows = [r for p in args.prompts for r in csv.DictReader(open(p, newline="", encoding="utf-8"))]
-        jobs = [{"id": r["id"], "prompt": r["prompt"], "size": r["size"]} for r in rng.sample(rows, min(args.n, len(rows)))]
+        jobs = [{"id": r["id"], "prompt": r["prompt"], "size": r.get("size") or "1024x1024"}
+                for r in rng.sample(rows, min(args.n, len(rows)))]
     else:
         with open(args.list, newline="") as f:
             photos = sorted({r["path"] for r in csv.DictReader(f) if r["label"] == "0"})
@@ -124,6 +128,15 @@ def main():
         client = genai.Client(vertexai=True, project=args.project or os.environ["GOOGLE_CLOUD_PROJECT"], location=args.location)
 
     def make(job):
+        """One picture; a per-minute limit (429) is waited out and tried again, up to 6 times (failed calls are free)."""
+        for attempt in range(6):
+            job, image, info = make_once(job)
+            if image is not None or "429" not in info:
+                return job, image, info
+            time.sleep(20 * (attempt + 1))
+        return job, image, info
+
+    def make_once(job):
         start = time.time()
         try:
             if args.model.startswith("imagen"):
