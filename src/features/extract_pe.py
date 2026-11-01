@@ -30,9 +30,9 @@ from src.models.pe_core import PECore
 class Views(torch.utils.data.Dataset):
     """(picture, copy) -> normalised view; runs in the DataLoader workers."""
 
-    def __init__(self, rows, mode, copies, size, mean, std, seed):
+    def __init__(self, rows, mode, copies, size, mean, std, seed, forward=False):
         self.items = [(r, c) for r in rows for c in range(copies if mode == "train" else 1)]
-        self.mode, self.size, self.mean, self.std, self.seed = mode, size, mean, std, seed
+        self.mode, self.size, self.mean, self.std, self.seed, self.forward = mode, size, mean, std, seed, forward
 
     def __len__(self):
         return len(self.items)
@@ -42,7 +42,14 @@ class Views(torch.utils.data.Dataset):
         with Image.open(row["path"]) as im:
             image = ImageOps.exif_transpose(im).convert("RGB")
         if self.mode == "train":
-            views = [preprocess.train_view(image, view_rng(row["path"], copy, self.seed), size=self.size)]
+            rng = view_rng(row["path"], copy, self.seed)
+            if self.forward:  # a forwarded copy first (as WhatsApp does): smaller, then a low-quality JPEG
+                long_side = rng.randint(700, 1300)
+                scale = long_side / max(image.size)
+                if scale < 1:
+                    image = image.resize((round(image.width * scale), round(image.height * scale)), Image.BICUBIC)
+                image = preprocess.jpeg(image, rng.randint(55, 85))
+            views = [preprocess.train_view(image, rng, size=self.size)]
         elif self.mode == "three":  # the app's three squares along the long side (src/models/pe_core.PECore.views)
             w, h = image.size
             side = min(w, h)
@@ -60,6 +67,8 @@ def main():
     parser.add_argument("--mode", choices=["train", "eval", "three"], default="eval",
                         help="three = the app's three squares along the long side, features averaged")
     parser.add_argument("--copies", type=int, default=2, help="random views per picture (train mode)")
+    parser.add_argument("--forward", action="store_true", help="train mode: each view from a random forwarded copy "
+                        "(long side 700-1300 px, JPEG 55-85), the same for real and AI pictures")
     parser.add_argument("--labels", type=int, nargs="+", help="keep only these labels (default: all)")
     parser.add_argument("--out-dir", type=Path, default=Path("features/pe"))
     parser.add_argument("--workers", type=int, default=4)
@@ -73,7 +82,7 @@ def main():
     for path in args.inputs:
         with open(path, newline="") as f:
             rows = [r for r in csv.DictReader(f) if args.labels is None or int(r["label"]) in args.labels]
-        data = Views(rows, args.mode, args.copies, pe.size, pe.mean, pe.std, args.seed)
+        data = Views(rows, args.mode, args.copies, pe.size, pe.mean, pe.std, args.seed, args.forward)
         loader = torch.utils.data.DataLoader(data, batch_size=args.batch_size, num_workers=args.workers)
         feats, order, start = [], [], time.time()
         for pixels, index in loader:  # pixels: [B, views, 3, 336, 336]

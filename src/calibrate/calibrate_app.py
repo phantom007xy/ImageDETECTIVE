@@ -15,7 +15,8 @@ import sys
 from pathlib import Path
 
 HEAD = "weights/google_v1/head_G3tt.pt"  # G3 + tighter real close-ups (tight face crops looked like GAN faces; results/head_g_v1.txt)
-EDIT = "weights/edit_check_v3/head_EC3p.pt"  # EC3's PE (tune_pe step 7,000) + a head that also knows person edits
+EDIT = "weights/edit_check_v3/head_EC3pf.pt"  # EC3's PE (tune_pe step 7,000) + a head that knows person edits and
+# forwarded copies (EC3p + training views of forwarded copies: src/features/extract_pe.py --forward)
 # (src/eval/edit_head_cv.py --save-final, 1 Nov: from EC3's head, pull 0.1, my 30 selfies' Muse edits x5)
 PE_WEIGHTS = "weights/edit_check_v3/pe_EC3.pt"
 # A second head on the same PE features, trained from EC3p with Google's pictures too (Gemini 3.1 Flash, Nano Banana Pro,

@@ -31,3 +31,22 @@ Chosen: from EC3's head, pull 0.1, selfie pairs x5, now fitted on all 30 selfies
 (private; the PE is unchanged, so its features of my private photos stay valid). The app uses it after calibrate_app.
 Caveats: the held-out selfies are me, from the same sessions as the training selfies (optimistic); the honest test is
 new selfies (other place, clothes, light). Other people's faces stay unmeasured: I may edit no one else.
+
+== Update (1 Nov, evening): training views of forwarded copies -> EC3pf ==
+Muse local edits lost ground on forwarded copies (v2: small copy 57%, crop 59%). New training views of the same
+pictures as forwarded copies (src/features/extract_pe.py --forward: long side 700-1300 px, JPEG 55-85, then the usual
+training view; real and AI alike), added once to the head, from EC3p, pull 0.1 (python -m src.eval.edit_head_cv ...
+--start weights/edit_check_v3/head_EC3p.pt --extra "features/pe_ec3_train_fwd/*_train.npz:1" --extra
+"features/pe_ec3_train_fwd/pairs_v2/*_train.npz:1" --extra "data/private/pe_ec3_train_fwd/*.npz:5" --save-final
+weights/edit_check_v3/head_EC3pf.pt). Line set as in the app (jointly with G3tt): EC3p +3.91, EC3pf +3.73.
+Called AI or edited (G3tt + the edit head; 150 / 150 / 132 / 51 pictures):
+  set                       head   original  jpeg70  whatsapp  whatsapp2  small  screenshot  crop
+  REAL polished dev         EC3p     2.7%     2.0%    2.0%      2.0%      2.0%     3.3%      4.7%
+                            EC3pf    2.7%     2.0%    2.0%      2.0%      1.3%     3.3%      4.0%
+  REAL OpenImages unseen    both     0.7%     0.0%    0.0%      0.0%      0.0%     1.3%      0.7%
+  AI   Muse edits v2 local  EC3p    75.0%    75.0%   68.9%     67.4%     56.8%    77.3%     59.1%
+                            EC3pf   75.8%    75.8%   71.2%     69.7%     65.9%    76.5%     61.4%
+  AI   Muse edits v1 local  EC3p    76.5%    78.4%   78.4%     78.4%     62.7%    78.4%     49.0%
+                            EC3pf   76.5%    76.5%   78.4%     78.4%     60.8%    80.4%     47.1%
+-> Small copies +9 points on v2, the rest equal within a picture or two, no cost on real photos: the app uses EC3pf
+   (with the Gemini head EC3g as its second head).

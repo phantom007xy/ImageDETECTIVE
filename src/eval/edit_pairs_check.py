@@ -32,7 +32,7 @@ from src.faces import crop  # noqa: E402
 from src.inference import Detector  # noqa: E402
 
 HEAD = "weights/google_v1/head_G3tt.pt"
-EDIT_CHECK = "weights/edit_check_v3/head_EC3p.pt"
+EDIT_CHECK = "weights/edit_check_v3/head_EC3pf.pt"
 
 
 def rerender(original, edited):
