@@ -81,3 +81,11 @@ selfies+portraits, SID val, DFDC part 3 real) above it. My phone faces can raise
 Caveats: OpenForensics swaps are GAN faces blended into photos (2021 methods); today's face-swap apps may leave other
 traces. The Test-Dev number is a sample of 1,500 photos from one dataset. WildDeepfake gained a little (16.9% -> 21%),
 so the video-swap side stays "limited".
+
+4. In the app (1 Nov, ~22:35): private_photo_test (phone_v1, face middle layers saved) + calibrate_app, run by me:
+  The swap line rose from +1.84 (public pools) to +2.60: one of my 148 phone faces sets it (0.5% of 148 = none may be
+  above). Phone photos: 0 of 104 called AI or edited, 0 of 148 faces red (4.7% "some swap signs", orange only).
+  Swaps caught at the app's red line +2.60:  OpenForensics test 29.5% (old head 0%), DFDC p3 6.3% (old 0.3%),
+  WildDeepfake 11.3% (old 5.6%); "some swap signs" (orange): 63.0% / 30.0% / 25.2%.
+  Every real pool and AI-image number of the full verdict unchanged (polished 4.5%, OpenImages unseen 1.9%,
+  close-ups 4.0%, selfies+portraits 3.2%, phone 0%; Muse test 100%, Gemini dev 90.0%, ...).
