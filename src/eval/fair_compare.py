@@ -29,14 +29,16 @@ from src.models.linear_head import LinearHead
 MAX_FALSE_ALARMS = 0.05
 
 
-def load(spec, label):
-    """spec = "path" or "path@source": only the images of that label (and source, if given)."""
+def load(spec, label, keys=("features",)):
+    """spec = "path" or "path@source": only the images of that label (and source, if given).
+    keys: which saved features, joined (a head's .keys; "features" = the last layer's mean patch vector)."""
     path, _, source = spec.partition("@")
     data = np.load(path)
     keep = data["labels"] == label
     if source:
         keep &= data["sources"] == source
-    return torch.from_numpy(data["features"][keep].astype(np.float32))
+    x = np.concatenate([data[k].reshape(len(data[k]), -1) for k in keys], axis=1)
+    return torch.from_numpy(x[keep].astype(np.float32))
 
 
 def threshold_for(scores, max_rate=MAX_FALSE_ALARMS):

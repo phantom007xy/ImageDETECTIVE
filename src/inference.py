@@ -142,7 +142,9 @@ class Detector:
             if face["too_small"]:
                 continue
             pixels = preprocess.to_tensor(crop.eval_face_view(image, face)).unsqueeze(0)
-            vector = self.backbone.mean_patch_vector(pixels).cpu()
+            # one pass: the last layer for the head, plus the middle layers the face-swap head reads (if any)
+            means = self.backbone.layer_means(pixels, self.swap_head.layers if self.swap_head is not None else ())
+            vector = means["features"].cpu()
             logit = float(self.head.logits(vector)[0])
             face["logit"] = logit
             face["probability_ai"] = self.face_probability(logit)  # None without a face calibration
@@ -150,8 +152,8 @@ class Detector:
             made = c["face_ai_logit"] is not None and logit > c["face_ai_logit"]
             leans = c["face_leans_logit"] is not None and logit > c["face_leans_logit"]
             swapped = swap_leans = False
-            if self.swap_head is not None:  # face swaps: the DFDC head on the same face features
-                face["swap_logit"] = swap = float(self.swap_head.logits(vector)[0])
+            if self.swap_head is not None:  # face swaps: the face-swap head on the same pass's features
+                face["swap_logit"] = swap = float(self.swap_head.logits(self.swap_head.inputs(means))[0])
                 swapped, swap_leans = swap > c["swap_ai_logit"], swap > c["swap_leans_logit"]
             face["flagged"] = made or swapped  # only this changes the verdict
             face["kind"] = "AI-made" if made else ("swapped" if swapped else None)

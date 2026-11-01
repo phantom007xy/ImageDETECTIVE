@@ -62,11 +62,10 @@ def paired(whole, edit, spec, real):
 def best_faces(face_file, ids, heads):
     """Per photo (in the order of ids): each head's highest logit over the photo's faces (-inf without a face)."""
     f = np.load(face_file)
-    x = torch.from_numpy(f["features"].astype(np.float32))
     row = {photo: i for i, photo in enumerate(ids)}
     best = np.full((len(heads), len(ids)), -np.inf)
-    for h, head in enumerate(heads):
-        for photo, s in zip(f["img_ids"].astype(str), head.logits(x).numpy()):
+    for h, head in enumerate(heads):  # each head reads its own features (head.keys; most: the last layer)
+        for photo, s in zip(f["img_ids"].astype(str), head.logits(head.inputs(f)).numpy()):
             if photo in row:
                 best[h, row[photo]] = max(best[h, row[photo]], s)
     return best

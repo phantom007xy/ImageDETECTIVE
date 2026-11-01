@@ -69,6 +69,7 @@ APP_HEAD = "G3tt"  # the whole-image head the app uses (1 Nov: G3, results/head_
 DARK_BELOW = 80
 VIEWS = ("long448", "short448")  # both app views are saved, so they can be compared (preprocess.APP_VIEW)
 SWAP_HEAD = "weights/dfdc_v1/head_dfdc.pt"
+FACE_LAYERS = (8, 12, 16)  # face crops: also the mean patch tokens after these blocks, for face-swap heads that read them
 
 
 def probability(head, vector):
@@ -120,9 +121,10 @@ def main():
         if pe is not None:
             pe_vectors.append(pe.layer_features(pe.to_tensor(pe.view(image)).unsqueeze(0))[0].numpy().astype(np.float16))
         faces = [f for f in finder.find(image) if not f["too_small"]]
-        crops = [backbone.mean_patch_vector(preprocess.to_tensor(crop.eval_face_view(image, f)).unsqueeze(0)).cpu()
-                 for f in faces]  # the app's face crop
-        face_vectors += [c[0].numpy().astype(np.float16) for c in crops]
+        means = [backbone.layer_means(preprocess.to_tensor(crop.eval_face_view(image, f)).unsqueeze(0), FACE_LAYERS)
+                 for f in faces]  # the app's face crop: the last layer and the middle layers, one pass
+        crops = [m["features"].cpu() for m in means]
+        face_vectors += [{k: v[0].cpu().numpy().astype(np.float16) for k, v in m.items()} for m in means]
         face_files += [str(relative)] * len(crops)
         row = {
             "file": str(relative),
@@ -130,7 +132,7 @@ def main():
             "faces": len(faces),
             "brightness": round(float(np.asarray(image.convert("L")).mean()), 1),
         }
-        row["face_max_swap_logit"] = round(max(float(swap.logits(c)[0]) for c in crops), 4) if crops else ""
+        row["face_max_swap_logit"] = round(max(float(swap.logits(swap.inputs(m))[0]) for m in means), 4) if crops else ""
         for name, head in heads.items():
             row[f"p_{name}"] = round(probability(head, app_view), 4)
             row[f"logit_{name}"] = round(float(head.logits(app_view)[0]), 4)
@@ -167,7 +169,8 @@ def main():
                             labels=np.zeros(len(rows), dtype=np.int8), img_ids=np.array([r["file"] for r in rows]),
                             sources=np.array(["private/phone"] * len(rows)))
     if face_vectors:  # the same for every face crop, so the face threshold can be checked on my faces too
-        np.savez_compressed(Path("data/private") / f"{args.folder.name}_faces_app.npz", features=np.stack(face_vectors),
+        np.savez_compressed(Path("data/private") / f"{args.folder.name}_faces_app.npz",
+                            **{k: np.stack([v[k] for v in face_vectors]) for k in face_vectors[0]},
                             labels=np.zeros(len(face_vectors), dtype=np.int8), img_ids=np.array(face_files),
                             sources=np.array(["private/phone_face"] * len(face_vectors)))
 

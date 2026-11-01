@@ -10,9 +10,22 @@ import torch.nn.functional as F
 
 
 class LinearHead:
-    def __init__(self, weight=None, bias=None):
-        self.weight = weight  # [1024]
+    def __init__(self, weight=None, bias=None, keys=("features",)):
+        self.weight = weight  # [1024] (or [1024 x number of keys])
         self.bias = bias  # scalar tensor
+        # Which DINOv3 features the head reads, joined in this order: "features" = the last layer's mean patch vector
+        # (every head until 1 Nov), "features_L12" = the mean patch tokens after block 12 (Backbone.layer_means).
+        self.keys = list(keys)
+
+    @property
+    def layers(self):
+        """The middle blocks this head needs (Backbone.layer_means(pixels, head.layers))."""
+        return sorted(int(k.split("_L")[1]) for k in self.keys if "_L" in k)
+
+    def inputs(self, data):
+        """This head's input from a feature file (np.load) or from Backbone.layer_means: its keys, joined."""
+        parts = [torch.as_tensor(data[k]).float().cpu() for k in self.keys]
+        return torch.cat([p.reshape(len(p), -1) for p in parts], dim=1)
 
     def fit(self, x, y, weight_decay=1e-3, max_iter=200):
         """x: [N, 1024] float features, y: [N] with 1 = AI, 0 = real."""
@@ -46,9 +59,9 @@ class LinearHead:
         return x @ self.weight + self.bias
 
     def save(self, path):
-        torch.save({"weight": self.weight, "bias": self.bias}, path)
+        torch.save({"weight": self.weight, "bias": self.bias, "keys": self.keys}, path)
 
     @classmethod
     def load(cls, path):
         state = torch.load(path)
-        return cls(state["weight"], state["bias"])
+        return cls(state["weight"], state["bias"], state.get("keys", ["features"]))

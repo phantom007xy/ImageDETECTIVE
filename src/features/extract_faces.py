@@ -7,12 +7,15 @@ whole image is resized to 224 x 224.
 
 Inputs are SID-Set Parquet files or CSV image lists (path, label, source), as in extract.py.
 
+With --layers 8 12 16, the mean patch tokens after those blocks are saved too (features_L<k>), from the same pass.
+
 Usage (from the repo root):
   python -m src.features.extract_faces INPUT [INPUT ...] --out-dir features --mode train --copies 4
 """
 
 import argparse
 import time
+from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
@@ -26,12 +29,13 @@ from src.models.backbone import Backbone
 
 
 def extract_file(backbone, finder, input_path, out_path, args):
-    features, labels, img_ids, face_ids, copy_ids, sources, face_scores = [], [], [], [], [], [], []
+    features, labels, img_ids, face_ids, copy_ids, sources, face_scores = defaultdict(list), [], [], [], [], [], []
     batch = []
 
     def run_batch():
         if batch:
-            features.append(backbone.mean_patch_vector(torch.stack(batch)).cpu().numpy().astype(np.float16))
+            for key, value in backbone.layer_means(torch.stack(batch), args.layers).items():
+                features[key].append(value.cpu().numpy().astype(np.float16))
             batch.clear()
 
     start, images, faces_total = time.time(), 0, 0
@@ -68,7 +72,7 @@ def extract_file(backbone, finder, input_path, out_path, args):
         return
     np.savez_compressed(
         out_path,
-        features=np.concatenate(features),
+        **{key: np.concatenate(value) for key, value in features.items()},
         labels=np.array(labels, dtype=np.int8),
         img_ids=np.array(img_ids),
         face_ids=np.array(face_ids, dtype=np.int16),
@@ -90,6 +94,8 @@ def main():
     parser.add_argument("--labels", type=int, nargs="+", default=[0, 1], help="0 = real, 1 = AI")
     parser.add_argument("--whole-image-faces", action="store_true", help="images are face crops already (no SAM)")
     parser.add_argument("--batch-size", type=int, default=32)
+    parser.add_argument("--layers", type=int, nargs="*", default=[],
+                        help="also save the mean patch tokens after these DINOv3 blocks (features_L<k>)")
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 

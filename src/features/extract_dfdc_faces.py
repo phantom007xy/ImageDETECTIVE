@@ -76,12 +76,19 @@ def main():
     parser.add_argument("--copies", type=int, default=4, help="random copies per crop (train mode only)")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--max-reals", type=int, help="only the first N real videos per part (for a quick test)")
+    parser.add_argument("--layers", type=int, nargs="*", default=[],
+                        help="also save the mean patch tokens after these DINOv3 blocks (features_L<k>)")
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
     backbone, finder = Backbone(), FaceFinder()
     rng_pick = random.Random(args.seed)
-    feats, labels, ids, groups, diffs, batch = [], [], [], [], [], []
+    feats, labels, ids, groups, diffs, batch = defaultdict(list), [], [], [], [], []
+
+    def run_batch():
+        for key, value in backbone.layer_means(torch.stack(batch), args.layers).items():
+            feats[key].append(value.cpu().numpy().astype(np.float16))
+        batch.clear()
     stats = defaultdict(int)
 
     def add(view, label, item_id, group, diff):
@@ -91,8 +98,7 @@ def main():
         groups.append(group)
         diffs.append(diff)
         if len(batch) == 32:
-            feats.append(backbone.mean_patch_vector(torch.stack(batch)).cpu().numpy().astype(np.float16))
-            batch.clear()
+            run_batch()
 
     start = time.time()
     for part in args.parts:
@@ -131,10 +137,10 @@ def main():
             if n % 25 == 0:
                 print(f"  {part.name}: {n}/{len(reals)} real videos, {dict(stats)}, {time.time() - start:.0f} s", flush=True)
     if batch:
-        feats.append(backbone.mean_patch_vector(torch.stack(batch)).cpu().numpy().astype(np.float16))
+        run_batch()
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(args.out, features=np.concatenate(feats), labels=np.array(labels, dtype=np.int8),
+    np.savez_compressed(args.out, **{k: np.concatenate(v) for k, v in feats.items()}, labels=np.array(labels, dtype=np.int8),
                         img_ids=np.array(ids), groups=np.array(groups), face_diff=np.array(diffs, dtype=np.float16),
                         sources=np.array(["dfdc/" + ("fake" if lab else "real") for lab in labels]), mode=args.mode)
     print(f"done: {dict(stats)} -> {len(labels)} vectors in {time.time() - start:.0f} s -> {args.out}", flush=True)

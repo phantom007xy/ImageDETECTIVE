@@ -77,3 +77,16 @@ class Backbone:
         if not torch.isfinite(vectors).all():
             raise RuntimeError("DINOv3 returned NaN or inf values; check the precision (dtype)")
         return vectors
+
+    @torch.no_grad()
+    def layer_means(self, pixels, layers=()):
+        """One pass: {"features": the mean patch vector (as above), "features_L<k>": the mean patch tokens after block k}.
+
+        Middle layers keep more low-level traces (they found Muse edits far better: results/backbone_probe_v1.txt).
+        """
+        result = self.model(pixel_values=pixels.to(self.device, self.dtype), output_hidden_states=bool(layers))
+        out = {"features": result.last_hidden_state[:, self.skip:].float().mean(dim=1)}
+        out.update({f"features_L{k}": result.hidden_states[k][:, self.skip:].float().mean(dim=1) for k in layers})
+        if not all(torch.isfinite(v).all() for v in out.values()):
+            raise RuntimeError("DINOv3 returned NaN or inf values; check the precision (dtype)")
+        return out

@@ -144,14 +144,14 @@ def main():
     swap_ai_logit = swap_leans_logit = None
     if args.swap_head:
         swap = LinearHead.load(args.swap_head)
-        pools = {name: swap.logits(load(spec, 0)).numpy() for name, spec in map(split, args.real_faces + args.swap_real_faces)}
+        pools = {name: swap.logits(load(spec, 0, swap.keys)).numpy() for name, spec in map(split, args.real_faces + args.swap_real_faces)}
         swap_ai_logit = max(threshold_for(s, args.max_face_false_alarms) for s in pools.values())
         swap_leans_logit = max(threshold_for(s, 0.05) for s in pools.values())
         print(f"\n  Face-swap head {args.swap_head.name}: swapped if logit > {swap_ai_logit:+.2f} (changes the verdict), "
               f"some swap signs if > {swap_leans_logit:+.2f}")
         for title, specs, label in (("REAL faces", args.real_faces + args.swap_real_faces, 0), ("SWAPS", args.swap_fakes, 1)):
             for name, spec in map(split, specs):
-                s = swap.logits(load(spec, label)).numpy()
+                s = swap.logits(load(spec, label, swap.keys)).numpy()
                 print(f"  {title} {name:<20}{len(s):>6} | swapped: {(s > swap_ai_logit).mean():.1%} | "
                       f"some swap signs: {(s > swap_leans_logit).mean():.1%}")
 
