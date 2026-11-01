@@ -68,7 +68,7 @@ HEADS = {
 APP_HEAD = "G3tt"  # the whole-image head the app uses (1 Nov: G3, results/head_g_v1.txt)
 DARK_BELOW = 80
 VIEWS = ("long448", "short448")  # both app views are saved, so they can be compared (preprocess.APP_VIEW)
-SWAP_HEAD = "weights/dfdc_v1/head_dfdc.pt"
+SWAP_HEAD = "weights/swap_v2/head_swap_v2.pt"  # DFDC + OpenForensics + SID real faces (results/swap_head_v2.txt)
 FACE_LAYERS = (8, 12, 16)  # face crops: also the mean patch tokens after these blocks, for face-swap heads that read them
 
 
@@ -89,7 +89,7 @@ def main():
 
     files = sorted(p for p in args.folder.rglob("*") if p.is_file())
     heads = {name: LinearHead.load(path) for name, path in HEADS.items() if Path(path).exists()}
-    swap = LinearHead.load(SWAP_HEAD)  # face swaps (DFDC), on the same face crops
+    swap = LinearHead.load(SWAP_HEAD)  # face swaps, on the same face crops
     backbone, finder = Backbone(), FaceFinder()
     # A tuned DINOv3 is a different backbone: its own pass over every photo (whole image, both views).
     tuned = Backbone(tuned_path=args.tuned) if args.tuned else None

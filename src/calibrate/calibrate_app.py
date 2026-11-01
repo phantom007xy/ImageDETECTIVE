@@ -19,6 +19,7 @@ EDIT = "weights/edit_check_v3/head_EC3pf.pt"  # EC3's PE (tune_pe step 7,000) + 
 # forwarded copies (EC3p + training views of forwarded copies: src/features/extract_pe.py --forward)
 # (src/eval/edit_head_cv.py --save-final, 1 Nov: from EC3's head, pull 0.1, my 30 selfies' Muse edits x5)
 PE_WEIGHTS = "weights/edit_check_v3/pe_EC3.pt"
+SWAP = "weights/swap_v2/head_swap_v2.pt"  # the face-swap head (was weights/dfdc_v1/head_dfdc.pt until 1 Nov)
 # A second head on the same PE features, trained from EC3p with Google's pictures too (Gemini 3.1 Flash, Nano Banana Pro,
 # Gemini 2.5 restorations and edits): its own, higher line, so the Muse head keeps its line (results/head_g_v1.txt, 1 Nov)
 EDIT2 = "weights/edit_check_v3/head_EC3g.pt"
@@ -56,11 +57,13 @@ def main():
             "--real-faces", "OpenImages faces:features/faces/muse_pairs_val_eval.npz",
             "--fake-faces", "Muse test faces:features/faces/muse_image_test_v1_eval.npz",
             "--fake-faces", "SD faces:features/faces/sd_faces_eval.npz",
-            "--swap-head", "weights/dfdc_v1/head_dfdc.pt",
+            # face swaps: DFDC video swaps + OpenForensics photo swaps + real SID-Set faces (results/swap_head_v2.txt)
+            "--swap-head", SWAP,
             "--swap-real-faces", "DFDC p3 real:features/faces/dfdc_part3_eval.npz",
             "--swap-real-faces", "SID val real:features/faces/validation-00000-of-00034_eval.npz",
             "--swap-fakes", "DFDC p3 swaps:features/faces/dfdc_part3_eval.npz",
-            "--swap-fakes", "WildDeepfake:features/faces/wilddeepfake_eval.npz"]
+            "--swap-fakes", "WildDeepfake:features/faces/wilddeepfake_eval.npz",
+            "--swap-fakes", "OpenForensics test (photo swaps):features/faces_ml/openforensics_test_dev_eval.npz"]
     for name, stem in NEW_REAL.items():
         args += ["--real", f"{name}:features/{stem}_app.npz"]
         if Path(f"features/faces/{stem}_eval.npz").exists():

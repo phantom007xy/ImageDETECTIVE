@@ -1,0 +1,57 @@
+Face-swap head v2: OpenForensics (face swaps in still photos) next to DFDC (1 Nov 2026)
+
+Why: the face-swap check (results/dfdc_face_v1.txt) learned only from DFDC video frames. On photos whose faces were
+replaced by AI-made faces it was blind: OpenForensics Test-Dev AUC 0.63, 0.4% of the replaced faces caught at its
+strict line (0.6% of the photos).
+
+Data (scripts/download_openforensics.py, src/features/extract_openforensics_faces.py; photos stay on the laptop):
+  OpenForensics (Le et al., ICCV 2021; Zenodo 5528418; CC BY 4.0): Open Images photos in which some faces were replaced
+  by GAN-made faces and blended in; the other faces stay real, so real and fake faces share camera, light and
+  compression. Every face has a box and a label; SAM 3 finds the faces with the app's settings and each SAM face takes
+  the label of the annotated box it overlaps (IoU >= 0.3, one to one; unmatched SAM faces are skipped).
+  - Val split, all 7,308 photos: 4,441 real / 10,380 replaced faces kept (428 too small), 4 random training crops each.
+    85% of the photos train, 15% (by photo) are the dev part.
+  - Test-Dev split, a random 1,500-photo sample, app crop: 1,531 real / 2,270 replaced faces. Never used for a choice.
+  DINOv3 features saved from the last layer (what the app's heads read) and after blocks 8, 12 and 16 (same pass).
+  Training mixes: OF = OpenForensics train part; DFDC = DFDC parts 0-2 (as in v1); SID real = real faces of SID-Set
+  train files 0-9 (OpenImages), minus every photo in a real test pool (290 unseen OpenImages photos and the Muse pairs'
+  real photos come from the same files).
+
+Comparison (python -m src.eval.swap_head_v2): every head gets its own strict line, as in the app: at most 0.5% of the
+real faces of every public real pool (polished Commons, OpenImages val and unseen, Commons v3 dev, real close-ups,
+selfies+portraits, SID val, DFDC part 3 real) above it. My phone faces can raise it further when calibrate_app runs.
+
+1. Last-layer features (the app's face features), weight decay 1e-2:
+  head                       strict line   OF Test-Dev: AUC / caught strict / photos   DFDC p3: AUC / strict   WildDeepfake: AUC / strict
+  DFDC v1 (app until now)    +6.74         0.633 /  0.4% /  0.6%                        0.720 /  7.9%            0.727 / 16.9%
+  OF                         +6.36         0.976 /  2.9% /  4.3%                        0.689 /  0.0%            0.683 /  0.6%
+  DFDC + OF                  +5.52         0.960 /  3.8% /  5.3%                        0.769 /  2.2%            0.759 /  8.5%
+  DFDC + OF + SID real       +3.64         0.961 / 22.4% / 29.5%                        0.771 / 17.7%            0.762 / 16.0%
+  (at the 5% line the last one catches 42% of the OpenForensics swaps, 41.5% DFDC, 24.8% WildDeepfake)
+  Real faces above the strict line: at most 0.5% in every public pool for every head. AI-made faces (Muse, SD, GAN)
+  are not the swap head's job (0-3.7%); the AI-made face check covers them.
+  Weight decay 1e-3 / 1e-2 / 1e-1 for DFDC + OF + SID real: OF dev caught 37.5 / 39.3 / 40.2%, DFDC p3 18.7 / 17.7 /
+  10.8% (both dev sets) -> 1e-2 kept (as in v1).
+  Findings:
+  - OpenForensics alone is learned well (AUC 0.98) but does not carry over to video swaps; DFDC adds that.
+  - The strict line, not the AUC, decides what the app catches: a few real faces that look "swapped" set it. More real
+    faces in training (SID real) moved the line from +5.52 to +3.64 and multiplied the swaps caught by ~6.
+  -> Face-swap head v2 = DFDC + OF + SID real faces, last layer: weights/swap_v2/head_swap_v2.pt (private; DFDC rule:
+     never published). calibrate_app now uses it and also reports the OpenForensics test swaps.
+
+2. Middle layers (OpenForensics-only heads, so all features are comparable; DFDC and SID real faces with middle layers
+   are being extracted):
+  features                      OF Test-Dev AUC   caught at the 5% line   caught at the strict line (set by)
+  last layer                    0.976              6.0%                     2.9% (Commons v3 dev, 1 of 15 faces)
+  after block 12                0.979             53.7%                    21.2% (selfies+portraits)
+  after block 16                0.988             85.5%                     1.8% (close-ups, 1 of 174 faces)
+  blocks 8+12+16                0.992             77.8%                     1.8% (close-ups)
+  last + 12 + 16                0.994             74.3%                     7.5% (close-ups)
+  Middle layers separate photo face swaps far better (5% line: 6% -> 74-85%), but single real faces still set the
+  strict line; with real faces from more sources in training (as in part 1) this should move. WildDeepfake stays low
+  for every OpenForensics-only head (AUC 0.60-0.68): video swaps need DFDC in the mix.
+  Next: DFDC + OF + SID real on middle layers, compared with v2 at the strict line. If it wins, the private test must
+  save middle-layer face features once (src/eval/private_photo_test.py does it now) before calibrate_app.
+
+Caveats: OpenForensics swaps are GAN faces blended into photos (2021 methods); today's face-swap apps may leave other
+traces. The Test-Dev number is a sample of 1,500 photos from one dataset.
