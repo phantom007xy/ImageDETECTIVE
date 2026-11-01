@@ -34,10 +34,12 @@ VERDICTS = ["AI-generated", "Likely AI-generated", "Likely AI-edited", "This fac
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--head", default=HEAD, help="whole-image head (default: the app's)")
+    parser.add_argument("--edit-check", default=EDIT_CHECK, help="edit check head with its calibration (default: the app's)")
     parser.add_argument("--list", type=Path, required=True, help="CSV image list: path, label (0 real, >0 AI), source")
     args = parser.parse_args()
 
-    det = Detector(HEAD, edit_check=EDIT_CHECK)
+    det = Detector(args.head, edit_check=args.edit_check)
     if det.edit_check is None:
         raise SystemExit("the edit check is not calibrated: run python -m src.calibrate.calibrate_app first")
     counts, unreadable = defaultdict(Counter), 0

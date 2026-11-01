@@ -72,6 +72,8 @@ def spread(x):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--head", default=HEAD, help="whole-image head (default: the app's)")
+    parser.add_argument("--edit-check", default=EDIT_CHECK, help="edit check head with its calibration (default: the app's)")
     parser.add_argument("--list", type=Path, required=True, help="image list from scripts/make_muse_edits.py")
     args = parser.parse_args()
 
@@ -80,7 +82,7 @@ def main():
     originals = {Path(r["path"]).stem.removesuffix("_original"): r["path"] for r in rows if r["label"] == "0"}
     edits = [(Path(r["path"]).stem.removesuffix("_edited"), r["source"].split("/")[-1], r["path"])
              for r in rows if r["label"] != "0"]
-    det = Detector(HEAD, edit_check=EDIT_CHECK)
+    det = Detector(args.head, edit_check=args.edit_check)
     if det.edit_check is None:
         raise SystemExit("the edit check is not calibrated: run python -m src.calibrate.calibrate_app first")
     c, edit_line = det.calibration, det.edit_check["line"]
