@@ -53,5 +53,31 @@ selfies+portraits, SID val, DFDC part 3 real) above it. My phone faces can raise
   Next: DFDC + OF + SID real on middle layers, compared with v2 at the strict line. If it wins, the private test must
   save middle-layer face features once (src/eval/private_photo_test.py does it now) before calibrate_app.
 
+3. Middle layers with all training data -> face-swap head v3 (1 Nov, ~22:30)
+  DFDC parts 0-2, DFDC part 3 and the SID-Set real faces re-extracted with blocks 8/12/16 (features/faces_ml/, same
+  faces and identical last-layer features; DFDC part 3 now 6 frames per video, 1,452 real / 1,455 swapped faces).
+  Mix DFDC + OF + SID real for every feature set; choice on the DEV sets only (OF dev part, DFDC part 3), strict line:
+  features (weight decay)        strict line   OF dev   DFDC p3 | tests: OF Test-Dev (photos)   WildDeepfake
+  last layer, v2 (1e-2)          +3.54          41.2%    18.7%  |       24.4% (31.9%)           16.5%
+  block 12 (1e-2)                +3.85          24.6%     1.4%  |       18.7% (24.0%)            1.2%
+  block 16 (1e-1)                +2.35          48.0%     8.5%  |       43.2% (51.0%)           20.6%
+  blocks 8+12+16 (1e-1)          +2.24          57.2%    12.0%  |       54.1% (61.6%)           26.4%
+  last+12+16 (1e-2)              +4.82          48.0%    14.2%  |       36.2% (44.7%)           15.8%
+  last+12+16 (1e-1)              +2.65          57.9%    18.6%  |       47.7% (55.9%)           19.8%
+  last+12+16 (3e-1)  <- chosen   +1.83          63.7%    21.5%  |       54.6% (62.9%)           21.1%
+  last+12+16 (1)                 +1.34          61.3%    16.6%  |       50.9% (58.5%)           16.5%
+  last+8+12+16 (3e-1)            +1.86          63.3%    19.4%  |       55.0% (62.9%)           21.3%
+  Middle layers alone lose the video swaps (block 12: DFDC p3 1.4%); together with the last layer they keep them and add
+  the photo swaps. Stronger weight decay helps the joined features up to 3e-1.
+  -> Face-swap head v3 = DFDC + OF + SID real faces on last + block 12 + block 16 (3,072 numbers), weight decay 3e-1:
+     weights/swap_v3/head_swap_v3.pt (private). It reads the same face pass (Backbone.layer_means): no extra model pass.
+  Dry run of calibrate_app on the PUBLIC pools (scratch copies; my private pools not used): swap line +1.84 (DFDC p3
+  real faces set it); red faces on real pools 0.0-0.3%; the whole verdict on real pools unchanged (polished 4.5%,
+  OpenImages unseen 2.1%, close-ups 4.0%, selfies+portraits 3.2%); swaps caught: OpenForensics test 54.6% (DFDC v1:
+  0.4%), DFDC p3 21.4%, WildDeepfake 21.1%; every AI-image number unchanged (Muse test 100%, Gemini dev 90.0%, ...).
+  To use it: my private face files need the middle layers once (src/eval/private_photo_test.py saves them now), then
+  calibrate_app (it stops with a message if a private face file is still the old kind). My phone faces may raise the line.
+
 Caveats: OpenForensics swaps are GAN faces blended into photos (2021 methods); today's face-swap apps may leave other
-traces. The Test-Dev number is a sample of 1,500 photos from one dataset.
+traces. The Test-Dev number is a sample of 1,500 photos from one dataset. WildDeepfake gained a little (16.9% -> 21%),
+so the video-swap side stays "limited".

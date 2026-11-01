@@ -97,7 +97,7 @@ def main():
             if all(p in data for p in parts):
                 x = torch.from_numpy(np.concatenate([data[p][0] for p in parts]))
                 y = torch.from_numpy(np.concatenate([data[p][1] for p in parts]).astype(np.float32))
-                heads[f"{name} (wd {wd:g})"] = LinearHead().fit(x, y, weight_decay=wd)
+                heads[f"{name} (wd {wd:g})"] = LinearHead(keys=keys).fit(x, y, weight_decay=wd)  # it reads these features
 
     reals = {n: r[0] for n, s in REAL_POOLS.items() if (r := load(f"{s}_eval", 0))}
     tests = {"OF dev (train views)": (x_of[dev], y_of[dev], g_of[dev])}

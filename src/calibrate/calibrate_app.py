@@ -14,12 +14,18 @@ import subprocess
 import sys
 from pathlib import Path
 
+import numpy as np
+
+from src.models.linear_head import LinearHead
+
 HEAD = "weights/google_v1/head_G3tt.pt"  # G3 + tighter real close-ups (tight face crops looked like GAN faces; results/head_g_v1.txt)
 EDIT = "weights/edit_check_v3/head_EC3pf.pt"  # EC3's PE (tune_pe step 7,000) + a head that knows person edits and
 # forwarded copies (EC3p + training views of forwarded copies: src/features/extract_pe.py --forward)
 # (src/eval/edit_head_cv.py --save-final, 1 Nov: from EC3's head, pull 0.1, my 30 selfies' Muse edits x5)
 PE_WEIGHTS = "weights/edit_check_v3/pe_EC3.pt"
-SWAP = "weights/swap_v2/head_swap_v2.pt"  # the face-swap head (was weights/dfdc_v1/head_dfdc.pt until 1 Nov)
+# The face-swap head: DFDC + OpenForensics + real SID-Set faces, on the last layer AND the middle layers 12 and 16 of the
+# same face pass (results/swap_head_v2.txt, part 3). Until 1 Nov: weights/dfdc_v1/head_dfdc.pt, then swap_v2 (last layer).
+SWAP = "weights/swap_v3/head_swap_v3.pt"
 # A second head on the same PE features, trained from EC3p with Google's pictures too (Gemini 3.1 Flash, Nano Banana Pro,
 # Gemini 2.5 restorations and edits): its own, higher line, so the Muse head keeps its line (results/head_g_v1.txt, 1 Nov)
 EDIT2 = "weights/edit_check_v3/head_EC3g.pt"
@@ -47,6 +53,12 @@ def run(module, args):
 
 def main():
     private = {name: p for name, p in PRIVATE.items() if Path(p + "_app.npz").exists()}
+    keys = LinearHead.load(SWAP).keys  # the face features the swap head reads; older private face files lack the middle layers
+    for name, p in private.items():
+        faces = Path(p + "_faces_app.npz")
+        if faces.exists() and not set(keys) <= set(np.load(faces).files):
+            raise SystemExit(f"{name}: {faces} has no {', '.join(keys)} (the face-swap head reads middle layers since 1 Nov). "
+                             f"Run src.eval.private_photo_test on that folder again first (with --edit-check and --pe-weights).")
     print("private pools found: " + (", ".join(private) or "none (public pools only)"))
 
     args = ["--head", HEAD, "--out", HEAD.replace(".pt", "_calibration.json"),
@@ -63,7 +75,7 @@ def main():
             "--swap-real-faces", "SID val real:features/faces/validation-00000-of-00034_eval.npz",
             "--swap-fakes", "DFDC p3 swaps:features/faces/dfdc_part3_eval.npz",
             "--swap-fakes", "WildDeepfake:features/faces/wilddeepfake_eval.npz",
-            "--swap-fakes", "OpenForensics test (photo swaps):features/faces_ml/openforensics_test_dev_eval.npz"]
+            "--swap-fakes", "OpenForensics test (photo swaps):features/faces/openforensics_test_dev_eval.npz"]
     for name, stem in NEW_REAL.items():
         args += ["--real", f"{name}:features/{stem}_app.npz"]
         if Path(f"features/faces/{stem}_eval.npz").exists():
