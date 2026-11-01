@@ -22,6 +22,9 @@ Usage:
       --edits-per-photo 3 --n 9999 --out-dir D:/Datasets/MuseImage/edits_train_commons --spend --workers 4
   python scripts/make_muse_edits.py --list D:/Datasets/SelfEdits/originals --prompts person --edits-per-photo 2
       --n 20 --out-dir D:/Datasets/SelfEdits/self_edits_v1 --spend   (my own selfies, test only)
+  python scripts/make_muse_edits.py --list D:/Datasets/SelfEdits/train_originals --prompts person_train
+      --edits-per-photo 3 --n 9999 --out-dir D:/Datasets/SelfEdits/self_train_v1 --spend --workers 4
+      (new photos of myself, taken for training; never the 30 test selfies)
   The image list is written to features/lists/muse_<out-dir name>.csv, so every out-dir needs its own name.
 """
 
@@ -75,6 +78,21 @@ PROMPTS = {
                   "make it look like spring with blooming flowers", "make the lighting warmer and softer",
                   "change the background to a sandy beach", "change the background to a busy city street",
                   "make it look like a sunny day with a clear blue sky", "make it look like it was taken at night"],
+    },
+    # Training edits of a person (1 Nov): new photos of myself only, taken for this (D:/Datasets/SelfEdits/
+    # train_originals; nobody else in the frame; never published). The edit check had seen people only in REAL photos
+    # and scored my edited selfies far too low (results/edit_check_v3.txt). Other changes than the "person" test list,
+    # so the 30 test selfies still measure edits the check never trained on.
+    "person_train": {
+        "local": ["put a pair of round glasses on me", "add a woollen scarf around my neck", "add a winter beanie hat",
+                  "change my top into a dark blue jacket", "add headphones around my neck", "add a cup of coffee in my hand",
+                  "add a small cat next to me", "add a framed painting on the wall behind me", "add a houseplant behind me",
+                  "make my expression look surprised", "add a light beard", "change my top into a white collared shirt",
+                  "make my hair a little shorter", "remove anything on the wall behind me and fill it in naturally"],
+        "whole": ["put me in a library full of books", "change the background to a park in spring",
+                  "make it look like a rainy evening outside", "change the background to a modern office",
+                  "make it look like golden hour light outdoors", "put me on a stage with bright lights",
+                  "change the background to a cozy cafe", "make it look like an old film photo"],
     },
     # Test only, for my own selfies (D:/Datasets/SelfEdits/originals; nobody else in the frame; never published):
     # what a judge might do to their own photo.
@@ -138,7 +156,7 @@ def main():
         with open(manifest, newline="") as f:
             done = {r["id"] for r in csv.DictReader(f) if r["status"] in ("ok", "refused")}
     todo = [j for j in jobs if j["id"] not in done][: args.limit]
-    print(f"{len(photos)} photos{'' if args.prompts == 'person' else ' without people'}; {len(jobs)} edits planned ({sum(j['kind'] == 'local' for j in jobs)} "
+    print(f"{len(photos)} photos{'' if args.prompts.startswith('person') else ' without people'}; {len(jobs)} edits planned ({sum(j['kind'] == 'local' for j in jobs)} "
           f"local, {sum(j['kind'] == 'whole' for j in jobs)} whole-image); {len(todo)} to do -> at most ${len(todo) * COST:.2f}")
     if args.recover:
         # 31 Oct: after a crash, the old script's worker threads kept making (and paying for) edits that were saved

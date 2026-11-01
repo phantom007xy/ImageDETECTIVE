@@ -1,0 +1,29 @@
+Muse Image edits of a person: my own selfies (1 Nov 2026; test only; only totals leave my laptop)
+
+30 selfies of myself (nobody else in the frame; D:/Datasets/SelfEdits/originals, never published), 2 edits each with the
+"person" prompts of scripts/make_muse_edits.py (40 local: sunglasses, cap, shirt colour, smile, a small dog, remove the
+object behind me; 20 whole-image: beach, city street at night, snow, mountains, studio portrait). 60 of 60 made, none
+refused, $0.60. Run by me.
+
+python -m src.eval.list_verdicts --list features/lists/muse_self_edits_v1.csv --head weights/open_gen_v1/head_F.pt
+    --edit-check weights/edit_check_v3/head_EC3.pt (whole image + edit check, app lines of 1 Nov; no faces)
+  set                 n | AI-generated | Likely AI | Likely AI-edited | Uncertain | Likely authentic | AI label in file
+  originals          60 |      0%      |    0%     |        0%        |    0%     |     100%         |   0
+  whole-image edits  20 |      5%      |   60%     |       20%        |   10%     |       5%         |  20
+  local edits        40 |      0%      |    0%     |       10%        |    0%     |      90%         |  40
+-> No false alarm on my selfies; whole-image edits 85% caught; LOCAL edits of a person only 10% (people-free photos:
+   74-76%). Every edited file carries Muse's AI label, so the file as Muse returns it is caught by the metadata check;
+   a screenshot or a forward loses the label.
+
+Why (python -m src.eval.edit_pairs_check --list features/lists/muse_self_edits_v1.csv, run by me):
+  local edits (40): changed area median 5.1% (people-free photos: 17%); fine detail outside the change correlates 0.34
+    with the original (plain resize 0.98) -> Muse re-renders the whole selfie, it does not copy my pixels back.
+  edit check, whole picture: originals median -21.3, local edits -2.3 (line +3.87) -> AUC 0.99: it sees the edits but
+    scores my real selfies (and so their edits) far lower than people-free photos (real people-free photos ~ -10..-14).
+  edit check on the face crop: AUC 0.85; head F on the face: 0.62; face-swap head: 0.43 (no help).
+  whole edits (20): edit check AUC 1.00, 85% above the line; head F AUC 1.00.
+-> Likely cause (a guess that fits the numbers): every training edit was a people-free photo and every training photo
+   with people was real, so the check learned "a person in the picture -> real". Fix needs Muse edits of a person in
+   training; the only person I may edit is myself (plan Section 0).
+A line only for photos with a face would have to stay above +0.42 (a real portrait in the polished dev set), i.e. it
+would catch roughly a quarter of these edits: not enough.
