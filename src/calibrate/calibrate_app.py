@@ -2,7 +2,8 @@
 
   1. head F (src/calibrate/calibrate.py): AI / authentic thresholds, temperature, faces, the face-swap check
   2. the Muse-edit check (src/calibrate/calibrate_edit_check.py): its line, jointly with step 1's AI threshold and the
-     joint trade (head F gives up its lowest flag in its tightest pool; results/edit_check_v3.txt)
+     joint trade (head F gives up its lowest flag in its tightest pool; results/edit_check_v3.txt); then the red face
+     lines are raised where needed, so that the final verdict (whole OR edited OR a red face) stays within the budget
 Private pools are used if their feature files exist (made by src/eval/private_photo_test.py --edit-check ...
 --pe-weights ... on my phone photos and selfies); only totals are printed. Run it yourself after the private tests.
 
@@ -21,6 +22,11 @@ GIVE_UP = 1
 PRIVATE = {"phone": "data/private/phone_v1", "selfies": "data/private/originals"}  # <folder name> of the private test
 # Real photos used nowhere else (src/eval/leak_check.py): unseen OpenImages photos and Commons phone photos (dev part).
 NEW_REAL = {"OpenImages unseen": "sid_reals_0_9_unseen", "Commons v3 dev": "commons_v3_dev"}
+# The app's face crops of each set (src/features/extract_faces.py --mode eval), so red faces count in the final verdict.
+# The Muse edits' originals are people-free photos (checked with SAM 3 and by eye), so they have no face file.
+FACES = {"polished dev": "commons_dev", "OpenImages val": "muse_pairs_val", "OpenImages unseen": "sid_reals_0_9_unseen",
+         "Commons v3 dev": "commons_v3_dev", "Muse test v1": "muse_image_test_v1", "Muse pairs val": "muse_pairs_val",
+         "SDXL (unseen)": "sd_faces"}
 
 
 def run(module, args):
@@ -47,6 +53,8 @@ def main():
             "--swap-fakes", "WildDeepfake:features/faces/wilddeepfake_eval.npz"]
     for name, stem in NEW_REAL.items():
         args += ["--real", f"{name}:features/{stem}_app.npz"]
+        if Path(f"features/faces/{stem}_eval.npz").exists():
+            args += ["--real-faces", f"{name} faces:features/faces/{stem}_eval.npz"]
     for name, p in private.items():
         args += ["--real", f"{name}:{p}_app.npz"]
         if Path(p + "_faces_app.npz").exists():
@@ -63,6 +71,11 @@ def main():
             "--out", EDIT.replace(".pt", "_calibration.json")]
     for name, (whole, pe) in pools.items():
         args += ["--pool", f"{name}:{whole}:{pe}"]
+    faces = {name: f"features/faces/{stem}_eval.npz" for name, stem in FACES.items()}
+    faces.update({name: p + "_faces_app.npz" for name, p in private.items() if name in pools})
+    for name, path in faces.items():
+        if Path(path).exists():
+            args += ["--faces", f"{name}:{path}"]
     fakes = [("edits v1 local", "muse_edits_v1", "muse_edits/local"), ("edits v1 whole", "muse_edits_v1", "muse_edits/whole"),
              ("edits v2 local", "muse_edits_test_v2", "muse_edits/local"),
              ("edits v2 whole", "muse_edits_test_v2", "muse_edits/whole"), ("Muse test v1", "muse_image_test_v1", ""),

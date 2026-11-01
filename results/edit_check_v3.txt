@@ -96,3 +96,8 @@ Balanced mix as in src/calibrate/calibrate.py: real pools half, Muse test v1 + M
   Muse test v1 called Likely authentic          2.0%           |         0.0%
   Muse pairs val / SDXL called authentic     3.9% / 0.9%       |      1.3% / 0.3%
 -> The edit check turns fakes that sat in "Uncertain" into catches, so the joint verdict lowers the Uncertain share.
+
+== Update (1 Nov): the full verdict also counts red faces ==
+The "together" column above is whole image OR edit check. The app's full verdict also turns AI on a red face; with the
+face lines now inside the same budget (results/calibration_F_v1.txt, 1 Nov) every real pool stays within 5%:
+polished dev 4.8%, OpenImages val 2.6%, OpenImages unseen 2.3%, Commons v3 dev 3.1%, my phone photos and selfies 0%.

@@ -60,23 +60,29 @@ def load_calibration(head_path):
             "swap_leans_logit": None, "calibrated": False}
 
 
+JOINT_LINES = {"ai_logit": "whole_ai_logit", "face_ai_logit": "face_ai_logit", "swap_ai_logit": "swap_ai_logit"}
+
+
 def load_edit_check(head_path, whole_calibration):
     """The Muse-edit check from <head>_calibration.json (src/calibrate/calibrate_edit_check.py): its head, line and PE
-    weights (None = the original PE-Core); None if it is not calibrated. If the calibration used the joint trade
-    (--give-up), whole_calibration's AI line is raised here to the traded line, but only if whole_calibration is the
-    one the trade was computed from; otherwise the edit check stays off (run python -m src.calibrate.calibrate_app)."""
+    weights (None = the original PE-Core); None if it is not calibrated. The joint calibration may also move lines of
+    whole_calibration so that the final verdict stays within one budget: the whole-image AI line (the joint trade,
+    --give-up) and the red face lines (--faces). They are replaced here, but only if whole_calibration is the one they
+    were computed from; otherwise the edit check stays off (run python -m src.calibrate.calibrate_app)."""
     path = Path(head_path)
     cal_path = path.with_name(path.stem + "_calibration.json")
     if not (path.exists() and cal_path.exists()):
         print(f"WARNING: edit check {path} or its calibration not found: the edit check is off")
         return None
     cal = json.loads(cal_path.read_text())
-    if cal.get("whole_ai_logit") is not None:
-        if abs(cal["whole_ai_logit_calibrated"] - whole_calibration["ai_logit"]) > 1e-6:
+    moved = {key: own for key, own in JOINT_LINES.items() if cal.get(own) is not None}
+    for key, own in moved.items():
+        if whole_calibration[key] is None or abs(cal[own + "_calibrated"] - whole_calibration[key]) > 1e-6:
             print(f"WARNING: {cal_path.name} was made with another whole-image calibration: the edit check is off "
                   "(run python -m src.calibrate.calibrate_app)")
             return None
-        whole_calibration["ai_logit"] = cal["whole_ai_logit"]
+    for key, own in moved.items():
+        whole_calibration[key] = cal[own]
     return {"head": LinearHead.load(path), "line": cal["edit_logit"], "pe_weights": cal.get("pe_weights")}
 
 

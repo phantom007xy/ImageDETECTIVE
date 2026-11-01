@@ -71,3 +71,41 @@ python -m src.calibrate.calibrate ... (as above without my phone pools) --fake-f
 -> The cost: about 1 in 4 professional real photos (polished dev) gets "Uncertain".
 -> The app now uses head F with this calibration (31 Oct). These are dev numbers (thresholds set on the same sets);
    the honest numbers come from the Day 8 judge test.
+
+== Final calibration with the edit check EC3, and faces inside the shared budget (1 Nov 2026) ==
+python -m src.calibrate.calibrate_app (run by me: it adds my phone photos and selfies; only totals leave the laptop).
+Pools: polished dev 330, OpenImages val 76, OpenImages unseen 576, Commons v3 dev 32, my phone photos 104, my selfies 30
+(1,148 real); Muse test v1 100, Muse pairs val 76, SDXL 332 (508 AI).
+  head F: temperature 1.25 | AI-generated (clear) > +4.95 | Likely AI > -0.30 (p > 0.440) | Likely authentic <= -4.22
+  (p <= 0.033; was -3.84: with the two new real pools and my selfies it can be stricter at the same 15% cap)
+  edit check EC3: edited > +3.87; head F's line raised to -0.17 (the joint trade). My photos set none of the lines.
+  my phone photos (104): 0 AI, 0 edited, 4 Uncertain | my selfies (30): 0 AI, 0 edited, 0 Uncertain
+  my faces (148 phone + 34 selfie faces): none red (neither AI-made nor swapped)
+
+Found while checking the full verdict: the red face lines were set on their own (at most 0.5% of real faces per pool),
+not jointly with the whole image and the edit check. In the polished dev set those two already use the whole budget
+(16 of 330), and one real face above +3.63 sits on a photo neither of them flags -> the app's full verdict called
+17 of 330 = 5.2% AI, one photo over the budget.
+Fix (src/calibrate/calibrate_edit_check.py --faces, used by calibrate_app; the app loads the lines with the edit check):
+after the edit line, each red face line (head F on the face, then the face-swap head) is raised where needed so that
+(whole OR edited OR a red face) stays within the budget in every pool with face features. Face features of the two new
+real pools (src/features/extract_faces.py --mode eval): 557 faces in OpenImages unseen, 15 in Commons v3 dev.
+  red face (AI-made): +3.63 -> +5.46 (set by the polished dev set) | red face (swap): +9.13, unchanged
+  "some AI signs" (orange, never changes the verdict): -3.21 -> -2.59 (Commons v3 dev has 15 faces: its highest sets it)
+  The full verdict (whole OR edited OR a red face); public pools measured per photo, my pools from the totals above:
+  set                      n | any AI verdict | Uncertain | Likely authentic
+  REAL polished dev      330 |      4.8%      |   30.0%   |   65.2%    (5.2% before the fix)
+  REAL OpenImages val     76 |      2.6%      |   23.7%   |   73.7%
+  REAL OpenImages unseen 576 |      2.3%      |   17.9%   |   79.9%    (one photo by a red swap face)
+  REAL Commons v3 dev     32 |      3.1%      |   28.1%   |   68.8%
+  REAL my phone photos   104 |      0.0%      |    3.8%   |   96.2%
+  REAL my selfies         30 |      0.0%      |    0.0%   |  100.0%
+  AI   Muse test v1      100 |    100.0%      |    0.0%   |    0.0%
+  AI   Muse pairs val     76 |     97.4%      |    1.3%   |    1.3%
+  AI   SDXL (unseen)     332 |     92.5%      |    7.2%   |    0.3%    (92.8% with the old face line: 1 picture)
+  Uncertain share of the mix: 15.0% with head F alone (cap 15%), 12.6% with the full verdict.
+  Cost of the fix: fewer red boxes on AI faces (Muse test pictures with a red face 39% -> 25%, SDXL 22% -> 13%); those
+  faces turn orange, and the pictures are caught by the whole image or the edit check anyway.
+Face swaps at the app's lines: one real face in my phone photos sets the red swap line (+9.13; the public pools alone
+allow +6.12, results/dfdc_face_v1.txt). DFDC part 3 swaps: red 0.3%, orange 19.1%; WildDeepfake: red 5.6%, orange
+24.0%; real faces orange 0-4.1% (my phone faces 4.1%, my selfies 0%). -> Face swaps stay "limited", stated openly.

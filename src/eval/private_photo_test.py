@@ -218,8 +218,12 @@ def main():
               f"({'its calibrated line' if same_pe else 'p > 0.5, not calibrated for this PE yet'})")
         if same_pe:
             logit_f = np.array([r["logit_F"] for r in rows])
-            print(f"  as in the app (head F, AI line {f['ai_logit']:+.2f}, OR the edit check): called AI or edited "
-                  f"{((logit_f > f['ai_logit']) | (z > line)).mean():.0%} of {len(z)}")
+            best = lambda key: np.array([-np.inf if r[key] == "" else r[key] for r in rows])  # noqa: E731
+            line_or_inf = lambda key: np.inf if f[key] is None else f[key]  # noqa: E731
+            red = (best("face_max_logit_F") > line_or_inf("face_ai_logit")) | (best("face_max_swap_logit")
+                                                                               > line_or_inf("swap_ai_logit"))
+            print(f"  as in the app (head F, AI line {f['ai_logit']:+.2f}, OR the edit check, OR a red face): called AI "
+                  f"or edited {((logit_f > f['ai_logit']) | (z > line) | red).mean():.0%} of {len(z)}")
     if tuned is not None:
         for view in VIEWS:
             z = tuned_head.logits(torch.from_numpy(np.stack(tuned_vectors[view]).astype(np.float32))).numpy()
