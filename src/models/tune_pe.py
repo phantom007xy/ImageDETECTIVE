@@ -143,6 +143,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--train", nargs="+", required=True, help="CSV image lists (globs allowed)")
     parser.add_argument("--init-head", type=Path, default=Path("weights/edit_check_v1/head_EC_both.pt"))
+    parser.add_argument("--init-pe", type=Path, help="start from these fine-tuned PE weights (e.g. weights/edit_check_v3/"
+                        "pe_EC3.pt) instead of the pretrained ones; the pull then keeps the weights close to THEM")
+    parser.add_argument("--repeat", action="append", default=[], help='"LIST GLOB:K" shows those lists K times per pass '
+                        "(e.g. a small set of edits of a person among thousands of people-free edits)")
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--steps", type=int, default=4000)
     parser.add_argument("--batch-size", type=int, default=16)
@@ -159,14 +163,21 @@ def main():
     torch.manual_seed(args.seed)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     files = sorted({f for pattern in args.train for f in glob.glob(pattern)})
-    rows = [r for path in files for r in csv.DictReader(open(path, newline=""))]
+    times = {f: 1 for f in files}
+    for spec in args.repeat:
+        pattern, k = spec.rsplit(":", 1)
+        times.update({f: int(k) for f in glob.glob(pattern)})
+    rows = [r for path in files for r in list(csv.DictReader(open(path, newline=""))) * times[path]]
     labels = np.array([1 if int(r["label"]) else 0 for r in rows])
     print(f"training pictures: {len(rows)} ({int((labels == 0).sum())} real, {int(labels.sum())} Muse) from {len(files)} lists",
           flush=True)
     class_weight = torch.tensor([len(rows) / (2 * (labels == 0).sum()), len(rows) / (2 * labels.sum())],
                                 dtype=torch.float32).cuda()
 
-    model = load_pe(drop_path_rate=0.1).cuda()  # fp32 weights; bf16 compute under autocast
+    model = load_pe(pretrained=args.init_pe is None, drop_path_rate=0.1)
+    if args.init_pe:  # continue from a fine-tuned PE (the pull below then anchors to these weights)
+        model.load_state_dict(torch.load(args.init_pe, map_location="cpu"), strict=True)
+    model = model.cuda()  # fp32 weights; bf16 compute under autocast
     model.set_grad_checkpointing(True)
     model.train()
     cfg = resolve_data_config({}, model=model)
