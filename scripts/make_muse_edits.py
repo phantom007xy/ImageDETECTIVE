@@ -138,7 +138,7 @@ def main():
         with open(manifest, newline="") as f:
             done = {r["id"] for r in csv.DictReader(f) if r["status"] in ("ok", "refused")}
     todo = [j for j in jobs if j["id"] not in done][: args.limit]
-    print(f"{len(photos)} photos without people; {len(jobs)} edits planned ({sum(j['kind'] == 'local' for j in jobs)} "
+    print(f"{len(photos)} photos{'' if args.prompts == 'person' else ' without people'}; {len(jobs)} edits planned ({sum(j['kind'] == 'local' for j in jobs)} "
           f"local, {sum(j['kind'] == 'whole' for j in jobs)} whole-image); {len(todo)} to do -> at most ${len(todo) * COST:.2f}")
     if args.recover:
         # 31 Oct: after a crash, the old script's worker threads kept making (and paying for) edits that were saved
