@@ -15,11 +15,14 @@ import sys
 from pathlib import Path
 
 HEAD = "weights/open_gen_v1/head_F.pt"
-EDIT = "weights/edit_check_v3/head_EC3.pt"  # on the fine-tuned PE (src/models/tune_pe.py, step 7,000)
+EDIT = "weights/edit_check_v3/head_EC3p.pt"  # EC3's PE (tune_pe step 7,000) + a head that also knows person edits
+# (src/eval/edit_head_cv.py --save-final, 1 Nov: from EC3's head, pull 0.1, my 30 selfies' Muse edits x5)
 PE_WEIGHTS = "weights/edit_check_v3/pe_EC3.pt"
 PE_DIR = "features/pe_ec3"  # its features of the public pools (src/features/extract_pe.py --pe-weights)
 GIVE_UP = 1
-PRIVATE = {"phone": "data/private/phone_v1", "selfies": "data/private/originals"}  # <folder name> of the private test
+# <folder name> of the private test. My first 30 selfies ("originals") are TRAINING data of head_EC3p since 1 Nov,
+# so they are no calibration pool any more; new test selfies (other place, clothes, light) take their place.
+PRIVATE = {"phone": "data/private/phone_v1", "new selfies": "data/private/test_selfies"}
 # Real photos used nowhere else (src/eval/leak_check.py): unseen OpenImages photos and Commons phone photos (dev part).
 NEW_REAL = {"OpenImages unseen": "sid_reals_0_9_unseen", "Commons v3 dev": "commons_v3_dev"}
 # The app's face crops of each set (src/features/extract_faces.py --mode eval), so red faces count in the final verdict.

@@ -1,0 +1,33 @@
+Edit check with person edits: a new head on the frozen fine-tuned PE (EC3), 1 Nov 2026
+
+Why: on my selfies the frozen EC3 features separate Muse edits from their originals almost perfectly (AUC 0.99), but
+the EC3 head scored every photo with a person far lower, so local edits of a person stayed under the line (10-12%;
+results/self_edits_v1.txt). Suggested and tried first: keep the PE frozen and retrain only the head with person edits.
+Data: the 22,307 training pictures of EC3 (one random training view each, src/features/extract_pe.py --mode train
+--pe-weights weights/edit_check_v3/pe_EC3.pt) + Muse edits of my 30 selfies (1 Nov I allowed them for training:
+the 60 test edits with the "person" prompts and 89 new ones with the separate "person_train" prompts; 149 edits,
+4 training views each; private, totals only).
+Fair test (python -m src.eval.edit_head_cv ...): 3 folds by ORIGINAL selfie; each fold's selfies (original and all
+their edits, in the app's view) are held out once. The edit line is set exactly as in the app: jointly with head F on
+the six public real pools, the joint trade, the edit check alone at most 0.5% of every pool. Averages over the folds.
+
+  head                                 line  | edits v1 local/whole | v2 local/whole | Muse test | pairs || MY held-out selfies: local / whole / originals flagged
+  EC3 head (now)                      +3.87  |    76.5% / 96.0%     | 74.2% / 93.9%  |   100%    | 97.4% ||   12% /  84% / 0%
+  new head from zero, no selfies      +5.49  |    49.0% / 92.0%     | 59.1% / 90.9%  |   100%    | 96.1% ||    2% /  78% / 0%
+  new head from zero, selfies x5      +4.44  |    60.8% / 93.3%     | 67.9% / 92.9%  |   100%    | 97.4% ||   82% /  98% / 0%
+  new head from zero, selfies x20     +3.81  |    68.0% / 93.3%     | 71.0% / 92.9%  |   100%    | 97.4% ||   86% / 100% / 0%
+  from EC3's head, pull 0.01, x5      +5.65  |    64.7% / 93.3%     | 68.4% / 92.9%  |   100%    | 97.8% ||   82% /  98% / 0%
+  from EC3's head, pull 0.01, x20     +4.99  |    69.9% / 93.3%     | 72.0% / 93.4%  |   100%    | 98.7% ||   87% / 100% / 0%
+  from EC3's head, pull 0.1, x5       +4.05  |    75.2% / 96.0%     | 74.5% / 94.4%  |   100%    | 98.7% ||   86% /  98% / 0%
+  from EC3's head, pull 0.1, x20      +3.95  |    73.9% / 96.0%     | 74.7% / 94.4%  |   100%    | 98.7% ||   87% /  96% / 0%
+  Real photos called AI or edited (head F + edit check) are the same on every row: polished dev 4.8%, OpenImages val
+  2.6%, originals v1 2.6% / v2 1.0%, OpenImages unseen 1.9-2.1%, Commons v3 dev 3.1% (the real pools set the line).
+
+-> A head learned from zero loses EC3's strength on people-free edits (49% / 59% without selfies): EC3's own head was
+   trained together with the PE. Starting from EC3's head and pulling the new head back towards it (an L2 pull to the
+   start, 0.1) keeps that strength (75.2% / 74.5% vs 76.5% / 74.2%) AND learns person edits: my held-out local edits
+   12% -> 86%, whole edits 84% -> 98%, none of my held-out real selfies flagged.
+Chosen: from EC3's head, pull 0.1, selfie pairs x5, now fitted on all 30 selfies -> weights/edit_check_v3/head_EC3p.pt
+(private; the PE is unchanged, so its features of my private photos stay valid). The app uses it after calibrate_app.
+Caveats: the held-out selfies are me, from the same sessions as the training selfies (optimistic); the honest test is
+new selfies (other place, clothes, light). Other people's faces stay unmeasured: I may edit no one else.

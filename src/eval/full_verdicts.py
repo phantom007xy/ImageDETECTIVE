@@ -27,7 +27,7 @@ from PIL import Image  # noqa: E402
 from src.inference import Detector  # noqa: E402
 
 HEAD = "weights/open_gen_v1/head_F.pt"
-EDIT_CHECK = "weights/edit_check_v3/head_EC3.pt"
+EDIT_CHECK = "weights/edit_check_v3/head_EC3p.pt"
 VERDICTS = ["AI-generated", "Likely AI-generated", "Likely AI-edited", "This face looks AI-made or AI-changed",
             "Uncertain", "Likely authentic"]
 
