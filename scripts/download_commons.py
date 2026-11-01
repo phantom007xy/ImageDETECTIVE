@@ -63,6 +63,15 @@ PLANS = {
         ("Taken with Xiaomi 13", "phone", 100, False),
         ("Quality images", "quality", 600, False),
     ],
+    # v4 (1 Nov): the app flagged 12 of 129 tight crops of real portraits (results/head_g_v1.txt): head F learned
+    # "close-up face = AI" from the SD faces. More real portraits and real selfies give real close-ups to train on,
+    # and a dev set that checks a judge's profile picture or selfie.
+    "v4": [
+        ("Selfies", "selfie", 600, True),
+        ("Portrait photographs of women", "portrait", 600, True),
+        ("Portrait photographs of men", "portrait", 600, True),
+        ("Portrait photographs", "portrait", 300, False),
+    ],
 }
 FIELDS = ["file", "split", "kind", "category", "title", "page_url", "author", "licence", "licence_url"]
 
@@ -188,7 +197,7 @@ def main():
             writer = csv.DictWriter(f, fieldnames=["path", "label", "source"], lineterminator="\n")
             writer.writeheader()
             writer.writerows(rows)
-        kinds = {k: sum(it["kind"] == k for it in items if it["split"] == split) for k in ("quality", "people", "portrait", "phone")}
+        kinds = {k: sum(it["kind"] == k for it in items if it["split"] == split) for k in ("quality", "people", "portrait", "phone", "selfie")}
         print(f"{split}: {len(rows)} photos {kinds}")
     print(f"{len(ok) - len(items)} downloads failed | {len(author_counts)} photographers | attribution: {attribution}")
 
