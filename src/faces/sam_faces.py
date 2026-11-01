@@ -25,8 +25,9 @@ class FaceFinder:
         self.model = model.to(device=self.device, dtype=self.dtype).eval()
 
     @torch.no_grad()
-    def find(self, image):
-        """image: PIL RGB -> list of faces, each {"box": [x0, y0, x1, y1], "score", "mask_area", "too_small"}."""
+    def find(self, image, with_masks=False):
+        """image: PIL RGB -> list of faces, each {"box": [x0, y0, x1, y1], "score", "mask_area", "too_small"}
+        (+ "mask": a boolean H x W array of the face, if with_masks; for self-blended training faces)."""
         inputs = self.processor(images=image, text=PROMPT, return_tensors="pt")
         batch = {k: (v.to(self.device, self.dtype) if v.is_floating_point() else v.to(self.device))
                  for k, v in inputs.items()}
@@ -45,4 +46,6 @@ class FaceFinder:
                 "mask_area": float(mask.sum()),
                 "too_small": min(x1 - x0, y1 - y0) < MIN_FACE,
             })
+            if with_masks:
+                faces[-1]["mask"] = mask.bool().cpu().numpy()
         return faces
