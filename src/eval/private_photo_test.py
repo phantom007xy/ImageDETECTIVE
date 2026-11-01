@@ -216,6 +216,8 @@ def main():
         check = load_edit_check(args.edit_check, f)
         same_pe = check is not None and check["pe_weights"] == (args.pe_weights.as_posix() if args.pe_weights else None)
         line = check["line"] if same_pe else 0.0
+        if same_pe and "head2" in check:  # the second PE head counts as "edited" here too (it is AI either way)
+            z = np.where(check["head2"].logits(torch.from_numpy(x.reshape(len(x), -1))).numpy() > check["line2"], np.inf, z)
         print(f"Muse-edit check {args.edit_check.name}: called edited {(z > line).mean():.0%} of {len(z)} real photos "
               f"({'its calibrated line' if same_pe else 'p > 0.5, not calibrated for this PE yet'})")
         if same_pe:

@@ -121,7 +121,9 @@ def main():
                 logits[version].append(float(head.logits(vector)[0]))
                 if pe is not None:  # the edit check's own view of the same damaged copy
                     features = pe.layer_features(pe.to_tensor(pe.view(damaged)).unsqueeze(0))
-                    edits[version].append(float(check["head"].logits(features.reshape(1, -1).float())[0]))
+                    x = features.reshape(1, -1).float()
+                    second = "head2" in check and float(check["head2"].logits(x)[0]) > check["line2"]  # 2nd PE head
+                    edits[version].append(float(check["head"].logits(x)[0]) if not second else float("inf"))
         print(f"{kind} {name} ({len(rows)} images)")
         for version in args.versions:
             z = np.array(logits[version])

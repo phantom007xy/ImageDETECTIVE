@@ -51,3 +51,60 @@ the PUBLIC pools (dry run; the app's file is made by calibrate_app with my phone
    is SD 3.5 (and about 1 point on pairs, PixArt and Kandinsky), because the line now also protects real close-ups.
    Gemini made from a prompt stays at 74% (Commons): it needs pictures of today's Gemini models (Gemini app, by hand;
    the Gemini API has no free image generation: "limit 0" on the free tier).
+
+== 4. G3 in the app: final calibration (python -m src.calibrate.calibrate_app, run by me with my phone photos) ==
+  G3: temperature 1.09 | AI-generated (clear) > +4.84 | Likely AI > +0.17 (traded +0.27 in the polished set) |
+      Likely authentic <= -3.10 | red face +4.19 | red swap +9.13 (set by one of my phone faces) | edit check +3.91
+  real called AI (full verdict): polished 4.8% | OI val 1.3% | originals 2.6% / 2.0% | OI unseen 3.0% | Commons v3 dev 0%
+      | close-ups 4.0% | selfies+portraits 3.2% | MY PHONE PHOTOS 0% (Uncertain 7.7%; head F: 3.8%)
+  caught: Muse test 100% | pairs 97.4% | Muse edits v1 local 76.5% / whole 96.0%, v2 75.0% / 95.5% | SDXL 93.1% |
+      GAN faces TPDNE 95.1% / SFHQ 92.0% | Nano Banana dev 98.9% | PixArt 98.2% | Kandinsky 98.7% | SD 3.5 50.0%
+Today's Gemini model (gemini-3.1-flash-image on Vertex AI, free credits; 30 judge-like prompts of
+data/prompts/gemini_dev_v1.csv, as delivered, no AI label in the files; dev only, never trained on):
+  python -m src.eval.full_verdicts --list features/lists/gemini_dev_v1.csv
+  caught 70.0% (AI-generated 13.3%, Likely AI 43.3%, Likely AI-edited 13.3%) | Uncertain 16.7% | Likely authentic 13.3%
+-> next: training pictures of today's Gemini models (stage 1: 350 gemini-3.1-flash-image + 80 gemini-3-pro-image from
+   our pair captions, 100 restorations, 100 edits; <= $66 of the free credits).
+
+== 5. Forwarded copies with G3 + EC3p (python -m src.eval.robustness_check --head weights/google_v1/head_G3.pt
+   --edit-check weights/edit_check_v3/head_EC3p.pt --n 150 ...; share called AI or edited by the app's joint verdict) ==
+  set (n)                   original  jpeg70  whatsapp  whatsapp2  small  screenshot  crop(70%)
+  REAL polished dev (150)     4.0%     3.3%     4.0%      3.3%      2.7%     3.3%       4.7%   (head F: crop 8.7%)
+  REAL OpenImages unseen      1.3%     0.7%     0.7%      0.0%      0.7%     1.3%       0.7%
+  REAL close-ups (149)        4.0%     2.0%     1.3%      1.3%      1.3%     4.0%      12.1%   <- the face fills the frame
+  REAL selfies+portraits (62) 3.2%     3.2%     3.2%      3.2%      1.6%     4.8%       0.0%
+  AI   Muse test v1 (100)   100%     100%     100%      100%      100%     100%       100%
+  AI   edits v2 local (132)  75.0%    75.0%    69.7%     68.2%     56.8%    77.3%      58.3%
+  AI   GAN faces TPDNE (150) 96.7%    95.3%    95.3%     95.3%     94.0%    96.0%      99.3%
+  AI   Gemini dev (30)       70.0%    66.7%    66.7%     66.7%     60.0%    83.3%      66.7%
+-> Forwarding is safe for real photos except real close-ups cropped so tight that the face fills the frame (12.1%): the
+   framing of GAN faces. Fix for G4: tighter real close-ups (the centre 60-80% of every training close-up, 893 more).
+
+== 6. Today's Gemini: Google's pictures, a negative result, then a second Perception Encoder head ==
+Google pictures (scripts/make_google_images.py, Vertex AI, my Google Cloud FREE credits; never my own photos):
+  gemini-3.1-flash-image (global endpoint, ~1 picture/minute) and gemini-3-pro-image ("Nano Banana Pro") from our pair
+  captions; gemini-2.5-flash-image (us-central1) restorations ("restore and colourise" an old-looking copy of a
+  people-free training photo) and edits. Used here: 214 caption pictures (110 / 88 / 16; train captions -> training,
+  dev captions -> 19 dev pictures), 92 restorations, 19 edits. Dev test: 30 judge-like prompts with gemini-3.1-flash-image
+  (data/prompts/gemini_dev_v1.csv), never trained on.
+a) Into the whole-image head (frozen DINOv3, compare_heads, "file~K" = shown K times), fair line per head:
+  head          line  | Gemini dev  Google dev-captions  SDXL   SFHQ  | real pools (all <= 4.8%)
+  G3            0.543 |   56.7%         63.2%           90.4%  92.0% |
+  G4 (x1)       0.712 |   56.7%         52.6%           85.5%  87.5% |
+  G4w10         0.878 |   53.3%         36.8%           63.0%  66.7% |
+  G4w30         0.951 |   50.0%         26.3%           41.3%  42.7% |
+  -> NEGATIVE: the more weight on Gemini, the more the head flags real POLISHED photos ("cinematic look = AI"): its
+     strict line rises and it catches less of everything. DINOv3's features can't tell today's Gemini from real
+     professional photos. G3 stays.
+b) Into the edit check (frozen fine-tuned PE): a head started from EC3p, pull 0.1, my selfie pairs x5, Google x5 ->
+   weights/edit_check_v3/head_EC3g.pt (python -m src.eval.edit_head_cv ... --extra "features/pe_ec3_train/google/
+   *_train.npz:5" --start weights/edit_check_v3/head_EC3p.pt --save-final ...). As the ONLY edit head it costs Muse
+   local edits (76% -> 41%: real polished photos score higher, its line rises to +6.6). As a SECOND head next to EC3p,
+   with its own joint line (src/calibrate/calibrate_edit_check.py --head2), it only adds flags where the budget has room:
+   dry run, public pools, G3 + EC3p (+3.91) + EC3g (+6.62):
+     real: polished 4.8% | OI val 1.3% | originals 2.6% / 2.0% | OI unseen 3.1% | Commons v3 dev 0% | close-ups 4.0% |
+           selfies+portraits 3.2%  (unchanged)
+     caught: GEMINI DEV 70.0% -> 90.0% (the 2nd head alone 86.7%) | Muse edits v1 local 76.5% / whole 96.0%, v2 75.0% /
+             95.5% (unchanged) | Muse test 100% | pairs 98.7% | SDXL 94.3% | Nano Banana dev 99.0% | GAN 95.1% / 92.0%
+   The app: a picture is "Likely AI-generated" when the second head fires (the reason line names the Perception
+   Encoder). One more linear head on the same PE features: no extra model pass.

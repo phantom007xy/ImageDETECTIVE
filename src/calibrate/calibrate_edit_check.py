@@ -14,6 +14,8 @@ Faces (--faces "NAME:face feature file", the app's face crops of that pool's pho
 verdict to AI, so the red face lines of the whole-image calibration (head F on face crops and the face-swap head, each
 at most 0.5% of real faces) are raised here where needed, until (whole OR edited OR a red face) stays within the budget
 in every pool with face features. They are saved too, and the app uses them (results/calibration_F_v1.txt, 1 Nov).
+A second head on the same PE features (--head2, e.g. trained with Google's Gemini pictures) gets its own line the same
+way, after the first one: it may only add flags where the budget still has room, so the first head keeps its line.
 Each pool needs both feature files of the SAME photos in the same order: the whole-image app features
 (src/features/extract.py --mode app; my phone photos: data/private/<folder>_app.npz) and the PE-Core features
 (src/features/extract_pe.py --mode eval; a fine-tuned PE: --pe-weights; my photos: data/private/<folder>_pe*.npz).
@@ -107,6 +109,7 @@ def main():
     parser.add_argument("--rate", type=float, default=0.005)
     parser.add_argument("--give-up", type=int, default=0, help="the joint trade: flags the whole-image head gives up")
     parser.add_argument("--faces", action="append", default=[], help='"NAME:face feature file" of a pool, check or fake')
+    parser.add_argument("--head2", type=Path, help="a second head on the same PE features, with its own joint line")
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
 
@@ -118,6 +121,14 @@ def main():
 
     whole_line, tightest = traded_line(pools, c["ai_logit"], args.give_up)
     line = edit_line(pools, whole_line, args.rate)
+    # The second head (if any): its own line, where the budget still has room after the whole image and the first head.
+    head2, e2, line2 = (LinearHead.load(args.head2) if args.head2 else None), {}, None
+    if head2 is not None:
+        for real, specs in ((True, args.pool + args.check), (False, args.fake)):
+            e2.update({name: paired(whole, head2, spec, real)[1] for name, spec in map(split, specs)})
+        alone2 = max(threshold_for(e2[n], args.rate) for n in pools)
+        line2 = joint_line([e2[n] for n in pools], [(w > whole_line) | (e > line) for w, e, _ in pools.values()], alone2)
+    second = lambda name, n: e2[name] > line2 if head2 is not None else np.zeros(n, bool)  # noqa: E731
 
     # Red faces, as in the app: head F on the face crops, and the face-swap head on the same crops.
     face_keys = [k for k in ("face_ai_logit", "swap_ai_logit") if args.faces and c[k] is not None]
@@ -125,7 +136,7 @@ def main():
     groups = {**pools, **checks, **fakes}
     faces = {name: best_faces(path, groups[name][2], face_heads) for name, path in map(split, args.faces)} if face_keys else {}
     face_lines = [c[k] for k in face_keys]
-    flagged = {n: (w > whole_line) | (e > line) for n, (w, e, _) in pools.items()}
+    flagged = {n: (w > whole_line) | (e > line) | second(n, len(w)) for n, (w, e, _) in pools.items()}
     with_faces = [n for n in pools if n in faces]
     for h in range(len(face_keys)):
         face_lines[h] = joint_line([faces[n][h] for n in with_faces], [flagged[n] for n in with_faces], face_lines[h])
@@ -136,6 +147,8 @@ def main():
           f"logit > {line:+.2f}; with {args.whole_head.name}: AI if logit > {whole_line:+.2f}"
           + (f" (its calibrated line {c['ai_logit']:+.2f}, raised: it gives up {args.give_up} flag(s) in {tightest})"
              if tightest else ""))
+    if head2 is not None:
+        print(f"  second head {args.head2.name}: flagged if logit > {line2:+.2f}")
     for key, new in zip(face_keys, face_lines):
         print(f"  red face if the {'face-swap head' if key == 'swap_ai_logit' else 'whole-image head on the face'} "
               f"says logit > {new:+.2f} (its own line {c[key]:+.2f}" + (", raised to keep the final verdict within "
@@ -144,8 +157,10 @@ def main():
         for name, (w, e, _) in group.items():
             red = (faces[name] > np.array(face_lines)[:, None]).any(axis=0) if name in faces else np.zeros(len(w), bool)
             face_cell = (f" | red face {red.mean():5.1%}" if name in faces else " | red face     -") if faces else ""
+            sec = second(name, len(w))
+            sec_cell = f" | 2nd head {sec.mean():5.1%}" if head2 is not None else ""
             print(f"  {title:<5} {name:<20}{len(w):>5} | whole-image AI {(w > whole_line).mean():5.1%} | edited "
-                  f"{(e > line).mean():5.1%}{face_cell} | together {((w > whole_line) | (e > line) | red).mean():5.1%}")
+                  f"{(e > line).mean():5.1%}{sec_cell}{face_cell} | together {((w > whole_line) | (e > line) | sec | red).mean():5.1%}")
     if args.out:
         face_cal = {k: v for key, new in zip(face_keys, face_lines) for k, v in ((key, new), (key + "_calibrated", c[key]))}
         args.out.write_text(json.dumps({
@@ -153,6 +168,7 @@ def main():
             "whole_head": args.whole_head.as_posix(), "edit_logit": float(line), "rate": args.rate,
             "give_up": args.give_up, "whole_ai_logit": whole_line, "whole_ai_logit_calibrated": c["ai_logit"],
             **face_cal, "face_pools": with_faces,
+            "head2": args.head2.as_posix() if head2 is not None else None, "edit2_logit": line2,
             "real_pools": {n: len(w) for n, (w, *_) in pools.items()},
             "check_pools": {n: len(w) for n, (w, *_) in checks.items()}}, indent=2))
         print(f"saved {args.out}")

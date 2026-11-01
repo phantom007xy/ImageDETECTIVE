@@ -74,7 +74,9 @@ def main():
         if pe is not None:
             pe_vector = pe.layer_features(pe.to_tensor(pe.view(image)).unsqueeze(0))[0]
             pe_vectors.append(pe_vector.numpy().astype(np.float16))
-            edited = float(check["head"].logits(pe_vector.reshape(1, -1).float())[0]) > check["line"]
+            x = pe_vector.reshape(1, -1).float()
+            edited = float(check["head"].logits(x)[0]) > check["line"] or (
+                "head2" in check and float(check["head2"].logits(x)[0]) > check["line2"])  # the second PE head
         if c["strong_ai_logit"] is not None and z > c["strong_ai_logit"]:
             verdict = "AI-generated"
         elif z > c["ai_logit"]:

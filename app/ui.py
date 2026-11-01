@@ -125,6 +125,9 @@ def verdict_card(result):
                   f"({p:.0%} AI evidence). A forwarded copy loses this label; the pixel checks still work then.")
     elif v == "AI-generated":
         reason = f"The whole image looks AI-made ({p:.0%} AI evidence); no real test photo scored this high."
+    elif v == "Likely AI-generated" and not result.get("whole_ai", True):
+        reason = ("Meta's Perception Encoder sees how the pixels were rendered: this picture looks made by an AI image "
+                  f"model (a check also trained on Google Gemini pictures), although the whole-image check alone says {p:.0%}.")
     elif v == "Likely AI-generated":
         reason = f"The whole image looks AI-made ({p:.0%} AI evidence)."
     elif v == "Likely AI-edited":
@@ -160,6 +163,7 @@ def checks_html(result, investigation=None):
     else:
         rows.append(("Edit check", "Perception Encoder",
                      _tag("looks re-rendered by an AI editor", VERDICT_COLOUR["amber"]) if edit["flagged"]
+                     else _tag("looks rendered by an AI image model", VERDICT_COLOUR["red"]) if edit.get("flagged2")
                      else _tag("no clear signs of an AI edit", VERDICT_COLOUR["green"])))
     faces_text = (_tag(f"{len(flagged)} of {len(checked)} look AI-made or swapped", VERDICT_COLOUR["orange"]) if flagged
                   else _tag(f"{len(checked)} checked, none flagged", VERDICT_COLOUR["green"]) if checked

@@ -35,6 +35,9 @@ def main():
         pe_weights = edit_calibration.exists() and json.loads(edit_calibration.read_text()).get("pe_weights")
         if pe_weights:  # the fine-tuned PE (~1.3 GB): Meta's PE-Core weights, changed by our fine-tune
             files.append(Path(pe_weights))
+        head2 = edit_calibration.exists() and json.loads(edit_calibration.read_text()).get("head2")
+        if head2:  # a second head on the same PE features (e.g. trained with Gemini pictures too)
+            files.append(Path(head2))
     swap = json.loads(calibration.read_text()).get("swap_head")
     if swap:
         files.append(Path(swap.replace("\\", "/")))

@@ -83,7 +83,10 @@ def load_edit_check(head_path, whole_calibration):
             return None
     for key, own in moved.items():
         whole_calibration[key] = cal[own]
-    return {"head": LinearHead.load(path), "line": cal["edit_logit"], "pe_weights": cal.get("pe_weights")}
+    check = {"head": LinearHead.load(path), "line": cal["edit_logit"], "pe_weights": cal.get("pe_weights")}
+    if cal.get("head2") and Path(cal["head2"]).exists():  # a second head on the same PE features (e.g. Gemini pictures)
+        check.update(head2=LinearHead.load(cal["head2"]), line2=cal["edit2_logit"])
+    return check
 
 
 class Detector:
@@ -122,6 +125,8 @@ class Detector:
             return "Likely AI-generated"
         if edit is not None and edit["flagged"]:  # the Muse-edit check, calibrated jointly with the head
             return "Likely AI-edited"
+        if edit is not None and edit.get("flagged2"):  # the second PE head: rendered by an AI image model (e.g. Gemini)
+            return "Likely AI-generated"
         if any(f.get("flagged") for f in faces):
             return "This face looks AI-made or AI-changed"
         if score <= c["real_logit"]:
@@ -175,7 +180,10 @@ class Detector:
         if self.edit_check is not None:
             features = self.pe.layer_features(self.pe.to_tensor(self.pe.view(image)).unsqueeze(0))
             logit = float(self.edit_check["head"].logits(features.reshape(1, -1).float())[0])
-            edit = {"logit": logit, "flagged": logit > self.edit_check["line"]}
+            edit = {"logit": logit, "flagged": logit > self.edit_check["line"], "flagged2": False}
+            if "head2" in self.edit_check:  # the second head (trained with Google's Gemini pictures too), its own line
+                logit2 = float(self.edit_check["head2"].logits(features.reshape(1, -1).float())[0])
+                edit.update(logit2=logit2, flagged2=logit2 > self.edit_check["line2"])
         pixel_verdict = self.verdict(score, faces, edit)
         meta = metadata.check_file(file_bytes) if file_bytes is not None else None
         verdict, reason = pixel_verdict, "pixels"
@@ -189,6 +197,7 @@ class Detector:
             "verdict": verdict,
             "verdict_reason": reason,  # "pixels" or "metadata"
             "pixel_verdict": pixel_verdict,  # what the detector alone says
+            "whole_ai": score > self.calibration["ai_logit"],  # the whole-image head alone crossed its AI line
             "metadata": meta,
             "patch_logits": patch_logits.numpy(),
             "faces": faces,

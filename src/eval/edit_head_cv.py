@@ -98,7 +98,11 @@ def main():
     parser.add_argument("--save-final", type=Path, help="then fit the head from EC3 with --final-pull and --final-repeat "
                         "on ALL selfies and save it here (no held-out selfies left: test on new ones)")
     parser.add_argument("--final-pull", type=float, default=0.1)
+    parser.add_argument("--start", default=EC3, help="the head the final fit starts from and is pulled back to "
+                        "(head_EC3p for the Gemini head: it keeps the person edits it already knows)")
     parser.add_argument("--final-repeat", type=int, default=5)
+    parser.add_argument("--extra", action="append", default=[], help='"GLOB:K": more training features for the final '
+                        "head, shown K times (e.g. Google's pictures: features/pe_ec3_train/google/*_train.npz:5)")
     parser.add_argument("--folds", type=int, default=3)
     args = parser.parse_args()
 
@@ -174,10 +178,16 @@ def main():
               f"{sel['local']:.0%} | whole edits caught {sel['whole']:.0%}")
 
     if args.save_final:
-        x = np.concatenate([x_pub] + [x_per] * args.final_repeat)
-        y = np.concatenate([y_pub] + [y_per] * args.final_repeat)
-        fit_near(x, y, ec3, args.final_pull).save(args.save_final)
-        print(f"\nsaved {args.save_final}: from EC3, pull {args.final_pull:g}, all selfie pairs x{args.final_repeat}")
+        x_parts, y_parts = [x_pub] + [x_per] * args.final_repeat, [y_pub] + [y_per] * args.final_repeat
+        for spec in args.extra:
+            pattern, k = spec.rsplit(":", 1)
+            x_e, y_e, _ = load(expand([pattern]))
+            x_parts += [x_e] * int(k)
+            y_parts += [y_e] * int(k)
+        x, y = np.concatenate(x_parts), np.concatenate(y_parts)
+        fit_near(x, y, LinearHead.load(args.start), args.final_pull).save(args.save_final)
+        print(f"\nsaved {args.save_final}: from {Path(args.start).name}, pull {args.final_pull:g}, all selfie pairs "
+              f"x{args.final_repeat}" + "".join(f", {e}" for e in args.extra))
 
 
 if __name__ == "__main__":

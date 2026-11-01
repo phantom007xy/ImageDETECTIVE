@@ -18,6 +18,9 @@ HEAD = "weights/google_v1/head_G3.pt"  # F + Nano Banana + GAN faces (TPDNE, SFH
 EDIT = "weights/edit_check_v3/head_EC3p.pt"  # EC3's PE (tune_pe step 7,000) + a head that also knows person edits
 # (src/eval/edit_head_cv.py --save-final, 1 Nov: from EC3's head, pull 0.1, my 30 selfies' Muse edits x5)
 PE_WEIGHTS = "weights/edit_check_v3/pe_EC3.pt"
+# A second head on the same PE features, trained from EC3p with Google's pictures too (Gemini 3.1 Flash, Nano Banana Pro,
+# Gemini 2.5 restorations and edits): its own, higher line, so the Muse head keeps its line (results/head_g_v1.txt, 1 Nov)
+EDIT2 = "weights/edit_check_v3/head_EC3g.pt"
 PE_DIR = "features/pe_ec3"  # its features of the public pools (src/features/extract_pe.py --pe-weights)
 GIVE_UP = 1
 # <folder name> of the private test. My first 30 selfies ("originals") are TRAINING data of head_EC3p since 1 Nov,
@@ -73,7 +76,7 @@ def main():
     pe_name = Path(PE_WEIGHTS).stem
     pools.update({name: (p + "_app.npz", f"{p}_{pe_name}.npz") for name, p in private.items()
                   if Path(f"{p}_{pe_name}.npz").exists()})
-    args = ["--head", EDIT, "--pe-weights", PE_WEIGHTS, "--whole-head", HEAD, "--give-up", str(GIVE_UP),
+    args = ["--head", EDIT, "--pe-weights", PE_WEIGHTS, "--whole-head", HEAD, "--give-up", str(GIVE_UP), "--head2", EDIT2,
             "--out", EDIT.replace(".pt", "_calibration.json")]
     for name, (whole, pe) in pools.items():
         args += ["--pool", f"{name}:{whole}:{pe}"]
@@ -88,7 +91,7 @@ def main():
              ("Muse pairs val", "muse_pairs_val", ""), ("SDXL (unseen)", "sd_faces", "sd_faces/sdxl"),
              ("SD 3.5 Medium", "open_gen_dev", "open_gen/sd35m"), ("Kandinsky 2.2", "open_gen_dev", "open_gen/k22"),
              ("PixArt-Sigma", "open_gen_dev", "open_gen/pixart"), ("GAN faces (TPDNE)", "tpdne_test", ""), ("GAN faces (SFHQ)", "sfhq_pt3_test", ""),
-             ("Nano Banana dev", "bitmind_nb_dev", "")]
+             ("Nano Banana dev", "bitmind_nb_dev", ""), ("GEMINI dev (today's model)", "google/gemini_dev_v1", "")]
     for name, stem, prefix in fakes:
         args += ["--fake", f"{name}:features/{stem}_app.npz:{PE_DIR}/{stem}_eval.npz" + (f"@{prefix}" if prefix else "")]
     run("src.calibrate.calibrate_edit_check", args)
