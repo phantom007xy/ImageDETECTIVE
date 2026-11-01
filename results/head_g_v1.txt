@@ -1,0 +1,53 @@
+Head G: the whole-image head with Gemini pictures, GAN faces and real close-ups (1 Nov 2026; work in progress)
+
+== 1. Nano Banana (Gemini) pictures from BitMind (scripts/export_bitmind.py; HF bitmind/nano-banana, MIT) ==
+1,526 training pictures (files 0, 5, 10, 15, 20) and 610 dev-only pictures (files 25, 30), all 1024 x 1024 PNG;
+landscapes and fantasy scenes first, then people, animals, interiors, objects. Frozen DINOv3 + linear heads
+(src/eval/compare_heads.py, head F's training files plus the new ones), compared at each head's own line: at most 5%
+of every real dev pool called AI (python -m src.eval.fair_compare, app view):
+
+  head  line  | real called AI: polished  OI val  OI unseen  phone v3  CLOSE-UPS | caught: Muse  pairs  SDXL  PixArt  SD3.5  NanoB dev | Commons: Gemini  Gem.restor.  ChatGPT  DALL-E  MJ    SD    StyleGAN
+  F     0.666 |                  3.9%    0.0%     1.0%     0.0%      4.7%    |       91.0%  71.1%  83.7%  98.7%  42.1%   98.2%   |          73.7%    10.0%      78.9%   71.9%  77.8% 97.0%  0.0%
+  G1    0.666 |                  3.9%    0.0%     1.0%     0.0%      4.7%    |       92.0%  69.7%  82.2%  98.5%  42.1%   99.3%   |          68.4%    10.0%      78.9%   68.8%  83.3% 97.0%  0.0%
+  G1r   0.545 |                  4.8%    1.3%     1.7%     0.0%      4.7%    |       93.0%  75.0%  83.1%  98.7%  50.0%   99.3%   |          78.9%    13.3%      78.9%   71.9%  83.3% 97.0%  0.0%
+  (G1 = F + Nano Banana; G1r = G1 + 440 real close-ups, 8 training views each)
+-> Head F already catches 98% of BitMind's Nano Banana pictures; adding them changes little. The Commons Gemini misses
+   are not "Nano Banana in general".
+
+== 2. Found: head F flags real close-up faces (a "close-up face = AI" shortcut) ==
+Real close-ups (scripts/make_real_face_crops.py: SAM 3 faces of at least 200 px, square crops of 5-6.5 eye distances,
+from DEV photos: 129) set head F's fair line above (4.7%, the strictest pool). The app's full verdict at its own lines
+(python -m src.eval.full_verdicts --list features/lists/real_face_crops_dev.csv):
+  real close-ups of Commons portraits 77: 11.7% called AI (1 "AI-generated") | Commons people 8: 25% | phone 1: 1 of 1
+  real close-ups of OpenImages photos 38: 0%       | all 129: 12 called AI (9.3%) - over the 5% budget
+Likely cause: head F's AI class has 1,200 tight Stable Diffusion face images, its real class almost no tight real faces.
+Whole photos never showed it (polished dev 4.8%, my phone photos 0%): it appears when a real portrait is cropped tight,
+like a profile picture. Adding real close-ups to training (G1r) already lowers it and raises catches at the same line.
+Next: more real close-ups (OpenImages SID files 15-29; Commons v4 portraits and selfies, CC0/CC BY), GAN faces (SFHQ),
+and the close-ups as a calibration pool.
+
+== 3. More real close-ups and real selfies, then GAN faces (G2, G3) ==
+Real side: 893 real close-ups for training (440 + 302 from OpenImages SID files 15-29 + 151 from Commons v4), 313 whole
+Commons v4 photos (portraits and real selfies, CC0/CC BY; scripts/download_commons.py --plan v4); dev: 150 close-ups
+(one pool, from dev photos) and 62 Commons v4 dev photos (48 portraits, 14 selfies).
+GAN faces: thispersondoesnotexist.com faces (HF javi22/this-person-does-not-exist-10k, MIT; scripts/download_tpdne.py):
+1,419 train / 244 test; SFHQ part 3 (Kaggle, CC0, StyleGAN2; scripts/download_sfhq.py reads only the picked files
+from the dataset zip): 2,025 train / 375 test.
+  G2 = F + Nano Banana + all real close-ups + Commons v4 photos + TPDNE; G3 = G2 + SFHQ.
+Fair comparison, own line per head (at most 5% of every real pool, the close-ups and selfies+portraits included):
+  head  line  | real: polished OIval OIunseen phone-v3 close-ups selfies+portr | Muse pairs SDXL PixArt SD3.5 NanoB TPDNE SFHQ | Commons: Gemini GemRestor DALL-E MJ StyleGAN
+  F     0.649 |       3.9%     0.0%  1.2%     0.0%     4.7%      1.6%         | 91.0% 71.1% 84.0% 98.7% 42.1% 98.4%  5.3%  4.5% |          73.7%   10.0%    71.9% 77.8% 0/3
+  G2    0.525 |       4.2%     0.0%  2.3%     0.0%     4.7%      3.2%         | 89.0% 71.1% 90.1% 98.5% 47.4% 99.0% 88.5% 65.6% |          73.7%   16.7%    75.0% 72.2% 3/3
+  G3    0.543 |       4.8%     1.3%  2.6%     0.0%     4.7%      3.2%         | 88.0% 71.1% 90.4% 98.5% 50.0% 98.9% 94.7% 92.0% |          73.7%   16.7%    75.0% 77.8% 3/3
+Chosen: G3 (weights/google_v1/head_G3.pt, private). The app's full verdict with G3 + the edit check EC3p, calibrated on
+the PUBLIC pools (dry run; the app's file is made by calibrate_app with my phone photos too):
+  G3: AI if logit > +0.17 (traded +0.27 in the polished set), authentic <= -3.05, temperature 1.09; red face +4.19
+  real called AI: polished 4.8% | OI val 1.3% | originals 2.6% / 2.0% | OI unseen 3.1% | Commons v3 dev 0% |
+                  close-ups 4.0% (head F: 9.3%) | selfies+portraits 3.2%
+  caught: Muse test 100% | pairs 97.4% | edits v1 local 76.5% whole 96.0% | v2 local 75.0% whole 95.5% | SDXL 93.1% |
+          GAN faces TPDNE 95.1% / SFHQ 92.0% (head F: about 5%) | Nano Banana dev 98.9% | PixArt 98.2% | Kandinsky 98.7% |
+          SD 3.5 50.0% (head F in the app: 63.2%)
+-> Real close-ups (profile-picture style) are back within the budget and GAN faces go from about 5% to 92-95%; the price
+   is SD 3.5 (and about 1 point on pairs, PixArt and Kandinsky), because the line now also protects real close-ups.
+   Gemini made from a prompt stays at 74% (Commons): it needs pictures of today's Gemini models (Gemini app, by hand;
+   the Gemini API has no free image generation: "limit 0" on the free tier).

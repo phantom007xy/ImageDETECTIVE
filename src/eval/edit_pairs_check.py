@@ -31,7 +31,7 @@ from PIL import Image, ImageFilter, ImageOps  # noqa: E402
 from src.faces import crop  # noqa: E402
 from src.inference import Detector  # noqa: E402
 
-HEAD = "weights/open_gen_v1/head_F.pt"
+HEAD = "weights/google_v1/head_G3.pt"
 EDIT_CHECK = "weights/edit_check_v3/head_EC3p.pt"
 
 

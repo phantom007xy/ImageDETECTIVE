@@ -62,7 +62,9 @@ HEADS = {
     "E": "weights/commons_v1/head_E.pt",
     "F": "weights/open_gen_v1/head_F.pt",
     "G": "weights/muse_edits_v1/head_G.pt",
+    "G3": "weights/google_v1/head_G3.pt",
 }
+APP_HEAD = "G3"  # the whole-image head the app uses (1 Nov: G3, results/head_g_v1.txt)
 DARK_BELOW = 80
 VIEWS = ("long448", "short448")  # both app views are saved, so they can be compared (preprocess.APP_VIEW)
 SWAP_HEAD = "weights/dfdc_v1/head_dfdc.pt"
@@ -210,19 +212,19 @@ def main():
     if pe is not None:
         x = np.stack(pe_vectors).astype(np.float32)
         z = LinearHead.load(args.edit_check).logits(torch.from_numpy(x.reshape(len(x), -1))).numpy()
-        f = load_calibration(HEADS["F"])  # the app's head, with the joint trade if the edit check uses one
+        f = load_calibration(HEADS[APP_HEAD])  # the app's head, with the joint trade if the edit check uses one
         check = load_edit_check(args.edit_check, f)
         same_pe = check is not None and check["pe_weights"] == (args.pe_weights.as_posix() if args.pe_weights else None)
         line = check["line"] if same_pe else 0.0
         print(f"Muse-edit check {args.edit_check.name}: called edited {(z > line).mean():.0%} of {len(z)} real photos "
               f"({'its calibrated line' if same_pe else 'p > 0.5, not calibrated for this PE yet'})")
         if same_pe:
-            logit_f = np.array([r["logit_F"] for r in rows])
+            logit_f = np.array([r[f"logit_{APP_HEAD}"] for r in rows])
             best = lambda key: np.array([-np.inf if r[key] == "" else r[key] for r in rows])  # noqa: E731
             line_or_inf = lambda key: np.inf if f[key] is None else f[key]  # noqa: E731
-            red = (best("face_max_logit_F") > line_or_inf("face_ai_logit")) | (best("face_max_swap_logit")
+            red = (best(f"face_max_logit_{APP_HEAD}") > line_or_inf("face_ai_logit")) | (best("face_max_swap_logit")
                                                                                > line_or_inf("swap_ai_logit"))
-            print(f"  as in the app (head F, AI line {f['ai_logit']:+.2f}, OR the edit check, OR a red face): called AI "
+            print(f"  as in the app (head {APP_HEAD}, AI line {f['ai_logit']:+.2f}, OR the edit check, OR a red face): called AI "
                   f"or edited {((logit_f > f['ai_logit']) | (z > line) | red).mean():.0%} of {len(z)}")
     if tuned is not None:
         for view in VIEWS:
