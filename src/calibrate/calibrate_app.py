@@ -14,7 +14,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-HEAD = "weights/google_v1/head_G3.pt"  # F + Nano Banana + GAN faces (TPDNE, SFHQ) + real close-ups/selfies (results/head_g_v1.txt)
+HEAD = "weights/google_v1/head_G3tt.pt"  # G3 + tighter real close-ups (tight face crops looked like GAN faces; results/head_g_v1.txt)
 EDIT = "weights/edit_check_v3/head_EC3p.pt"  # EC3's PE (tune_pe step 7,000) + a head that also knows person edits
 # (src/eval/edit_head_cv.py --save-final, 1 Nov: from EC3's head, pull 0.1, my 30 selfies' Muse edits x5)
 PE_WEIGHTS = "weights/edit_check_v3/pe_EC3.pt"

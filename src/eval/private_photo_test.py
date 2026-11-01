@@ -63,8 +63,9 @@ HEADS = {
     "F": "weights/open_gen_v1/head_F.pt",
     "G": "weights/muse_edits_v1/head_G.pt",
     "G3": "weights/google_v1/head_G3.pt",
+    "G3tt": "weights/google_v1/head_G3tt.pt",
 }
-APP_HEAD = "G3"  # the whole-image head the app uses (1 Nov: G3, results/head_g_v1.txt)
+APP_HEAD = "G3tt"  # the whole-image head the app uses (1 Nov: G3, results/head_g_v1.txt)
 DARK_BELOW = 80
 VIEWS = ("long448", "short448")  # both app views are saved, so they can be compared (preprocess.APP_VIEW)
 SWAP_HEAD = "weights/dfdc_v1/head_dfdc.pt"

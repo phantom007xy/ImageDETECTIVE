@@ -108,3 +108,18 @@ b) Into the edit check (frozen fine-tuned PE): a head started from EC3p, pull 0.
              95.5% (unchanged) | Muse test 100% | pairs 98.7% | SDXL 94.3% | Nano Banana dev 99.0% | GAN 95.1% / 92.0%
    The app: a picture is "Likely AI-generated" when the second head fires (the reason line names the Perception
    Encoder). One more linear head on the same PE features: no extra model pass.
+
+== 7. Tight face crops: G3tt replaces G3 (1 Nov, evening) ==
+Forwarded-copy check: real close-ups cropped to 70% were called AI 12.1% with G3: a face filling the frame looks like
+a GAN face (TPDNE/SFHQ are framed that way). Real faces at that framing, cut from the TRAINING close-ups without a new
+SAM pass: "tight" = the centre 60-80% (893), "tighter" = the centre 40-60%, roughly forehead to chin (893).
+Real dev close-ups (150) called AI at each head's own fair line:   original   crop 70%   crop 55%
+  G3                                                                  4.7%      12.7%      26.0%
+  G3t  (+ tight)                                                      4.7%       8.0%      13.3%
+  G3tt (+ tight + tighter)                                            5.3%       6.7%       6.7%
+Fair comparison (own line per head): G3tt vs G3: SDXL 91.9 vs 90.4, SD 3.5 52.6 vs 50.0, TPDNE 95.5 vs 94.7; Muse pairs
+63.2 vs 71.1 (the edit check catches them in the app), DALL-E and Commons Gemini -1 picture each.
+The app with G3tt + EC3p + EC3g (dry run, public pools): real polished 4.5%, OI unseen 2.3%, close-ups 4.0%,
+selfies+portraits 3.2% (all others as before); caught: Muse 100%, pairs 98.7%, edits unchanged, SDXL 95.2%,
+SD 3.5 52.6%, GAN 95.9% / 92.3%, Nano Banana 98.7%, Gemini dev 90.0%, Kandinsky 97.4% (-1 picture).
+-> the app uses G3tt (weights/google_v1/head_G3tt.pt); calibrate_app re-run by me with my phone photos.
