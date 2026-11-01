@@ -123,3 +123,17 @@ The app with G3tt + EC3p + EC3g (dry run, public pools): real polished 4.5%, OI 
 selfies+portraits 3.2% (all others as before); caught: Muse 100%, pairs 98.7%, edits unchanged, SDXL 95.2%,
 SD 3.5 52.6%, GAN 95.9% / 92.3%, Nano Banana 98.7%, Gemini dev 90.0%, Kandinsky 97.4% (-1 picture).
 -> the app uses G3tt (weights/google_v1/head_G3tt.pt); calibrate_app re-run by me with my phone photos.
+
+== 8. More Google pictures for the Gemini head: no gain (1 Nov, ~23:00) ==
+The rest of the approved Google credit (streams A2/B2/C2; total spend ~$65.6 of $80) more than doubled the Google set:
+551 caption pictures (312 Gemini 3.1 Flash, 135 Nano Banana Pro, 104 Gemini 2.5 Flash; was 214), 92 restorations,
+90 edits (was 19); dev captions 67 pictures (was 19). Same recipe as EC3g (from EC3p, pull 0.1, my selfie pairs x5,
+Google xK), each candidate calibrated as the app's second head in a dry run of calibrate_app on the PUBLIC pools:
+  second head          its line   GEMINI dev (30)   Google dev captions (67)   Commons Gemini (19, never trained on)
+  EC3g (app now)        +6.62         90.0%                 67.2%                        84.2%
+  EC3g2, Google x2      +7.21         86.7%                 68.7%                        78.9%
+  EC3g2, Google x5      +7.46         86.7%                 67.2%                        78.9%
+  Real pools identical for all three (polished 4.5%, OpenImages unseen 2.1%, close-ups 4.0%, ...); Nano Banana dev
+  98.7% -> 98.9%; everything else unchanged.
+-> NEGATIVE: more Google pictures raise the second head's scores on real polished photos too, so its line rises and it
+   catches no more. EC3g stays; no further Google pictures (the remaining credit is kept).
