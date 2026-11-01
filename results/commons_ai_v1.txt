@@ -36,3 +36,10 @@ file's AI label as the app would read it from the uploaded file)
    The edit check knows Muse re-renders only (it also flags 0% of SD 3.5 and Kandinsky, results/edit_check_v3.txt).
 Caveats: in-the-wild files (uploaders may have resized, cropped or re-saved them); the photo-like pick and the
 restoration split are my judgement; groups per generator are small.
+
+== Update (1 Nov, evening): the app now (G3tt + edit check EC3pf + the Gemini head EC3g; python -m src.eval.full_verdicts) ==
+  made from a prompt: 153 of 171 caught (89.5%; head F alone at the time of the first test: 151)
+    100%: Grok 11, Stable Diffusion 33, Nano Banana 4, Meta AI 3, Imagen 2, StyleGAN faces 3 (was 0 of 3), MAI-Image-1, Reve
+    ChatGPT 94.7% (18 of 19) | DALL-E 3 (Bing) 92.9% | Flux 85.7% | Gemini 84.2% (was 73.7%) | DALL-E 2/3 78.1% |
+    Midjourney 77.8% | Firefly 1 of 2 | Ideogram 1 of 2
+  AI restorations or edits of real photos (31): 7 caught (Gemini restorations 23.3%) - still the weak spot
