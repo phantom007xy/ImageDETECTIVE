@@ -87,6 +87,15 @@ def self_blend(img, mask, rng):
     return np.clip(out, 0, 255).astype(np.uint8)
 
 
+def photo_damage(img, rng):
+    """Like a compressed or small copy of the whole photo (a WhatsApp forward): the face shrunk to 25-100%, JPEG 45-90 at
+    that size, enlarged again. Compression at the photo's scale wipes far more of a swap's traces than JPEG on the
+    enlarged 336 px crop (the first run's view): results/face_pe_v1.txt, forwarded copies."""
+    side = img.size[0]
+    small = img.resize((max(32, round(side * rng.uniform(0.25, 1.0))),) * 2, Image.BICUBIC)
+    return jpeg(small, rng.randint(45, 90)).resize((side, side), Image.BICUBIC)
+
+
 def face_train_view(img, rng, size):
     """A random 2.6-4.0 eye-distance square of a wide crop (one eye distance = WIDE_SIZE / WIDE_K px), at size x size."""
     eye = WIDE_SIZE / WIDE_K
@@ -105,8 +114,8 @@ def face_train_view(img, rng, size):
 
 
 class FaceCrops(torch.utils.data.Dataset):
-    def __init__(self, rows, size, mean, std, p_blend):
-        self.rows, self.size, self.mean, self.std, self.p_blend = rows, size, mean, std, p_blend
+    def __init__(self, rows, size, mean, std, p_blend, p_damage=0.0):
+        self.rows, self.size, self.mean, self.std, self.p_blend, self.p_damage = rows, size, mean, std, p_blend, p_damage
 
     def __len__(self):
         return len(self.rows)
@@ -122,6 +131,8 @@ class FaceCrops(torch.utils.data.Dataset):
                 mask = np.asarray(m.convert("L")) > 127
             if mask.sum() > 200:
                 img, label, kind = Image.fromarray(self_blend(np.asarray(img), mask, rng)), 1, 2
+        if rng.random() < self.p_damage:  # every class alike (after self-blending: the seam gets compressed too)
+            img = photo_damage(img, rng)
         view = face_train_view(img, rng, self.size)
         pixels = torch.from_numpy(np.asarray(view, dtype=np.float32) / 255.0).permute(2, 0, 1)
         return (pixels - self.mean) / self.std, torch.tensor(float(label)), torch.tensor(kind)
@@ -161,8 +172,13 @@ def dev_crops(crops, mean, std, max_per_set, seed):
                 chosen += sum(r["group"] == g for r in rows)
             rows = [r for r in rows if r["group"] in keep]
         if rows:
-            imgs = np.stack([np.asarray(Image.open(r["path"]).convert("RGB")) for r in rows])
-            out[name] = (torch.from_numpy(imgs).permute(0, 3, 1, 2).contiguous(), np.array([int(r["label"]) for r in rows]))
+            images = [Image.open(r["path"]).convert("RGB") for r in rows]
+            labels = np.array([int(r["label"]) for r in rows])
+            out[name] = (torch.from_numpy(np.stack([np.asarray(i) for i in images])).permute(0, 3, 1, 2).contiguous(), labels)
+            # a fixed compressed copy (the face at 60%, JPEG 70, enlarged again): roughly a forwarded photo's face
+            damaged = [jpeg(i.resize((202, 202), Image.BICUBIC), 70).resize((336, 336), Image.BICUBIC) for i in images]
+            out[name + " (compressed)"] = (torch.from_numpy(np.stack([np.asarray(i) for i in damaged])).permute(0, 3, 1, 2)
+                                           .contiguous(), labels)
     return out
 
 
@@ -182,16 +198,18 @@ def validate(model, w, b, dev, mean, std):
     reals = {n: scores[n] for n in DEV_REAL if n in scores}
     line = max(float(np.quantile(s, 0.995)) for s in reals.values())
     result = {"line": line}
-    for n in DEV_SWAPS:
+    for n in list(DEV_SWAPS) + [d + " (compressed)" for d in DEV_SWAPS]:
         if n in scores:
             labels = dev[n][1]
             result[n] = (float((scores[n][labels == 1] > line).mean()), metrics.auc(scores[n], labels == 1))
     result["reals"] = {n: float((s > line).mean()) for n, s in reals.items()}
+    result["reals compressed"] = max(float((scores[n + " (compressed)"] > line).mean()) for n in reals)
     return result
 
 
 def report(step, r):
-    swaps = " | ".join(f"{n}: caught {r[n][0]:.1%} (AUC {r[n][1]:.3f})" for n in DEV_SWAPS if n in r)
+    swaps = " | ".join(f"{n}: caught {r[n][0]:.1%} (AUC {r[n][1]:.3f})" for n in r if n not in ("line", "reals", "reals compressed"))
+    swaps += f" | compressed real faces above (worst pool) {r['reals compressed']:.1%}"
     print(f"  step {step}: strict line {r['line']:+.2f} | {swaps} | real faces above: "
           + " ".join(f"{n} {v:.1%}" for n, v in r["reals"].items()), flush=True)
 
@@ -210,6 +228,10 @@ def main():
     parser.add_argument("--probe-samples", type=int, default=4000, help="training views for the frozen probe (head start)")
     parser.add_argument("--dev-max", type=int, default=1200, help="dev swap-set size (whole photos/videos)")
     parser.add_argument("--eval-every", type=int, default=500)
+    parser.add_argument("--init-pe", type=Path, help="continue from this fine-tuned PE (the pull then anchors to it)")
+    parser.add_argument("--init-head", type=Path, help="... and this head (instead of a frozen probe)")
+    parser.add_argument("--p-damage", type=float, default=0.0, help="share of training faces given photo-scale damage")
+    parser.add_argument("--warmup", type=int, default=300)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
@@ -234,7 +256,9 @@ def main():
     model.set_grad_checkpointing(True)
     cfg = resolve_data_config({}, model=model)
     size, mean, std = cfg["input_size"][1], torch.tensor(cfg["mean"]).view(3, 1, 1), torch.tensor(cfg["std"]).view(3, 1, 1)
-    dataset = FaceCrops(rows, size, mean, std, args.p_blend)
+    if args.init_pe:
+        model.load_state_dict(torch.load(args.init_pe, map_location="cpu"), strict=True)
+    dataset = FaceCrops(rows, size, mean, std, args.p_blend, args.p_damage)
     sampler = torch.utils.data.WeightedRandomSampler(weights, num_samples=10 ** 7, replacement=True)
     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, sampler=sampler, drop_last=True,
                                          num_workers=args.workers, persistent_workers=True, pin_memory=True)
@@ -243,17 +267,21 @@ def main():
     dev = dev_crops(args.crops, mean, std, args.dev_max, args.seed)
     print("dev: " + " | ".join(f"{n} {len(v[1])}" for n, v in dev.items()), flush=True)
 
-    # The head starts as a linear probe of the frozen PE on training views (step 0 = the frozen baseline).
-    model.eval()
-    feats, labels = [], []
-    with torch.no_grad():
-        for pixels, y, _ in loader:
-            with torch.autocast("cuda", dtype=torch.bfloat16):
-                feats.append(layer_features(model, pixels.cuda()).flatten(1).float().cpu())
-            labels.append(y)
-            if sum(len(f) for f in feats) >= args.probe_samples:
-                break
-    probe = LinearHead().fit(torch.cat(feats), torch.cat(labels), weight_decay=1e-2)
+    # The head starts as a linear probe of the frozen PE on training views (step 0 = the frozen baseline),
+    # or from --init-head when continuing a run.
+    if args.init_head:
+        probe = LinearHead.load(args.init_head)
+    else:
+        model.eval()
+        feats, labels = [], []
+        with torch.no_grad():
+            for pixels, y, _ in loader:
+                with torch.autocast("cuda", dtype=torch.bfloat16):
+                    feats.append(layer_features(model, pixels.cuda()).flatten(1).float().cpu())
+                labels.append(y)
+                if sum(len(f) for f in feats) >= args.probe_samples:
+                    break
+        probe = LinearHead().fit(torch.cat(feats), torch.cat(labels), weight_decay=1e-2)
     model.train()
     w = probe.weight.float().cuda().requires_grad_()
     b = probe.bias.float().reshape(()).cuda().requires_grad_()
@@ -272,7 +300,7 @@ def main():
                      "base_lr": args.lr * args.decay ** (25 - d)} for d in depths]
     param_groups.append({"params": [w, b], "lr": args.lr_head, "base_lr": args.lr_head})
     optimizer = torch.optim.AdamW(param_groups, weight_decay=0.0)
-    warmup = 300
+    warmup = args.warmup
 
     def factor(s):
         return min(1.0, (s + 1) / warmup) * 0.5 * (1 + math.cos(math.pi * min(1.0, s / args.steps)))
