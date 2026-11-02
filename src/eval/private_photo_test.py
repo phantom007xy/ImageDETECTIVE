@@ -68,8 +68,8 @@ HEADS = {
 APP_HEAD = "G3tt"  # the whole-image head the app uses (1 Nov: G3, results/head_g_v1.txt)
 DARK_BELOW = 80
 VIEWS = ("long448", "short448")  # both app views are saved, so they can be compared (preprocess.APP_VIEW)
-SWAP_HEAD = "weights/swap_v3/head_swap_v3.pt"  # DFDC + OpenForensics + SID real faces, last + middle layers (results/swap_head_v2.txt)
-FACE_PE = "weights/face_pe_v1/pe_step4000.pt"  # the face-swap Perception Encoder, if the swap head reads its features
+SWAP_HEAD = "weights/face_pe_v2/head_facepe.pt"  # the face-swap check on its own fine-tuned PE (results/face_pe_v1.txt)
+FACE_PE = "weights/face_pe_v2/pe_step1000.pt"  # the face-swap Perception Encoder, if the swap head reads its features
 FACE_LAYERS = (8, 12, 16)  # face crops: also the mean patch tokens after these blocks, for face-swap heads that read them
 
 

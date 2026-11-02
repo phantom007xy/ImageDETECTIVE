@@ -46,3 +46,25 @@ Dry run of calibrate_app on the PUBLIC pools (my private pools not used): swap l
 AI-image number of the full verdict unchanged (polished 4.5%, OpenImages unseen 1.9%, close-ups 4.0%, selfies+portraits
 3.2%; Muse 100%, Gemini dev 90.0%, GAN 95.9 / 92.0%, ...).
 Weights: weights/face_pe_v1/pe_step4000.pt + head_facepe.pt (private; DFDC rule: never published).
+
+== Forwarded copies and face-swap model v2 (2 Nov, morning-noon) ==
+Forwarded copies (src/eval/face_swap_robustness.py: whole photos damaged as a forward would, then SAM 3, the app crop,
+the model; share of photos with a face above the line): real faces stay clean (polished 0% in every copy, OpenImages
+0-0.8%), but v1 loses most swaps once the photo is compressed: OpenForensics test 82.5% original -> JPEG 70 35.8%,
+WhatsApp-like 45.0%, small copy 13.3%. In training, JPEG was applied only to the enlarged 336 px crop.
+v2 = v1 (step 4,000) trained 2,000 more steps (lr 1e-5) with half the training faces given photo-scale damage first
+(shrunk to 25-100%, JPEG 45-90 at that size, enlarged again; every class alike). Choice on the DEV photos only
+(OpenForensics dev, 120 photos; each model at its own strict line from all real face pools):
+  model        line    original  JPEG70  WhatsApp  WhatsApp x2  small   screenshot | average | DFDC p3 (dev)
+  v1 s4000     +9.87    84.2%    40.8%    53.3%      50.8%      15.8%     82.5%    |  54.6%  |  49.6%
+  v2 s500      +12.59   65.0%    39.2%    44.2%      45.0%      25.0%     64.2%    |  47.1%  |  38.6%
+  v2 s1000     +12.60   77.5%    62.5%    65.0%      65.0%      48.3%     75.8%    |  65.7%  |  48.5%  <- chosen
+  v2 s2000     +10.04   79.2%    63.3%    64.2%      64.2%      42.5%     78.3%    |  62.0%  |  48.1%
+  Real photos (dev, forwarded copies) with a face above the line: polished 0% in every copy for every model;
+  OpenImages unseen: v1 0-0.8%, v2 s1000 0-1.7% (JPEG 70: 2 of 120 photos), v2 s2000 0-1.7%.
+v2 s1000 on the held-out sets (clean copies): OpenForensics test 77.7%, DFDC p3 48.5%, WildDeepfake 47.2% (its own real
+faces 3.4% above, was 6.6%); real photo pools 0.0%; AI-made faces 0.5-1.5%.
+-> The app uses v2 step 1,000 (weights/face_pe_v2/pe_step1000.pt + head_facepe.pt, private): a little lower on clean
+   copies than v1, far better on forwarded ones (the app's main use). Dry run of calibrate_app (public pools): swap line
+   +12.74; swaps red: OpenForensics test 76.4%, DFDC p3 47.4%, WildDeepfake 46.5%; every real pool and every AI-image
+   number of the full verdict unchanged.
