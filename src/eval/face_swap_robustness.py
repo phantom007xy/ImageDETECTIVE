@@ -4,6 +4,7 @@ Whole photos are damaged as a forward would (src/eval/robustness_check.py: JPEG 
 small copy, screenshot), then the app's face path runs on the copy: SAM 3 faces, the app's crop at 336, the face-swap
 Perception Encoder and its head. A photo counts as flagged if any of its faces is above the line.
   - REAL: photos with faces from the polished Commons dev set and the unseen OpenImages photos
+  - "phone": real faces given beauty-mode or portrait-mode processing (src/models/tune_face_pe.phone_process)
   - SWAPS: OpenForensics dev photos (15% of Val; for choices) and Test-Dev photos (the test); each has at least one
     replaced face (a real face above the line would also count, which is rare: 0.2% of its real faces)
 Several models can be compared on the same copies (SAM runs once per copy): --model "NAME:PE weights:head:line".
@@ -27,6 +28,18 @@ from src.faces import crop
 from src.faces.sam_faces import FaceFinder
 from src.models.linear_head import LinearHead
 from src.models.pe_core import PECore
+from src.models.tune_face_pe import phone_process
+
+
+def phone_copy(image, finder, seed):
+    """The photo as a phone with a beauty mode or portrait mode would have made it: every face found (SAM 3 masks) gets
+    skin smoothing, a brighter skin tone or a blurred background around it. The faces stay REAL faces."""
+    rng = random.Random(seed)
+    out = image
+    for face in finder.find(image, with_masks=True):
+        if not face["too_small"] and face["mask"].any():
+            out = Image.fromarray(phone_process(out, face["mask"], rng))
+    return out
 
 SETS = {"REAL polished dev": ("features/lists/commons_dev.csv", "features/faces/commons_dev_eval.npz"),
         "REAL OpenImages unseen": ("features/lists/sid_reals_0_9_unseen.csv", "features/faces/sid_reals_0_9_unseen_eval.npz"),
@@ -61,7 +74,7 @@ def main():
             with Image.open(r["path"]) as im:
                 image = (ImageOps.exif_transpose(im) if title.startswith("REAL") else im).convert("RGB")
             for v in args.versions:
-                copy = VERSIONS[v](image)
+                copy = phone_copy(image, finder, zlib.crc32(r["path"].encode())) if v == "phone" else VERSIONS[v](image)
                 faces = [f for f in finder.find(copy) if not f["too_small"]]
                 for m, (pe, head, line) in models.items():
                     if faces:

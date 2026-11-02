@@ -88,7 +88,7 @@ def evidence_map(image, patch_logits, scale=4.0, weak=0.25):
     heat[ai] = (239, 68, 68, 0)
     heat[real] = (134, 239, 172, 0)
     heat[~(ai | real)] = (30, 58, 138, 0)
-    alpha = np.where(ai, 70 + 130 * strength, np.where(real, 40 + 110 * -strength, 55))
+    alpha = np.where(ai, 70 + 130 * strength, np.where(real, 30 + 80 * -strength, 45))
     heat[..., 3] = np.clip(alpha, 0, 255).astype(np.uint8)
     layer = Image.fromarray(heat, "RGBA").resize(image.size, Image.BILINEAR)
     return Image.alpha_composite(image.convert("RGBA"), layer).convert("RGB")
