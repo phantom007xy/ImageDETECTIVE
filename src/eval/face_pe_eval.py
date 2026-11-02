@@ -28,7 +28,7 @@ from src.models.linear_head import LinearHead
 from src.models.pe_core import PECore
 
 CROPS = Path("D:/Datasets/FaceCrops")
-REAL_POOLS = {"polished dev": "pool_commons_dev", "OpenImages val": "pool_muse_pairs_val",
+REAL_POOLS = {"FaceID-550 new people": "pool_faceid550_dev", "polished dev": "pool_commons_dev", "OpenImages val": "pool_muse_pairs_val",
               "OpenImages unseen": "pool_sid_reals_0_9_unseen", "Commons v3 dev": "pool_commons_v3_dev",
               "close-ups": "pool_real_face_crops_dev_all", "selfies+portraits": "pool_commons_v4_dev",
               "SID val": "pool_sid_val", "DFDC p3 real": "dfdc_p3_dev"}
@@ -37,7 +37,10 @@ AI_FACES = {"Muse test faces": "pool_muse_image_test_v1", "SD faces": "pool_sd_f
 
 
 def rows_of(stem):
-    with open(CROPS / f"{stem}.csv", newline="") as f:
+    path = CROPS / f"{stem}.csv"
+    if not path.exists():
+        return None
+    with open(path, newline="") as f:
         return list(csv.DictReader(f))
 
 
@@ -69,16 +72,18 @@ def main():
     parser.add_argument("--pe", type=Path, help="fine-tuned PE weights (default: the original PE)")
     parser.add_argument("--head", type=Path, required=True)
     parser.add_argument("--save-dir", type=Path, help="save every set's features here")
+    parser.add_argument("--crops", type=Path, default=CROPS, help="the crop folder (src/faces/make_crops.py)")
     args = parser.parse_args()
+    globals()["CROPS"] = args.crops
 
     pe, head = PECore(tuned_path=args.pe), LinearHead.load(args.head)
     sets = {}
     for name, stem in {**REAL_POOLS, **SWAPS, **AI_FACES}.items():
-        if stem not in sets:
-            rows = rows_of(stem)
+        if stem not in sets and (rows := rows_of(stem)):
             sets[stem] = (rows, features(pe, rows))
-    rows = wilddeepfake_rows()
-    sets["wilddeepfake"] = (rows, features(pe, rows, ready_crops=True))
+    rows = wilddeepfake_rows() if Path("features/lists/wilddeepfake.csv").exists() else []
+    if rows and Path(rows[0]["path"]).exists():  # WildDeepfake's crops live on the laptop only
+        sets["wilddeepfake"] = (rows, features(pe, rows, ready_crops=True))
     if args.save_dir:
         args.save_dir.mkdir(parents=True, exist_ok=True)
         for stem, (rows, x) in sets.items():
@@ -87,16 +92,18 @@ def main():
 
     score = lambda stem: head.logits(torch.from_numpy(sets[stem][1].reshape(len(sets[stem][1]), -1).astype(np.float32))).numpy()  # noqa: E731
     label = lambda stem: np.array([int(r["label"]) for r in sets[stem][0]])  # noqa: E731
-    reals = {n: score(s)[label(s) == 0] for n, s in REAL_POOLS.items()}
+    reals = {n: score(s)[label(s) == 0] for n, s in REAL_POOLS.items() if s in sets}
     line = max(float(np.quantile(s, 0.995)) for s in reals.values())
     tight = max(reals, key=lambda n: np.quantile(reals[n], 0.995))
     print(f"{args.pe.name if args.pe else 'original PE'} + {args.head.name}: strict line {line:+.2f} (set by {tight})")
     print("  REAL faces above the line: " + " | ".join(f"{n} {(s > line).mean():.1%} of {len(s)}" for n, s in reals.items()))
     for name, stem in {**SWAPS, "WildDeepfake (never trained on, tighter crops)": "wilddeepfake"}.items():
+        if stem not in sets:
+            continue
         s, y = score(stem), label(stem)
         print(f"  {name:<48} swaps caught {(s[y == 1] > line).mean():6.1%} of {int((y == 1).sum())} | AUC {metrics.auc(s, y == 1):.3f}"
               f" | its real faces above {(s[y == 0] > line).mean():.1%}")
-    print("  AI-made faces above the line: " + " | ".join(f"{n} {(score(s) > line).mean():.1%}" for n, s in AI_FACES.items()))
+    print("  AI-made faces above the line: " + " | ".join(f"{n} {(score(s) > line).mean():.1%}" for n, s in AI_FACES.items() if s in sets))
 
 
 if __name__ == "__main__":

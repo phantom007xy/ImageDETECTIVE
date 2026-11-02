@@ -45,13 +45,15 @@ from src.models.pe_core import load_pe
 from src.models.tune_pe import layer_features
 
 # Training crop sets (make_crops manifests) -> the source names inside them; shares of a batch per source group.
-TRAIN_SETS = ["of_val_train", "dfdc_train", "real_sid", "real_commons"]
-SHARES = {"openforensics/fake": 0.20, "dfdc/fake": 0.20,
-          "openforensics/real": 0.15, "dfdc/real": 0.15, "sid_set/real": 0.15, "commons/real": 0.15}
+TRAIN_SETS = ["of_val_train", "dfdc_train", "real_sid", "real_commons"]  # default; --train-sets adds more
+# Batch shares: the swaps keep 40%; the real faces share 60% equally per source (--share overrides one group).
+FAKE_SHARES = {"openforensics/fake": 0.20, "dfdc/fake": 0.20}
+REAL_TOTAL = 0.60
 # Dev crop sets (app view): real pools set the strict line; swap sets are measured at it.
 DEV_REAL = {"polished dev": "pool_commons_dev", "OpenImages val": "pool_muse_pairs_val",
             "OpenImages unseen": "pool_sid_reals_0_9_unseen", "close-ups": "pool_real_face_crops_dev_all",
-            "selfies+portraits": "pool_commons_v4_dev", "SID val": "pool_sid_val"}
+            "selfies+portraits": "pool_commons_v4_dev", "SID val": "pool_sid_val",
+            "FaceID-550 new people": "pool_faceid550_dev"}  # selfies of people never in training (if downloaded)
 DEV_SWAPS = {"OF dev": "of_val_dev", "DFDC p3": "dfdc_p3_dev"}
 
 
@@ -96,6 +98,45 @@ def photo_damage(img, rng):
     return jpeg(small, rng.randint(45, 90)).resize((side, side), Image.BICUBIC)
 
 
+def phone_process(img, mask, rng):
+    """Real phone processing of a REAL face (it stays real): skin smoothing, a brighter skin tone or a portrait-mode
+    background blur, all aligned with the face (no shift, no resolution seam). Teaches the model that a face processed
+    differently from its surroundings is not by itself a swap: real phone faces with such processing scored far above
+    real public photos (2 Nov), while self-blended fakes keep their misalignment and resolution seams."""
+    base = np.asarray(img).astype(np.float32)
+    soft = cv2.dilate(mask.astype(np.uint8), np.ones((7, 7), np.uint8)).astype(np.float32)
+    soft = cv2.GaussianBlur(soft, (0, 0), rng.uniform(3, 8))
+    soft = (soft / max(float(soft.max()), 1e-6))[..., None]
+    r = rng.random()
+    if r < 0.4:  # skin smoothing (beauty filter)
+        smooth = cv2.bilateralFilter(np.asarray(img), rng.choice([5, 7, 9]), rng.uniform(30, 90), rng.uniform(5, 15))
+        out = soft * (base + rng.uniform(0.5, 1.0) * (smooth.astype(np.float32) - base)) + (1 - soft) * base
+    elif r < 0.7:  # a brighter, evener skin tone
+        tone = (base - 127.5) * rng.uniform(0.9, 1.0) + 127.5 + rng.uniform(5, 25) + np.array([rng.uniform(-6, 6) for _ in range(3)])
+        out = soft * tone + (1 - soft) * base
+    else:  # portrait mode: the background blurred around the (much enlarged) face
+        size = rng.randrange(41, 121) | 1
+        head = cv2.dilate(mask.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (size, size)))
+        keep = cv2.GaussianBlur(head.astype(np.float32), (0, 0), rng.uniform(3, 8))[..., None]
+        out = keep * base + (1 - keep) * cv2.GaussianBlur(base, (0, 0), rng.uniform(2, 8))
+    return np.clip(out, 0, 255).astype(np.uint8)
+
+
+def phone_process_dev(img):
+    """A fixed version for the dev check (app crops have no mask: an ellipse where the face sits in the app crop)."""
+    a = np.asarray(img)
+    mask = np.zeros(a.shape[:2], np.uint8)
+    cv2.ellipse(mask, (168, 150), (80, 105), 0, 0, 360, 1, -1)
+    soft = cv2.GaussianBlur(mask.astype(np.float32), (0, 0), 5)[..., None]
+    base = a.astype(np.float32)
+    smooth = cv2.bilateralFilter(a, 9, 60, 9).astype(np.float32)
+    face = base + 0.8 * (smooth - base) + 12
+    big = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (81, 81))).astype(np.float32)
+    big = cv2.GaussianBlur(big, (0, 0), 5)[..., None]
+    out = big * (soft * face + (1 - soft) * base) + (1 - big) * cv2.GaussianBlur(base, (0, 0), 4)
+    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))
+
+
 def face_train_view(img, rng, size):
     """A random 2.6-4.0 eye-distance square of a wide crop (one eye distance = WIDE_SIZE / WIDE_K px), at size x size."""
     eye = WIDE_SIZE / WIDE_K
@@ -114,8 +155,9 @@ def face_train_view(img, rng, size):
 
 
 class FaceCrops(torch.utils.data.Dataset):
-    def __init__(self, rows, size, mean, std, p_blend, p_damage=0.0):
+    def __init__(self, rows, size, mean, std, p_blend, p_damage=0.0, p_phone=0.0):
         self.rows, self.size, self.mean, self.std, self.p_blend, self.p_damage = rows, size, mean, std, p_blend, p_damage
+        self.p_phone = p_phone
 
     def __len__(self):
         return len(self.rows)
@@ -125,12 +167,15 @@ class FaceCrops(torch.utils.data.Dataset):
         row = self.rows[i]
         with Image.open(row["path"]) as im:
             img = im.convert("RGB")
-        label, kind = int(row["label"]), 1 if int(row["label"]) else 0  # kind: 0 real, 1 swap, 2 self-blended
-        if label == 0 and row["mask"] and rng.random() < self.p_blend:
+        label, kind = int(row["label"]), 1 if int(row["label"]) else 0  # 0 real, 1 swap, 2 self-blended, 3 phone-processed real
+        if label == 0 and row["mask"]:
             with Image.open(row["mask"]) as m:
                 mask = np.asarray(m.convert("L")) > 127
             if mask.sum() > 200:
-                img, label, kind = Image.fromarray(self_blend(np.asarray(img), mask, rng)), 1, 2
+                if rng.random() < self.p_blend:
+                    img, label, kind = Image.fromarray(self_blend(np.asarray(img), mask, rng)), 1, 2
+                elif rng.random() < self.p_phone:
+                    img, kind = Image.fromarray(phone_process(img, mask, rng)), 3
         if rng.random() < self.p_damage:  # every class alike (after self-blending: the seam gets compressed too)
             img = photo_damage(img, rng)
         view = face_train_view(img, rng, self.size)
@@ -148,10 +193,11 @@ def read_manifest(crops, name):
 
 
 def source_group(row):
+    """openforensics/fake|real and dfdc/fake|real stay as they are; any other source is one real group per dataset."""
     s = row["source"]
     if s.startswith("openforensics/") or s.startswith("dfdc/"):
         return s
-    return "sid_set/real" if s.startswith("sid_set") else "commons/real"
+    return f"{s.split('/')[0]}/real"
 
 
 def dev_crops(crops, mean, std, max_per_set, seed):
@@ -179,6 +225,10 @@ def dev_crops(crops, mean, std, max_per_set, seed):
             damaged = [jpeg(i.resize((202, 202), Image.BICUBIC), 70).resize((336, 336), Image.BICUBIC) for i in images]
             out[name + " (compressed)"] = (torch.from_numpy(np.stack([np.asarray(i) for i in damaged])).permute(0, 3, 1, 2)
                                            .contiguous(), labels)
+            if name in DEV_REAL:  # real faces with phone-like processing (beauty smoothing, portrait blur): must stay real
+                processed = [phone_process_dev(i) for i in images]
+                out[name + " (phone-processed)"] = (torch.from_numpy(np.stack([np.asarray(i) for i in processed]))
+                                                    .permute(0, 3, 1, 2).contiguous(), labels)
     return out
 
 
@@ -204,12 +254,15 @@ def validate(model, w, b, dev, mean, std):
             result[n] = (float((scores[n][labels == 1] > line).mean()), metrics.auc(scores[n], labels == 1))
     result["reals"] = {n: float((s > line).mean()) for n, s in reals.items()}
     result["reals compressed"] = max(float((scores[n + " (compressed)"] > line).mean()) for n in reals)
+    result["reals phone"] = max(float((scores[n + " (phone-processed)"] > line).mean()) for n in reals)
     return result
 
 
 def report(step, r):
-    swaps = " | ".join(f"{n}: caught {r[n][0]:.1%} (AUC {r[n][1]:.3f})" for n in r if n not in ("line", "reals", "reals compressed"))
-    swaps += f" | compressed real faces above (worst pool) {r['reals compressed']:.1%}"
+    swaps = " | ".join(f"{n}: caught {r[n][0]:.1%} (AUC {r[n][1]:.3f})" for n in r
+                       if n not in ("line", "reals", "reals compressed", "reals phone"))
+    swaps += (f" | real faces above (worst pool): compressed {r['reals compressed']:.1%}, phone-processed "
+              f"{r['reals phone']:.1%}")
     print(f"  step {step}: strict line {r['line']:+.2f} | {swaps} | real faces above: "
           + " ".join(f"{n} {v:.1%}" for n, v in r["reals"].items()), flush=True)
 
@@ -231,7 +284,11 @@ def main():
     parser.add_argument("--init-pe", type=Path, help="continue from this fine-tuned PE (the pull then anchors to it)")
     parser.add_argument("--init-head", type=Path, help="... and this head (instead of a frozen probe)")
     parser.add_argument("--p-damage", type=float, default=0.0, help="share of training faces given photo-scale damage")
+    parser.add_argument("--p-phone", type=float, default=0.0, help="share of the other real faces given phone processing")
     parser.add_argument("--warmup", type=int, default=300)
+    parser.add_argument("--train-sets", nargs="+", default=TRAIN_SETS, help="crop manifests (stems) to train on")
+    parser.add_argument("--share", action="append", default=[], help='"GROUP=SHARE", e.g. "fairface/real=0.1"')
+    parser.add_argument("--no-checkpointing", action="store_true", help="faster on a big GPU (more memory)")
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
@@ -239,11 +296,17 @@ def main():
     random.seed(args.seed)
     torch.manual_seed(args.seed)
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    rows = [r for name in TRAIN_SETS for r in read_manifest(args.crops, name)]
+    rows = [r for name in args.train_sets for r in read_manifest(args.crops, name)]
     groups = np.array([source_group(r) for r in rows])
-    counts = {g: int((groups == g).sum()) for g in SHARES}
-    print("training faces: " + " | ".join(f"{g} {n}" for g, n in counts.items()), flush=True)
-    shares = {g: s for g, s in SHARES.items() if counts[g]}
+    present = sorted(set(groups))
+    reals = [g for g in present if g.endswith("/real")]
+    shares = {g: s for g, s in FAKE_SHARES.items() if g in present}
+    shares.update({g: REAL_TOTAL / len(reals) for g in reals})
+    for spec in args.share:
+        g, v = spec.split("=")
+        shares[g] = float(v)
+    counts = {g: int((groups == g).sum()) for g in present}
+    print("training faces: " + " | ".join(f"{g} {counts[g]} (share {shares.get(g, 0):.0%})" for g in present), flush=True)
     total = sum(shares.values())
     weights = np.array([shares.get(g, 0) / total / max(counts.get(g, 1), 1) for g in groups])
     real_share = sum(s for g, s in shares.items() if g.endswith("/real")) / total
@@ -253,12 +316,12 @@ def main():
           flush=True)
 
     model = load_pe(pretrained=True, drop_path_rate=0.1).cuda()
-    model.set_grad_checkpointing(True)
+    model.set_grad_checkpointing(not args.no_checkpointing)
     cfg = resolve_data_config({}, model=model)
     size, mean, std = cfg["input_size"][1], torch.tensor(cfg["mean"]).view(3, 1, 1), torch.tensor(cfg["std"]).view(3, 1, 1)
     if args.init_pe:
         model.load_state_dict(torch.load(args.init_pe, map_location="cpu"), strict=True)
-    dataset = FaceCrops(rows, size, mean, std, args.p_blend, args.p_damage)
+    dataset = FaceCrops(rows, size, mean, std, args.p_blend, args.p_damage, args.p_phone)
     sampler = torch.utils.data.WeightedRandomSampler(weights, num_samples=10 ** 7, replacement=True)
     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, sampler=sampler, drop_last=True,
                                          num_workers=args.workers, persistent_workers=True, pin_memory=True)
@@ -305,7 +368,7 @@ def main():
     def factor(s):
         return min(1.0, (s + 1) / warmup) * 0.5 * (1 + math.cos(math.pi * min(1.0, s / args.steps)))
 
-    step, t0, running, by_kind = 0, time.time(), [], {0: [], 1: [], 2: []}
+    step, t0, running, by_kind = 0, time.time(), [], {0: [], 1: [], 2: [], 3: []}
     for pixels, y, kind in loader:
         for g in optimizer.param_groups:
             g["lr"] = g["base_lr"] * factor(step)
@@ -324,12 +387,13 @@ def main():
                     p.sub_(g["lr"] * args.pull * (p - p0.float()))
         step += 1
         running.append(loss.item())
-        for k in (0, 1, 2):
+        for k in (0, 1, 2, 3):
             by_kind[k] += per_face[kind.cuda() == k].tolist()
         if step % 100 == 0:
-            parts = " ".join(f"{n} {np.mean(by_kind[k]):.3f}" for k, n in ((0, "real"), (1, "swap"), (2, "blended")) if by_kind[k])
+            parts = " ".join(f"{n} {np.mean(by_kind[k]):.3f}" for k, n in ((0, "real"), (1, "swap"), (2, "blended"),
+                                                                           (3, "phone-real")) if by_kind[k])
             print(f"step {step}: loss {np.mean(running):.4f} ({parts}), {(time.time() - t0) / step:.2f} s/step", flush=True)
-            running, by_kind = [], {0: [], 1: [], 2: []}
+            running, by_kind = [], {0: [], 1: [], 2: [], 3: []}
         if step % args.eval_every == 0 or step == args.steps:
             torch.save(model.state_dict(), args.out_dir / f"pe_step{step}.pt")
             LinearHead(w.detach().cpu().clone(), b.detach().cpu().clone()).save(args.out_dir / f"head_step{step}.pt")

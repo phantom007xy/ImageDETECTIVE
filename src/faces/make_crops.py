@@ -90,7 +90,9 @@ def run_of(args, finder):
             image = im.convert("RGB")  # not turned upright: the annotation boxes refer to the stored pixels
         if image.size != (width, height):
             continue
-        is_dev = args.split != "Val" or zlib.crc32(path.name.encode()) % 100 < 15
+        # Val: 15% of the photos are the dev part; Train and Test-Challenge (perturbed copies, used for TRAINING here):
+        # all train; Test-Dev (our test): all app crops
+        is_dev = args.split == "Test-Dev" or (args.split == "Val" and zlib.crc32(path.name.encode()) % 100 < 15)
         found = finder.find(image, with_masks=not is_dev)
         for i, is_fake, _ in match(found, truth, 0.3):
             face = found[i]

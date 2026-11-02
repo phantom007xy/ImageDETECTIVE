@@ -68,3 +68,13 @@ faces 3.4% above, was 6.6%); real photo pools 0.0%; AI-made faces 0.5-1.5%.
    copies than v1, far better on forwarded ones (the app's main use). Dry run of calibrate_app (public pools): swap line
    +12.74; swaps red: OpenForensics test 76.4%, DFDC p3 47.4%, WildDeepfake 46.5%; every real pool and every AI-image
    number of the full verdict unchanged.
+
+== Near-duplicate check (2 Nov, night; scripts/dedupe_crops.py, 256-bit difference hash of the face at the app's framing) ==
+Share of dev/test faces with a near-twin (<= 16 of 256 bits) among the training faces of the runs above:
+  OpenForensics Test-Dev (our OpenForensics TEST)   0.1%   -> the test numbers above stand
+  OpenForensics dev (15% of Val, used for CHOICES)  49.1%  -> OpenForensics reuses base photos within Val (other file
+                                                             names, other fake faces put in; the real faces repeat):
+                                                             the OF dev numbers were far too easy (97% dev vs 82% test)
+  DFDC part 3 0.0% | polished Commons dev 0.0% | OpenImages unseen 0.7%
+The nearest dev/test face of any DFDC or Commons training face is 30+ bits away; OpenForensics has exact repeats.
+From now on the training faces within 16 bits of any dev/test face are removed before training (Colab runs, 3 Nov).
