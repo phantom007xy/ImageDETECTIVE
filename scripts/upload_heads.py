@@ -41,6 +41,9 @@ def main():
     swap = json.loads(calibration.read_text()).get("swap_head")
     if swap:
         files.append(Path(swap.replace("\\", "/")))
+    swap_pe = json.loads(calibration.read_text()).get("swap_pe")
+    if swap_pe:  # the face-swap Perception Encoder (~1.3 GB; trained on DFDC among others: private repo only)
+        files.append(Path(swap_pe.replace("\\", "/")))
     for f in files:
         if not f.exists():
             raise SystemExit(f"missing: {f}")

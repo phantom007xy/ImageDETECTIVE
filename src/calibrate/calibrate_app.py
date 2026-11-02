@@ -23,9 +23,11 @@ EDIT = "weights/edit_check_v3/head_EC3pf.pt"  # EC3's PE (tune_pe step 7,000) + 
 # forwarded copies (EC3p + training views of forwarded copies: src/features/extract_pe.py --forward)
 # (src/eval/edit_head_cv.py --save-final, 1 Nov: from EC3's head, pull 0.1, my 30 selfies' Muse edits x5)
 PE_WEIGHTS = "weights/edit_check_v3/pe_EC3.pt"
-# The face-swap head: DFDC + OpenForensics + real SID-Set faces, on the last layer AND the middle layers 12 and 16 of the
-# same face pass (results/swap_head_v2.txt, part 3). Until 1 Nov: weights/dfdc_v1/head_dfdc.pt, then swap_v2 (last layer).
-SWAP = "weights/swap_v3/head_swap_v3.pt"
+# The face-swap check: Meta's Perception Encoder fine-tuned on face crops (src/models/tune_face_pe.py, step 4,000 chosen on
+# dev: DFDC + OpenForensics swaps, self-blended fakes, real faces; results/face_pe_v1.txt) and its head; one more pass per
+# face. Before 2 Nov: swap_v3 (DINOv3, results/swap_head_v2.txt), swap_v2, dfdc_v1.
+SWAP = "weights/face_pe_v1/head_facepe.pt"
+SWAP_PE = "weights/face_pe_v1/pe_step4000.pt"
 # A second head on the same PE features, trained from EC3p with Google's pictures too (Gemini 3.1 Flash, Nano Banana Pro,
 # Gemini 2.5 restorations and edits): its own, higher line, so the Muse head keeps its line (results/head_g_v1.txt, 1 Nov)
 EDIT2 = "weights/edit_check_v3/head_EC3g.pt"
@@ -70,7 +72,7 @@ def main():
             "--fake-faces", "Muse test faces:features/faces/muse_image_test_v1_eval.npz",
             "--fake-faces", "SD faces:features/faces/sd_faces_eval.npz",
             # face swaps: DFDC video swaps + OpenForensics photo swaps + real SID-Set faces (results/swap_head_v2.txt)
-            "--swap-head", SWAP,
+            "--swap-head", SWAP, "--swap-pe", SWAP_PE,
             "--swap-real-faces", "DFDC p3 real:features/faces/dfdc_part3_eval.npz",
             "--swap-real-faces", "SID val real:features/faces/validation-00000-of-00034_eval.npz",
             "--swap-fakes", "DFDC p3 swaps:features/faces/dfdc_part3_eval.npz",

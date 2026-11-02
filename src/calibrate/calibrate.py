@@ -82,6 +82,7 @@ def main():
     parser.add_argument("--max-face-false-alarms", type=float, default=0.005)
     parser.add_argument("--fake-faces", action="append", default=[], help='"NAME:face feature file" (AI faces)')
     parser.add_argument("--swap-head", type=Path, help="face-swap head (DFDC) for the same face crops")
+    parser.add_argument("--swap-pe", type=Path, help="the face-swap Perception Encoder the swap head needs (if any)")
     parser.add_argument("--swap-real-faces", action="append", default=[], help='extra real faces for the swap head only')
     parser.add_argument("--swap-fakes", action="append", default=[], help='"NAME:face feature file" (swapped faces)')
     parser.add_argument("--out", type=Path, help="JSON file for the app")
@@ -161,6 +162,7 @@ def main():
             "head": str(args.head), "temperature": temperature, "ai_logit": ai_logit, "real_logit": real_logit,
             "strong_ai_logit": strong_ai_logit, "face_ai_logit": face_ai_logit, "face_leans_logit": face_leans_logit,
             "face_platt": face_platt, "swap_head": args.swap_head.as_posix() if args.swap_head else None,
+            "swap_pe": args.swap_pe.as_posix() if args.swap_pe else None,
             "swap_ai_logit": swap_ai_logit, "swap_leans_logit": swap_leans_logit,
             "max_false_alarms": args.max_false_alarms, "max_uncertain": args.max_uncertain,
             "real_pools": {n: len(s) for n, s in reals.items()}, "fake_sets": {n: len(s) for n, s in fakes.items()},

@@ -53,11 +53,11 @@ def load_calibration(head_path):
                 "strong_ai_logit": c.get("strong_ai_logit"), "face_ai_logit": c.get("face_ai_logit"),
                 "face_leans_logit": c.get("face_leans_logit"), "face_platt": c.get("face_platt"),
                 "swap_head": c.get("swap_head"), "swap_ai_logit": c.get("swap_ai_logit"),
-                "swap_leans_logit": c.get("swap_leans_logit"), "calibrated": True}
+                "swap_leans_logit": c.get("swap_leans_logit"), "swap_pe": c.get("swap_pe"), "calibrated": True}
     return {"temperature": 1.0, "ai_logit": math.log(AI_ABOVE / (1 - AI_ABOVE)),
             "real_logit": math.log(REAL_BELOW / (1 - REAL_BELOW)), "strong_ai_logit": None, "face_ai_logit": None,
             "face_leans_logit": None, "face_platt": None, "swap_head": None, "swap_ai_logit": None,
-            "swap_leans_logit": None, "calibrated": False}
+            "swap_leans_logit": None, "swap_pe": None, "calibrated": False}
 
 
 JOINT_LINES = {"ai_logit": "whole_ai_logit", "face_ai_logit": "face_ai_logit", "swap_ai_logit": "swap_ai_logit"}
@@ -106,6 +106,16 @@ class Detector:
         self.swap_head = LinearHead.load(swap_path) if swap_path and swap_path.exists() else None
         if swap_path and self.swap_head is None:
             print(f"WARNING: face-swap head {swap_path} not found: the face-swap check is off")
+        # A swap head that reads "features_facepe" needs the fine-tuned face-swap Perception Encoder
+        # (src/models/tune_face_pe.py): one more pass per face, on the app's face crop at 336.
+        self.face_pe = None
+        if self.swap_head is not None and "features_facepe" in self.swap_head.keys:
+            swap_pe = self.calibration["swap_pe"] and Path(self.calibration["swap_pe"].replace("\\", "/"))
+            if swap_pe and swap_pe.exists():
+                self.face_pe = PECore(device=device, tuned_path=swap_pe)
+            else:
+                print(f"WARNING: face-swap model {swap_pe} not found: the face-swap check is off")
+                self.swap_head = None
 
     def probability(self, logit):
         return 1 / (1 + math.exp(-logit / self.calibration["temperature"]))
@@ -145,6 +155,9 @@ class Detector:
             # one pass: the last layer for the head, plus the middle layers the face-swap head reads (if any)
             means = self.backbone.layer_means(pixels, self.swap_head.layers if self.swap_head is not None else ())
             vector = means["features"].cpu()
+            if self.face_pe is not None:  # the face-swap model's view: the app crop at 336, JPEG 90 (as in training)
+                view = preprocess.jpeg(crop.face_crop(image, face, size=self.face_pe.size), 90)
+                means["features_facepe"] = self.face_pe.layer_features(self.face_pe.to_tensor(view).unsqueeze(0)).flatten(1)
             logit = float(self.head.logits(vector)[0])
             face["logit"] = logit
             face["probability_ai"] = self.face_probability(logit)  # None without a face calibration

@@ -1,0 +1,48 @@
+Face-swap check v4: Meta's Perception Encoder fine-tuned on face crops (night 1-2 Nov 2026)
+
+Why: the face-swap heads on frozen DINOv3 features (results/dfdc_face_v1.txt, swap_head_v2.txt) catch few swaps at the
+strict line. Tuning the backbone is what makes face-swap detectors generalise (GenD, WACV 2026), and the same recipe took
+our Muse-edit check from AUC 0.75 to 0.97 (results/edit_check_v3.txt).
+
+Data (src/faces/make_crops.py; SAM 3 faces with the app's settings and crop rule; D:/Datasets/FaceCrops, private):
+  training (wide 5-eye-distance crops + SAM face masks):
+    OpenForensics Val, 85% of the photos: 8,921 replaced / 3,785 real faces
+    DFDC parts 0-2 (same-frame pairs, changed faces only): 3,525 swapped / 2,814 real faces
+    real faces: SID-Set train files 10-19 (2,328), Commons training photos v1-v4 (2,712); dev/test pools excluded
+  batch shares: OF fake 20%, DFDC fake 20%, each real source 15%; half the real faces are turned into SELF-BLENDED fakes
+  on the fly (Shiohara & Yamasaki, CVPR 2022: the face blended onto itself through its SAM mask after small colour,
+  sharpness, resolution and position changes) -> a batch: real 30%, swapped 40%, self-blended 30%
+  dev (app crops at 336): real pools (polished Commons, OpenImages val/unseen, close-ups, selfies+portraits, SID val),
+  OpenForensics dev (15% of Val photos), DFDC part 3 (1,204 faces of whole videos, for checkpoint choice)
+Training (src/models/tune_face_pe.py): PE-Core-L/14-336, all layers (lr 2e-5 at the top, layer decay 0.85, pull 1.0,
+stochastic depth 0.1, bf16 + checkpointing, batch 16), 5,000 steps (315 min on the laptop RTX 5050), the head started
+as a linear probe of the frozen PE (step 0).
+Dev check during training (strict line = at most 0.5% of every real dev pool; caught):
+  step    OF dev   DFDC p3 (subsample)
+  0       15.2%    7.0%      (frozen PE)
+  500     87.4%   62.2%
+  2000    97.1%   78.1%
+  4000    97.7%   84.1%   <- chosen (best on both dev sets)
+  5000    96.4%   83.4%
+
+Test (python -m src.eval.face_pe_eval): the strict line from ALL real face pools incl. all 1,452 DFDC part 3 real faces
+(they set it: +9.87), then caught at it:
+                                          frozen PE (step 0)   fine-tuned step 4000   (step 5000)
+  OpenForensics TEST (never used)           13.3%                 82.0% (AUC 0.999)      73.8%
+  DFDC part 3 (all faces; dev)              10.0%                 49.6% (AUC 0.941)      44.9%
+  WildDeepfake (never trained on)           21.6%                 51.7% (AUC 0.867)      47.4%
+  real photo faces above the line           <= 0.5%               0.0% in every photo pool (DFDC p3 real 0.6%)
+  AI-made faces above (not its job)         1-6%                  Muse 1.1%, SD 2.2%, GAN 3.7%
+  For comparison, face-swap head v3 (frozen DINOv3, same public-pool method): OpenForensics test 54.6%, DFDC p3 21.4%,
+  WildDeepfake 21.1%.
+  Caveat: WildDeepfake's own real faces (very tight 224 px video crops, upscaled to 336) are above the line 6.6% of the
+  time; our app's crops are wider, and every real PHOTO pool stays at 0.0%.
+
+In the app (src/inference.py): the face-swap head reads "features_facepe" = this PE's features of the app's face crop at
+336 (JPEG 90), one more pass per face (8-face group photo: 0.7 -> 1.0 s on the laptop GPU). The face files of every pool
+carry these features (src/features/add_face_pe.py, checked face by face), so the calibration works unchanged.
+Dry run of calibrate_app on the PUBLIC pools (my private pools not used): swap line +9.89; swaps red: OpenForensics test
+81.9%, DFDC p3 49.4%, WildDeepfake 51.5% (orange "some swap signs": 96.8 / 79.7 / 73.6%); every real pool and every
+AI-image number of the full verdict unchanged (polished 4.5%, OpenImages unseen 1.9%, close-ups 4.0%, selfies+portraits
+3.2%; Muse 100%, Gemini dev 90.0%, GAN 95.9 / 92.0%, ...).
+Weights: weights/face_pe_v1/pe_step4000.pt + head_facepe.pt (private; DFDC rule: never published).

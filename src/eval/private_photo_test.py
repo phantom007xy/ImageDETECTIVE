@@ -69,6 +69,7 @@ APP_HEAD = "G3tt"  # the whole-image head the app uses (1 Nov: G3, results/head_
 DARK_BELOW = 80
 VIEWS = ("long448", "short448")  # both app views are saved, so they can be compared (preprocess.APP_VIEW)
 SWAP_HEAD = "weights/swap_v3/head_swap_v3.pt"  # DFDC + OpenForensics + SID real faces, last + middle layers (results/swap_head_v2.txt)
+FACE_PE = "weights/face_pe_v1/pe_step4000.pt"  # the face-swap Perception Encoder, if the swap head reads its features
 FACE_LAYERS = (8, 12, 16)  # face crops: also the mean patch tokens after these blocks, for face-swap heads that read them
 
 
@@ -90,6 +91,8 @@ def main():
     files = sorted(p for p in args.folder.rglob("*") if p.is_file())
     heads = {name: LinearHead.load(path) for name, path in HEADS.items() if Path(path).exists()}
     swap = LinearHead.load(SWAP_HEAD)  # face swaps, on the same face crops
+    # a swap head on the face-swap PE's features needs that model too (its own pass per face, app crop at 336)
+    face_pe = PECore(tuned_path=FACE_PE) if "features_facepe" in swap.keys else None
     backbone, finder = Backbone(), FaceFinder()
     # A tuned DINOv3 is a different backbone: its own pass over every photo (whole image, both views).
     tuned = Backbone(tuned_path=args.tuned) if args.tuned else None
@@ -123,6 +126,10 @@ def main():
         faces = [f for f in finder.find(image) if not f["too_small"]]
         means = [backbone.layer_means(preprocess.to_tensor(crop.eval_face_view(image, f)).unsqueeze(0), FACE_LAYERS)
                  for f in faces]  # the app's face crop: the last layer and the middle layers, one pass
+        if face_pe is not None:
+            for m, f in zip(means, faces):
+                view = preprocess.jpeg(crop.face_crop(image, f, size=face_pe.size), 90)
+                m["features_facepe"] = face_pe.layer_features(face_pe.to_tensor(view).unsqueeze(0)).flatten(1)
         crops = [m["features"].cpu() for m in means]
         face_vectors += [{k: v[0].cpu().numpy().astype(np.float16) for k, v in m.items()} for m in means]
         face_files += [str(relative)] * len(crops)
