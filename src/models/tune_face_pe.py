@@ -5,7 +5,8 @@ backbone is what makes face-swap detectors generalise (GenD, WACV 2026: frozen l
 mean cross-dataset AUROC), and the same recipe took our Muse-edit check from AUC 0.75 to 0.97 (edit_check_v3.txt).
 
 Data (src/faces/make_crops.py; label 0 = real face, 1 = swapped or replaced face):
-  - real swaps: OpenForensics (faces replaced by GAN faces in still photos), DFDC (video face swaps)
+  - real swaps: OpenForensics (faces replaced by GAN faces in still photos), DFDC (video face swaps), RTFS-10k (video
+    calls swapped with inswapper and UniFace, today's common swap tools; real frames re-encoded like the swaps)
   - self-blended faces (Shiohara & Yamasaki, CVPR 2022): a real face blended onto itself through its SAM mask after
     small changes of colour, sharpness, resolution and position. It teaches the seam a face swap leaves without any
     swap tool, which is why it carries over to swap methods never seen in training. Made on the fly from real faces.
@@ -47,14 +48,15 @@ from src.models.tune_pe import layer_features
 # Training crop sets (make_crops manifests) -> the source names inside them; shares of a batch per source group.
 TRAIN_SETS = ["of_val_train", "dfdc_train", "real_sid", "real_commons"]  # default; --train-sets adds more
 # Batch shares: the swaps keep 40%; the real faces share 60% equally per source (--share overrides one group).
-FAKE_SHARES = {"openforensics/fake": 0.20, "dfdc/fake": 0.20}
+FAKE_SHARES = {"openforensics/fake": 0.20, "dfdc/fake": 0.20, "rtfs/fake": 0.15}
 REAL_TOTAL = 0.60
 # Dev crop sets (app view): real pools set the strict line; swap sets are measured at it.
 DEV_REAL = {"polished dev": "pool_commons_dev", "OpenImages val": "pool_muse_pairs_val",
             "OpenImages unseen": "pool_sid_reals_0_9_unseen", "close-ups": "pool_real_face_crops_dev_all",
             "selfies+portraits": "pool_commons_v4_dev", "SID val": "pool_sid_val",
-            "FaceID-550 new people": "pool_faceid550_dev"}  # selfies of people never in training (if downloaded)
-DEV_SWAPS = {"OF dev": "of_val_dev", "DFDC p3": "dfdc_p3_dev"}
+            "FaceID-550 new people": "pool_faceid550_dev",  # selfies of people never in training (if downloaded)
+            "RTFS video calls": "rtfs_dev"}  # its real faces (the swaps are below)
+DEV_SWAPS = {"OF dev": "of_val_dev", "DFDC p3": "dfdc_p3_dev", "RTFS dev": "rtfs_dev"}
 
 
 def self_blend(img, mask, rng):
@@ -193,11 +195,9 @@ def read_manifest(crops, name):
 
 
 def source_group(row):
-    """openforensics/fake|real and dfdc/fake|real stay as they are; any other source is one real group per dataset."""
+    """Swaps: one group per dataset (openforensics/fake, dfdc/fake, rtfs/fake); real faces: one group per dataset."""
     s = row["source"]
-    if s.startswith("openforensics/") or s.startswith("dfdc/"):
-        return s
-    return f"{s.split('/')[0]}/real"
+    return s if s.endswith("/fake") else f"{s.split('/')[0]}/real"
 
 
 def dev_crops(crops, mean, std, max_per_set, seed):
@@ -305,6 +305,7 @@ def main():
     for spec in args.share:
         g, v = spec.split("=")
         shares[g] = float(v)
+    shares = {g: s for g, s in shares.items() if g in present}  # a dataset that failed to download drops out
     counts = {g: int((groups == g).sum()) for g in present}
     print("training faces: " + " | ".join(f"{g} {counts[g]} (share {shares.get(g, 0):.0%})" for g in present), flush=True)
     total = sum(shares.values())

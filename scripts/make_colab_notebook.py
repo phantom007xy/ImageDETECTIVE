@@ -6,13 +6,16 @@ import json
 from pathlib import Path
 
 DRIVE = "/content/drive/MyDrive/ImageDETECTIVE"
-TRAIN_SETS = ("of_val_train of_train_train of_test_challenge_train dfdc_train real_sid real_commons real_fairface "
-              "real_openimages real_faceid550_train real_indian")
+TRAIN_SETS = ("of_val_train of_train_train of_test_challenge_train dfdc_train rtfs_train real_sid real_commons "
+              "real_fairface real_openimages real_faceid550_train real_indian")
 HELD = ("pool_commons_dev pool_muse_pairs_val pool_sid_reals_0_9_unseen pool_real_face_crops_dev_all pool_commons_v4_dev "
         "pool_sid_val pool_faceid550_dev pool_commons_v3_dev of_val_dev of_test_dev dfdc_p3_dev pool_muse_image_test_v1 "
-        "pool_sd_faces pool_tpdne_test")
-SHARES = ('--share "openforensics/real=0.15" --share "dfdc/real=0.15" --share "sid_set/real=0.05" --share "commons/real=0.05" '
-          '--share "fairface/real=0.05" --share "openimages/real=0.05" --share "faceid550/real=0.05" --share "indian/real=0.05"')
+        "pool_sd_faces pool_tpdne_test rtfs_dev rtfs_test")
+# swaps 40% of a batch (photo swaps, older video swaps, today's swap tools), each with its own real faces; 6 more real sets
+SHARES = ('--share "openforensics/fake=0.15" --share "dfdc/fake=0.10" --share "rtfs/fake=0.15" '
+          '--share "openforensics/real=0.12" --share "dfdc/real=0.08" --share "rtfs/real=0.10" --share "sid_set/real=0.05" '
+          '--share "commons/real=0.05" --share "fairface/real=0.05" --share "openimages/real=0.05" '
+          '--share "faceid550/real=0.05" --share "indian/real=0.05"')
 COMMON = (f"--crops /content/FaceCrops --train-sets {TRAIN_SETS} {SHARES} --steps 20000 --eval-every 2000 "
           "--lr 2e-5 --p-damage 0.5 --p-phone 0.4 --dev-max 1500 --workers 10")
 
@@ -23,7 +26,9 @@ Every step skips work that is already done, so after a disconnect you can simply
 
 Before you start:
 1. Runtime > Change runtime type > **A100 GPU**.
-2. Secrets (key icon on the left): **HF_TOKEN** = your Hugging Face token (SAM 3 is gated), notebook access on.
+2. Secrets (key icon on the left), each with notebook access on: **HF_TOKEN** = your Hugging Face token (SAM 3 is
+   gated); **KAGGLE_USERNAME** and **KAGGLE_KEY** = the two values in your kaggle.json (for RTFS-10k; without them the
+   run goes on without it)
 3. `My Drive/ImageDETECTIVE/FaceCrops_colab.zip` uploaded.
 4. Keep this tab open and the laptop awake (Google AI Pro has no background execution).
 
@@ -54,9 +59,14 @@ def run(cmd, log):
     ("code", """# 2. Code (public repo) and the same library versions as the laptop
 !rm -rf /content/ImageDETECTIVE && git clone -q https://github.com/phantom007xy/ImageDETECTIVE /content/ImageDETECTIVE
 !pip install -q transformers==5.21.0 huggingface_hub==2.3.0 timm==1.0.30 opencv-python-headless==5.0.0.93 httpx==0.28.1 pyarrow gdown
-!apt-get -qq install -y unrar p7zip-full > /dev/null
+!apt-get -qq install -y unrar p7zip-full ffmpeg > /dev/null
 from google.colab import userdata
 os.environ['HF_TOKEN'] = userdata.get('HF_TOKEN')
+for key in ('KAGGLE_USERNAME', 'KAGGLE_KEY'):
+    try:
+        os.environ[key] = userdata.get(key)
+    except Exception:
+        print(f'no {key} secret: RTFS-10k is skipped')
 from huggingface_hub import login
 login(os.environ['HF_TOKEN'])
 !cd /content/ImageDETECTIVE && git log --oneline -1"""),
@@ -68,7 +78,8 @@ if not os.path.exists('/content/FaceCrops'):
         s = open(f).read().replace('D:\\\\Datasets\\\\FaceCrops', '/content/FaceCrops').replace('\\\\', '/')
         open(f, 'w').write(s)
 !ls /content/FaceCrops/*.csv | wc -l && head -2 /content/FaceCrops/dfdc_train.csv"""),
-    ("code", """# 4. Downloads (Colab's fast network): OpenForensics Train (CC BY 4.0) and the new real-face sets (CC BY)
+    ("code", """# 4. Downloads (Colab's fast network): OpenForensics Train + Test-Challenge (CC BY 4.0), RTFS-10k (CC BY-SA 4.0)
+#    and the new real-face sets (CC BY)
 OF = '/content/data/OpenForensics'
 os.makedirs(OF, exist_ok=True)
 for split in ('Train', 'Test-Challenge'):
@@ -78,13 +89,19 @@ for split in ('Train', 'Test-Challenge'):
 of_dl = subprocess.Popen('for s in Train Test-Challenge; do python scripts/download_openforensics.py --split $s --n 0 --workers 12 '
                          '--data-dir /content/data/OpenForensics && rm -f /content/data/OpenForensics/${s}_part_*.zip; done'
                          f' > {DRIVE}/logs/download_openforensics.txt 2>&1', shell=True, cwd='/content/ImageDETECTIVE')
+rtfs_dl = (subprocess.Popen(f'python scripts/download_rtfs.py --out /content/data/rtfs > {DRIVE}/logs/download_rtfs.txt 2>&1',
+                            shell=True, cwd='/content/ImageDETECTIVE') if os.environ.get('KAGGLE_KEY') else None)
 run('python scripts/download_real_faces.py fairface openimages faceid550 indian --fairface-n 30000 --openimages-n 10000 '
     '--out /content/data/real', 'download_real_faces')
 of_dl.wait()
 print('OpenForensics Train:', of_dl.returncode); print(open(f'{DRIVE}/logs/download_openforensics.txt').read()[-600:])
+if rtfs_dl:
+    rtfs_dl.wait()
+    print('RTFS-10k:', rtfs_dl.returncode); print(open(f'{DRIVE}/logs/download_rtfs.txt').read()[-600:])
 !rm -f /content/data/OpenForensics/Train_part_*.zip /content/data/real/*.zip
 !df -h /content | tail -1"""),
-    ("code", """# 5. Face crops with SAM 3 (the app's settings and crop rule), two processes at once on the GPU
+    ("code", """# 5. Face crops with SAM 3 (the app's settings and crop rule), several processes at once on the GPU.
+#    RTFS-10k: 4 processes (re-encoding its real clips like the swaps takes CPU time), then joined + the coding check
 jobs = []
 of_cmds = [f'python -m src.faces.make_crops of --split {s} --data-dir /content/data/OpenForensics --out /content/FaceCrops'
            for s, m in (('Train', 'of_train_train'), ('Test-Challenge', 'of_test_challenge_train'))
@@ -99,8 +116,17 @@ if os.path.exists('/content/ImageDETECTIVE/features/lists/real_faceid550_dev.csv
     cmds.append('python -m src.faces.make_crops list features/lists/real_faceid550_dev.csv --kind app --name pool_faceid550_dev --out /content/FaceCrops')
 if cmds:
     jobs.append(subprocess.Popen(' && '.join(cmds) + f' > {DRIVE}/logs/crops_real.txt 2>&1', shell=True, cwd='/content/ImageDETECTIVE'))
+rtfs = os.path.exists('/content/data/rtfs/inswapper.csv') and not os.path.exists('/content/FaceCrops/rtfs_dev.csv')
+if rtfs:
+    for i in range(4):
+        jobs.append(subprocess.Popen(f'python -m src.faces.make_crops rtfs --data-dir /content/data/rtfs --shard {i}/4 '
+                                     f'--out /content/FaceCrops > {DRIVE}/logs/crops_rtfs_{i}.txt 2>&1', shell=True,
+                                     cwd='/content/ImageDETECTIVE'))
 for j in jobs:
     j.wait()
+if rtfs:
+    run('python -m src.faces.make_crops rtfs --merge 4 --out /content/FaceCrops', 'crops_rtfs_merge')
+    !rm -rf /content/data/rtfs/original_videos /content/data/rtfs/inswapper /content/data/rtfs/uniface
 !tail -2 $DRIVE/logs/crops_openforensics_train.txt; tail -8 $DRIVE/logs/crops_real.txt
 !wc -l /content/FaceCrops/*.csv | tail -25"""),
     ("code", f"""# 6. Near-duplicate check: training faces that (almost) repeat a dev/test face are removed (OpenForensics reuses photos)

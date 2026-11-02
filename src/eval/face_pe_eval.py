@@ -5,6 +5,8 @@ above it (polished Commons, OpenImages val and unseen, Commons v3 dev, close-ups
 3 real faces). Then, at that line:
   - OpenForensics Test-Dev: swaps in still photos, never used for any choice
   - OpenForensics dev and DFDC part 3: the dev sets the checkpoint was chosen on (for reference)
+  - RTFS-10k test: video calls swapped with inswapper / UniFace (with and without a face enhancer), people and
+    swapped-in identities never seen in training (src/faces/make_crops.py rtfs); its dev part for reference
   - WildDeepfake: video face swaps from the internet, never trained on; its own tighter 224 px crops, resized to 336
   - AI-made faces (Muse test, SD faces incl. SDXL, GAN faces): not this check's job, shown for information
 With --save, the features (mean patch tokens after blocks 4..20 + last layer) of every set go to --save-dir, so the
@@ -32,7 +34,8 @@ REAL_POOLS = {"FaceID-550 new people": "pool_faceid550_dev", "polished dev": "po
               "OpenImages unseen": "pool_sid_reals_0_9_unseen", "Commons v3 dev": "pool_commons_v3_dev",
               "close-ups": "pool_real_face_crops_dev_all", "selfies+portraits": "pool_commons_v4_dev",
               "SID val": "pool_sid_val", "DFDC p3 real": "dfdc_p3_dev"}
-SWAPS = {"OpenForensics test": "of_test_dev", "OpenForensics dev": "of_val_dev", "DFDC p3": "dfdc_p3_dev"}
+SWAPS = {"OpenForensics test": "of_test_dev", "OpenForensics dev": "of_val_dev", "DFDC p3": "dfdc_p3_dev",
+         "RTFS test (inswapper/UniFace, unseen people)": "rtfs_test", "RTFS dev": "rtfs_dev"}
 AI_FACES = {"Muse test faces": "pool_muse_image_test_v1", "SD faces": "pool_sd_faces", "GAN faces (TPDNE)": "pool_tpdne_test"}
 
 
@@ -103,6 +106,9 @@ def main():
         s, y = score(stem), label(stem)
         print(f"  {name:<48} swaps caught {(s[y == 1] > line).mean():6.1%} of {int((y == 1).sum())} | AUC {metrics.auc(s, y == 1):.3f}"
               f" | its real faces above {(s[y == 0] > line).mean():.1%}")
+        variants = np.array([r["group"].split("|")[1] if "|" in r["group"] else "" for r in sets[stem][0]])
+        for v in sorted(set(variants[y == 1]) - {""}):  # e.g. RTFS: inswapper, inswapper+enhancer, uniface
+            print(f"      {v:<44} caught {(s[(y == 1) & (variants == v)] > line).mean():6.1%} of {int(((y == 1) & (variants == v)).sum())}")
     print("  AI-made faces above the line: " + " | ".join(f"{n} {(score(s) > line).mean():.1%}" for n, s in AI_FACES.items() if s in sets))
 
 
