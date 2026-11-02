@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ImageDETECTIVE</title>
+<meta name="description" content="Check an image for signs of AI generation and manipulation, and see where the evidence is.">
+<link rel="icon" type="image/png" href="/static/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<script>
+  // The saved theme before the first paint (dark for first-time visitors).
+  try { var t = localStorage.getItem("idetective-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<aside id="sidebar" class="sidebar" aria-label="Main menu">
+  <button id="sidebar-toggle" class="side-toggle" type="button" aria-expanded="false" aria-controls="sidebar"
+          aria-label="Toggle bar" title="Toggle bar">
+    <span class="side-logo"><img class="logo-img" src="/static/logo.png" alt="" width="36" height="40"></span>
+    <span class="side-label side-brand">ImageDETECTIVE</span>
+  </button>
+  <nav class="side-nav" aria-label="Pages">
+    <a class="side-item" href="#/investigate" data-page="investigate" title="Image Investigation">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+      <span class="side-label">Image Investigation</span>
+    </a>
+    <a class="side-item" href="#/fool" data-page="fool" title="Try to fool it">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 10.5-10.5"/><path d="m12.5 7.5 4 4"/><path d="M17 2.5v3M15.5 4h3M20 7.5v2M19 8.5h2M8.5 3v2M7.5 4h2"/></svg>
+      <span class="side-label">Try to fool it</span>
+    </a>
+  </nav>
+  <div class="side-bottom">
+    <button id="theme-toggle" class="side-item" type="button" title="Light mode" aria-label="Light mode">
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 13.4A8.5 8.5 0 1 1 10.6 3.5a6.6 6.6 0 0 0 9.9 9.9z"/></svg>
+      <span id="theme-label" class="side-label">Light mode</span>
+    </button>
+    <a class="side-item" href="#/about" data-page="about" title="About" aria-label="About">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.1"/></svg>
+      <span class="side-label">About</span>
+    </a>
+    <a class="side-item" href="https://github.com/phantom007xy/ImageDETECTIVE" target="_blank" rel="noopener noreferrer"
+       title="GitHub repo" aria-label="GitHub repo (opens in a new tab)">
+      <svg class="filled" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .6C5.7.6.6 5.7.6 12c0 5 3.3 9.3 7.8 10.8.6.1.8-.2.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.7.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.1v3.2c0 .3.2.7.8.6A11.4 11.4 0 0 0 23.4 12C23.4 5.7 18.3.6 12 .6z"/></svg>
+      <span class="side-label">GitHub</span>
+    </a>
+  </div>
+</aside>
+<div id="scrim" class="scrim" hidden></div>
+
+<div class="shell">
+  <header class="topbar">
+    <a class="brand" href="#/investigate" aria-label="ImageDETECTIVE: back to Image Investigation">
+      <span class="brand-logo"><img class="logo-img" src="/static/logo.png" alt="" width="42" height="46"></span>
+      <span class="wordmark">ImageDETECTIVE</span>
+    </a>
+  </header>
+
+  <main id="main" class="main" tabindex="-1">
+
+    <!-- Image Investigation -->
+    <section id="page-investigate" class="page" data-page="investigate" aria-labelledby="tagline">
+      <h1 id="tagline" class="tagline">Search for clues in every picture.</h1>
+      <p class="intro">ImageDETECTIVE is a tool that checks images for signs of AI generation and manipulation. Start an
+        investigation, examine the evidence, and understand the findings.</p>
+
+      <section class="block" aria-labelledby="steps-heading">
+        <div class="section-head">
+          <h2 id="steps-heading">Steps to use</h2>
+          <span class="secondary">Three steps. A clearer picture.</span>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <button class="step-toggle" type="button" aria-expanded="false" aria-controls="step-1">
+              <span class="step-num">01</span><span class="step-title">Upload an image</span>
+              <svg class="plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <p id="step-1" class="step-body" hidden>Choose a photo from your device, drag it into the box, and start your
+              investigation.</p>
+          </div>
+          <div class="step">
+            <button class="step-toggle" type="button" aria-expanded="false" aria-controls="step-2">
+              <span class="step-num">02</span><span class="step-title">Start investigation</span>
+              <svg class="plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <p id="step-2" class="step-body" hidden>ImageDETECTIVE checks the whole image, signs of AI editing, every face
+              it finds, and the file's metadata.</p>
+          </div>
+          <div class="step">
+            <button class="step-toggle" type="button" aria-expanded="false" aria-controls="step-3">
+              <span class="step-num">03</span><span class="step-title">Explore the evidence</span>
+              <svg class="plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <p id="step-3" class="step-body" hidden>Read the assessment and compare the evidence view with the original
+              image.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="examine-heading">
+        <div class="section-head">
+          <h2 id="examine-heading">Examine an Image</h2>
+          <span class="caption">A closer look starts here</span>
+        </div>
+        <div id="drop" class="drop" role="button" tabindex="0" aria-label="Upload an image: browse files or drop one here"
+             aria-describedby="drop-help">
+          <div id="drop-empty" class="drop-empty">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5V4.5m0 0-4.2 4.2M12 4.5l4.2 4.2"/><path d="M4.5 15v3.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5V15"/></svg>
+            <span class="drop-title">Upload an image</span>
+            <span class="drop-sub">Drag and drop, or browse files</span>
+            <span id="drop-help" class="drop-help">JPG, PNG or WEBP · up to 20 MB</span>
+          </div>
+          <img id="preview" class="preview" alt="The image you chose" hidden>
+        </div>
+        <div id="file-row" class="file-row" hidden>
+          <span id="file-name" class="file-name"></span>
+          <button id="replace" class="link-button" type="button">Replace image</button>
+        </div>
+        <input id="file-input" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" hidden>
+        <p id="upload-error" class="error" role="alert" hidden></p>
+        <button id="go" class="primary" type="button" disabled>
+          <span id="go-text">Start investigation</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+        </button>
+        <p class="privacy">Your image is checked on this app's server and kept in memory for at most 30 minutes; it is
+          never saved to disk. If it is not clearly authentic, a copy at most 1,024 pixels long is also sent to Meta's API
+          (standard mode; Meta doesn't train on it) so the investigator can name and outline the evidence.</p>
+      </section>
+
+      <hr class="divider">
+
+      <section class="block report" aria-labelledby="report-heading">
+        <h2 id="report-heading">The Investigative Report</h2>
+        <p class="lead">An assessment backed by evidence. Not just a label.</p>
+        <div id="report-empty" class="empty">
+          <p class="empty-title">Your investigation starts with an image.</p>
+          <p class="empty-sub">Upload a photo above to begin.</p>
+        </div>
+        <p id="report-error" class="error" role="alert" hidden></p>
+        <div id="report-body" hidden>
+          <div id="verdict" class="verdict" aria-live="polite">
+            <p id="verdict-title" class="verdict-title"></p>
+            <p id="verdict-reason" class="verdict-reason"></p>
+            <p id="verdict-context" class="verdict-context" hidden></p>
+            <div class="meter" aria-hidden="true"><div id="meter-fill"></div></div>
+            <p id="meter-label" class="meter-label"></p>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Image view">
+            <button id="tab-evidence" class="tab" role="tab" type="button" aria-selected="true" aria-controls="viewer">Evidence view</button>
+            <button id="tab-original" class="tab" role="tab" type="button" aria-selected="false" aria-controls="viewer" tabindex="-1">Original image</button>
+          </div>
+          <div id="viewer" class="viewer" role="tabpanel" aria-labelledby="tab-evidence">
+            <img id="viewer-img" alt="">
+          </div>
+          <div class="legend">
+            <span><i class="swatch swatch-ai"></i>AI-related evidence</span>
+            <span><i class="swatch swatch-real"></i>Real-photo evidence</span>
+            <span><i class="swatch swatch-weak"></i>Weak / mixed signal</span>
+          </div>
+          <p class="note">The colours are the whole-image check's own signals for each part of the picture: model signals,
+            not proof of authenticity and not exact edit boundaries. The AI-edit check judges the picture as a whole, so it
+            has no map. Numbered boxes mark faces: red looks AI-made or swapped, orange shows some signs, green shows no
+            clear signs, grey is too small to check.</p>
+          <p id="outline-note" class="note" hidden></p>
+          <details class="details">
+            <summary>Investigation details</summary>
+            <dl id="details-list" class="details-list"></dl>
+          </details>
+        </div>
+      </section>
+    </section>
+
+    <!-- Try to fool it -->
+    <section id="page-fool" class="page" data-page="fool" aria-labelledby="fool-heading" hidden>
+      <h1 id="fool-heading" class="tagline">Try to fool it.</h1>
+      <p class="intro">Describe a picture. Meta's Muse Image makes it, and ImageDETECTIVE investigates it right away. Then
+        crop and re-save it, like a forwarded copy that has lost its AI label, and investigate again.</p>
+      <label class="field-label" for="prompt">Prompt</label>
+      <textarea id="prompt" class="field" rows="3" maxlength="600"
+                placeholder="e.g. a selfie of a young woman at a train station at night"></textarea>
+      <p class="field-help">Text prompts only: this page never edits uploaded photos, and it doesn't make pictures of real
+        or famous people.</p>
+      <p id="fool-error" class="error" role="alert" hidden></p>
+      <button id="fool-go" class="primary" type="button">
+        <span id="fool-go-text">Make it and investigate</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+      </button>
+      <div id="fool-result" class="block" hidden>
+        <div id="fool-verdict" class="verdict" aria-live="polite">
+          <p class="verdict-title"></p>
+          <p class="verdict-reason"></p>
+          <p class="verdict-context" hidden></p>
+          <div class="meter" aria-hidden="true"><div class="meter-fill"></div></div>
+          <p class="meter-label"></p>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Picture view">
+          <button id="fool-tab-evidence" class="tab" role="tab" type="button" aria-selected="true" aria-controls="fool-viewer">Evidence view</button>
+          <button id="fool-tab-original" class="tab" role="tab" type="button" aria-selected="false" aria-controls="fool-viewer" tabindex="-1">Generated picture</button>
+        </div>
+        <div id="fool-viewer" class="viewer" role="tabpanel"><img id="fool-img" alt=""></div>
+        <div class="legend">
+          <span><i class="swatch swatch-ai"></i>AI-related evidence</span>
+          <span><i class="swatch swatch-real"></i>Real-photo evidence</span>
+          <span><i class="swatch swatch-weak"></i>Weak / mixed signal</span>
+        </div>
+        <p id="fool-note" class="note" hidden></p>
+        <button id="fool-crop" class="secondary-button" type="button">Crop, re-save and investigate again</button>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="page-about" class="page about" data-page="about" aria-labelledby="about-heading" hidden>
+      <h1 id="about-heading" class="tagline">About ImageDETECTIVE</h1>
+      <p class="intro">ImageDETECTIVE is an image-authenticity investigation tool. It combines visual detectors, available
+        file metadata and optional AI-assisted explanations to help people assess signs of AI generation or
+        manipulation.</p>
+      <p class="callout">An investigation provides evidence, not proof. "Likely authentic" does not establish who took an
+        image, where it was taken or whether its caption is true.</p>
+
+      <h2>How the investigation works</h2>
+      <p>One upload runs every check on this app's server. The verdict comes only from ImageDETECTIVE's own detectors.
+        For pictures that are not clearly authentic, Meta's investigator then points to the most suspicious object and
+        writes a short explanation from the detectors' numbers; it never decides the verdict.</p>
+      <div class="table-wrap">
+        <table class="components">
+          <thead><tr><th scope="col">Component</th><th scope="col">Role</th><th scope="col">Limitation</th></tr></thead>
+          <tbody>
+            <tr><td>DINOv3 (Meta) with a calibrated head</td><td>Whole-image check; its patch signals make the evidence
+              view</td><td>A coarse map (one cell per 16 px of the checked copy), not an edit boundary</td></tr>
+            <tr><td>Perception Encoder (Meta), fine-tuned</td><td>AI-edit check: traces an AI image model leaves when it
+              re-renders a photo; a second head for pictures rendered by AI image models</td><td>Judges the picture as a
+              whole; small local edits are caught less often</td></tr>
+            <tr><td>SAM 3 (Meta) + face checks</td><td>Finds every face; each is checked for being AI-made and, with a
+              separately fine-tuned Perception Encoder, for being swapped</td><td>Faces under 64 px are not checked; face
+              swaps are only partly covered, less in heavily compressed copies</td></tr>
+            <tr><td>File metadata</td><td>Reads AI labels written into the file (IPTC "trained algorithmic media", C2PA
+              presence)</td><td>Forwarded copies and screenshots lose them, so a missing label proves nothing</td></tr>
+            <tr><td>Muse Spark + SAM 3.1 (Meta's API)</td><td>Investigator: names and outlines the most suspicious
+              object; writes a short explanation from the numbers</td><td>Optional; may be unavailable. The outline shows
+              where to look, not a proven edit boundary</td></tr>
+            <tr><td>Muse Image (Meta's API)</td><td>Makes the pictures on the "Try to fool it" page</td><td>Text prompts
+              only</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>How the verdict is set</h2>
+      <p>The thresholds are set on development photos so that at most 5% of real photos get an AI verdict. When the
+        checks don't point clearly either way, the answer is "Uncertain" instead of a guess. The percentage shown is the
+        whole-image check's calibrated AI evidence; the other checks are shown as findings, not as probabilities.</p>
+
+      <h2>How to read the evidence colours</h2>
+      <ul>
+        <li><b>Red:</b> parts of the picture whose signals point to AI generation or manipulation.</li>
+        <li><b>Pale green:</b> parts whose signals point to a real photo.</li>
+        <li><b>Dark blue:</b> weak or mixed signals.</li>
+        <li>Numbered boxes mark faces (red: looks AI-made or swapped; orange: some signs; green: no clear signs; grey:
+          too small to check). A yellow outline, when shown, is the object Meta's investigator pointed to.</li>
+      </ul>
+
+      <h2>Known limitations</h2>
+      <ul>
+        <li>It can't tell when or where a photo was taken: a real photo forwarded with a false story still looks real.</li>
+        <li>Classic manual edits (old-style Photoshop cut-and-paste) are not covered; face swaps and small AI edits only
+          partly.</li>
+        <li>Some newer image generators are caught less often once a picture has lost its file label (for example in a
+          screenshot).</li>
+        <li>Built for photos: drawings, documents, chat screenshots and videos are out of scope.</li>
+      </ul>
+
+      <h2>What happens to your upload</h2>
+      <ul>
+        <li>The image is checked on this app's server and kept in memory for at most 30 minutes (for the investigator
+          step); it is never saved to disk.</li>
+        <li>For images that are not clearly authentic, a copy at most 1,024 pixels long is sent to Meta's Model API in
+          standard mode (Meta doesn't train on it). The explanation is written from numbers only.</li>
+        <li>"Try to fool it" sends only your text prompt to Meta's API.</li>
+      </ul>
+
+      <h2>Source code</h2>
+      <p>Code, measured results and dataset credits:
+        <a href="https://github.com/phantom007xy/ImageDETECTIVE" target="_blank" rel="noopener noreferrer">github.com/phantom007xy/ImageDETECTIVE ↗</a>.
+        Built with DINOv3, Perception Encoder, SAM 3, SAM 3.1, Muse Image and Muse Spark (Meta).</p>
+    </section>
+
+    <footer class="footer">
+      <span>Evidence, not proof.</span>
+      <span class="footer-links">
+        <a href="#/about">About &amp; how it works</a>
+        <a href="https://github.com/phantom007xy/ImageDETECTIVE" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      </span>
+    </footer>
+  </main>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
