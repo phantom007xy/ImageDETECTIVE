@@ -1,0 +1,22 @@
+Judge test v1 (release gate): what judges are likely to upload. Final app setup of 3 Nov 2026: DINOv3 head G3tt +
+Muse-edit check EC3pf (+ second head EC3g) + SAM 3 faces with the AI-face line and face-swap model v2, lines from
+weights/google_v1/head_G3tt_calibration.json and weights/edit_check_v3/head_EC3pf_calibration.json.
+
+== AI images made by hand in the generators' own apps (features/lists/judge_test_ai_v1.csv, 80 pictures) ==
+python -m src.eval.full_verdicts --list features/lists/judge_test_ai_v1.csv   (laptop GPU, 3 Nov ~13:40)
+Pixels only = as a forwarded copy without its file metadata; "with label" = the original file as downloaded.
+source              n | AI-gen  Likely AI  AI-edited  AI face  Uncertain  Authentic | AI verdict | with label
+ChatGPT            20 |   5.0%     60.0%      35.0%     0.0%       0.0%       0.0% |     100.0% |     100.0%
+Meta AI            20 |  45.0%     50.0%       5.0%     0.0%       0.0%       0.0% |     100.0% |     100.0%
+Nano Banana Pro    20 |   5.0%     80.0%       5.0%     0.0%       5.0%       5.0% |      90.0% |     100.0%
+Nano Banana 2.1    20 |   0.0%     50.0%       0.0%     0.0%      35.0%      15.0% |      50.0% |     100.0%
+all                80 |                                                            |      85.0% |     100.0%
+
+-> ChatGPT and Meta AI pictures: all called AI from their pixels alone. Every original file also carries an AI label
+   (IPTC / C2PA), so unchanged downloads are always flagged; WhatsApp and screenshots remove that label.
+-> Weak spot: Google's Nano Banana 2.1 (half called AI from pixels, 3 of 20 called "Likely authentic"). Training with
+   2.6x more Google pictures did not help (results/head_g_v1.txt, section 8): reported as a known limit.
+
+== Same numbers in the web app (src/eval/ui_same_numbers.py) ==
+The 80 pictures through the web app's real upload path (app/server.py, /api/investigate): verdict, AI evidence,
+edit flags, metadata label and face results identical to the detector's for 80 of 80 (results/ui_numbers_judge_ai.json).

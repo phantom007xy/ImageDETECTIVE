@@ -1,0 +1,962 @@
+{
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_001,a selfie of a young man at a train station.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.97516,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_002,a selfie of a woman in a park on a sunny day, phone front camera.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.678517,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_003,a group photo of five friends at a beach.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.55141,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 5,
+  "faces_checked": 5,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_004,a family having dinner together at home, phone photo.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.40218,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 4,
+  "faces_checked": 4,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_005,portrait of a smiling grandmother in her kitchen.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.978795,
+  "edit": [
+   false,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_006,a man in a suit giving a speech at a conference.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.30706,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_007,a woman taking a mirror selfie in a gym.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.613699,
+  "edit": [
+   false,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_008,two friends eating street food at night.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.440131,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 9,
+  "faces_checked": 2,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_009,a golden retriever lying on a sofa.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.931211,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_010,a cat sleeping on a laptop keyboard.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.978215,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 2,
+  "faces_checked": 2,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_011,a plate of pasta in a restaurant, photo taken from above.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.767844,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_012,a cup of coffee and a croissant on a cafe table.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.732462,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_013,a busy street in Mumbai during heavy rain.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.090257,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 3,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_014,a car with a flat tyre at the side of a road.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.75463,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_015,a flooded village street after heavy monsoon rain.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.756639,
+  "edit": [
+   true,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_016,people waiting at a bus stop in the evening.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.461344,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 6,
+  "faces_checked": 3,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_017,a student studying in a library-2.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.996251,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 2,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_018,a birthday party at home with balloons and a cake-3.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.965068,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 5,
+  "faces_checked": 5,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_019,a sunset over the sea seen from a beach-4.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.985707,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\ChatGPT_images\\jt_020,an office desk with a computer and a plant, phone photo-5.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.557073,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_001,a selfie of a young man at a train station.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.993694,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 5,
+  "faces_checked": 1,
+  "faces_flagged": 1
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_002,a selfie of a woman in a park on a sunny day, phone front camera.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.955195,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 2,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_003,a group photo of five friends at a beach.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.981279,
+  "edit": [
+   false,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 5,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_004,a family having dinner together at home, phone photo.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.492843,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 12,
+  "faces_checked": 5,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_005,portrait of a smiling grandmother in her kitchen.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.861538,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_006,a man in a suit giving a speech at a conference.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.985824,
+  "edit": [
+   false,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 28,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_007,a woman taking a mirror selfie in a gym.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.874567,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 2,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_008,two friends eating street food at night.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.957982,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 7,
+  "faces_checked": 2,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_009,a golden retriever lying on a sofa.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.809115,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_010,a cat sleeping on a laptop keyboard.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.672953,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 2,
+  "faces_checked": 2,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_011,a plate of pasta in a restaurant, photo taken from above.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.981927,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_012,a cup of coffee and a croissant on a cafe table.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.834936,
+  "edit": [
+   false,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 4,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_013,a busy street in Mumbai during heavy rain.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.391861,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 11,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_014,a car with a flat tyre at the side of a road.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.029549,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_015,a flooded village street after heavy monsoon rain.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.800324,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 6,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_016,people waiting at a bus stop in the evening.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.772823,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 6,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_017,a student studying in a library.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.999402,
+  "edit": [
+   false,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 3,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_018,a birthday party at home with balloons and a cake.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.825951,
+  "edit": [
+   false,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 7,
+  "faces_checked": 4,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_019,a sunset over the sea seen from a beach.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.971358,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBananaPro_image\\jt_020,an office desk with a computer and a plant, phone photo.png": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.980335,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_001,a selfie of a young man at a train station.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.02633,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 5,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_002,a selfie of a woman in a park on a sunny day, phone front camera.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.743087,
+  "edit": [
+   false,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 3,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_003,a group photo of five friends at a beach.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.679308,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 5,
+  "faces_checked": 5,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_004,a family having dinner together at home, phone photo.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.002957,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 10,
+  "faces_checked": 5,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_005,portrait of a smiling grandmother in her kitchen.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.219453,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 2,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_006,a man in a suit giving a speech at a conference.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.2343,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 2,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_007,a woman taking a mirror selfie in a gym.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.993286,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_008,two friends eating street food at night.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.281169,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 12,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_009,a golden retriever lying on a sofa.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.54138,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 2,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_010,a cat sleeping on a laptop keyboard.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.979161,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_011,a plate of pasta in a restaurant, photo taken from above.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.44731,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_012,a cup of coffee and a croissant on a cafe table.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.937524,
+  "edit": [
+   false,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_013,a busy street in Mumbai during heavy rain.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.221356,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 8,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_014,a car with a flat tyre at the side of a road.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.010833,
+  "edit": [
+   false,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_015,a flooded village street after heavy monsoon rain.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.758188,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 13,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_016,people waiting at a bus stop in the evening.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.945255,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 6,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_017,a student studying in a library.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.962299,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 5,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_018,a birthday party at home with balloons and a cake.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.075113,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 22,
+  "faces_checked": 4,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_019,a sunset over the sea seen from a beach.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.378931,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\Gemini_images\\NanoBanana2.1_image\\jt_020,an office desk with a computer and a plant, phone photo.jpeg": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.984609,
+  "edit": [
+   false,
+   false
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_001,a selfie of a young man at a train station.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.715674,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 12,
+  "faces_checked": 2,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_002,a selfie of a woman in a park on a sunny day, phone front camera.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.999251,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_003,a group photo of five friends at a beach.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.991157,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 5,
+  "faces_checked": 5,
+  "faces_flagged": 1
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_004,a family having dinner together at home, phone photo.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.406904,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 6,
+  "faces_checked": 4,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_005,portrait of a smiling grandmother in her kitchen.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.991316,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_006,a man in a suit giving a speech at a conference.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.932033,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 2,
+  "faces_checked": 2,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_007,a woman taking a mirror selfie in a gym.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.987572,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 1
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_008,two friends eating street food at night.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.996883,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 2,
+  "faces_checked": 2,
+  "faces_flagged": 1
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_009,a golden retriever lying on a sofa.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.999816,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 4,
+  "faces_checked": 2,
+  "faces_flagged": 2
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_011,a plate of pasta in a restaurant, photo taken from above.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.99182,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_012,a cup of coffee and a croissant on a cafe table.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.999997,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_013,a busy street in Mumbai during heavy rain.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.999989,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 8,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_014,a car with a flat tyre at the side of a road.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.875126,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_015,a flooded village street after heavy monsoon rain.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.905013,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 4,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_016,people waiting at a bus stop in the evening.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.987803,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 6,
+  "faces_checked": 6,
+  "faces_flagged": 1
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_017,a student studying in a library.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.998006,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_018,a birthday party at home with balloons and a cake.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.997715,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 11,
+  "faces_checked": 3,
+  "faces_flagged": 2
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_019,a sunset over the sea seen from a beach.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.893634,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\jt_020,an office desk with a computer and a plant, phone photo.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 0.997385,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 0,
+  "faces_checked": 0,
+  "faces_flagged": 0
+ },
+ "D:\\Datasets\\AI_TestImage\\MetaAI_images\\t_010,a cat sleeping on a laptop keyboard.webp": {
+  "verdict": "AI-generated",
+  "probability_ai": 1.0,
+  "edit": [
+   true,
+   true
+  ],
+  "ai_label": "generated",
+  "faces": 1,
+  "faces_checked": 1,
+  "faces_flagged": 1
+ }
+}

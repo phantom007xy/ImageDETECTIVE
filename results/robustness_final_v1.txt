@@ -1,0 +1,92 @@
+Robustness of the final app setup to forwarding damage (3 Nov 2026): DINOv3 head G3tt + Muse-edit check EC3pf, calibrated
+lines (weights/google_v1/head_G3tt_calibration.json, weights/edit_check_v3/head_EC3pf_calibration.json). Whole image only (no
+faces, no metadata: a forwarded copy has lost its metadata). At most 150 images per set; dev and test sets only.
+python -m src.eval.robustness_check --head weights/google_v1/head_G3tt.pt --edit-check weights/edit_check_v3/head_EC3pf.pt
+  --list "polished dev:features/lists/commons_dev.csv" --list "OpenImages unseen:features/lists/sid_reals_0_9_unseen.csv"
+  --list "Muse edit originals v2:features/lists/muse_edits_test_v2.csv@muse_edits/original"
+  --list "Muse test v1:features/lists/muse_image_test_v1.csv" --list "Muse edits v2 local:...@muse_edits/local"
+  --list "Muse edits v2 whole:...@muse_edits/whole" --list "SDXL (unseen):features/lists/sd_faces.csv@sd_faces/sdxl"
+  --list "PixArt (unseen):features/lists/open_gen_v1/open_gen_dev.csv@open_gen/pixart" --list "SD3.5 devcap:...@open_gen/sd35m_devcaption"
+Versions: original | jpeg70 | whatsapp (long side <= 1600, q75) | whatsapp2 (twice) | small (long side <= 800, q60) |
+screenshot (1080 px wide, PNG) | crop (middle 70% of each side, JPEG 85).
+
+head head_G3tt.pt (calibrated) + edit check head_EC3pf.pt; shares: AI (likely or clear) or edited | Uncertain | Likely authentic
+REAL polished dev (150 images)
+  original    AI   2.7% | Uncertain  22.0% | Likely authentic  75.3% | mean logit  -4.31 | edit check alone   0.7%
+  jpeg70      AI   2.0% | Uncertain  22.0% | Likely authentic  76.0% | mean logit  -4.62 | edit check alone   0.7%
+  whatsapp    AI   2.0% | Uncertain  21.3% | Likely authentic  76.7% | mean logit  -4.60 | edit check alone   0.7%
+  whatsapp2   AI   2.0% | Uncertain  21.3% | Likely authentic  76.7% | mean logit  -4.61 | edit check alone   0.7%
+  small       AI   2.0% | Uncertain  21.3% | Likely authentic  76.7% | mean logit  -4.91 | edit check alone   0.7%
+  screenshot  AI   2.7% | Uncertain  22.0% | Likely authentic  75.3% | mean logit  -4.33 | edit check alone   0.7%
+  crop        AI   4.7% | Uncertain  22.7% | Likely authentic  72.7% | mean logit  -4.66 | edit check alone   1.3%
+REAL OpenImages unseen (150 images)
+  original    AI   0.7% | Uncertain  15.3% | Likely authentic  84.0% | mean logit  -5.98 | edit check alone   0.7%
+  jpeg70      AI   0.0% | Uncertain  11.3% | Likely authentic  88.7% | mean logit  -6.21 | edit check alone   0.0%
+  whatsapp    AI   0.0% | Uncertain  12.0% | Likely authentic  88.0% | mean logit  -6.19 | edit check alone   0.0%
+  whatsapp2   AI   0.0% | Uncertain  12.0% | Likely authentic  88.0% | mean logit  -6.20 | edit check alone   0.0%
+  small       AI   0.0% | Uncertain   8.7% | Likely authentic  91.3% | mean logit  -6.38 | edit check alone   0.0%
+  screenshot  AI   0.7% | Uncertain  14.7% | Likely authentic  84.7% | mean logit  -5.97 | edit check alone   0.7%
+  crop        AI   0.7% | Uncertain   9.3% | Likely authentic  90.0% | mean logit  -6.75 | edit check alone   0.0%
+REAL Muse edit originals v2 (150 images)
+  original    AI   2.7% | Uncertain  17.3% | Likely authentic  80.0% | mean logit  -5.52 | edit check alone   0.0%
+  jpeg70      AI   1.3% | Uncertain  13.3% | Likely authentic  85.3% | mean logit  -5.83 | edit check alone   0.0%
+  whatsapp    AI   1.3% | Uncertain  13.3% | Likely authentic  85.3% | mean logit  -5.79 | edit check alone   0.0%
+  whatsapp2   AI   1.3% | Uncertain  14.7% | Likely authentic  84.0% | mean logit  -5.79 | edit check alone   0.0%
+  small       AI   0.0% | Uncertain  12.7% | Likely authentic  87.3% | mean logit  -6.02 | edit check alone   0.0%
+  screenshot  AI   1.3% | Uncertain  17.3% | Likely authentic  81.3% | mean logit  -5.58 | edit check alone   0.0%
+  crop        AI   1.3% | Uncertain  16.7% | Likely authentic  82.0% | mean logit  -6.58 | edit check alone   0.0%
+AI Muse test v1 (100 images)
+  original    AI 100.0% | Uncertain   0.0% | Likely authentic   0.0% | mean logit  +4.73 | edit check alone 100.0%
+  jpeg70      AI 100.0% | Uncertain   0.0% | Likely authentic   0.0% | mean logit  +4.53 | edit check alone 100.0%
+  whatsapp    AI 100.0% | Uncertain   0.0% | Likely authentic   0.0% | mean logit  +4.53 | edit check alone 100.0%
+  whatsapp2   AI 100.0% | Uncertain   0.0% | Likely authentic   0.0% | mean logit  +4.54 | edit check alone 100.0%
+  small       AI 100.0% | Uncertain   0.0% | Likely authentic   0.0% | mean logit  +3.96 | edit check alone 100.0%
+  screenshot  AI 100.0% | Uncertain   0.0% | Likely authentic   0.0% | mean logit  +4.71 | edit check alone 100.0%
+  crop        AI 100.0% | Uncertain   0.0% | Likely authentic   0.0% | mean logit  +4.56 | edit check alone  99.0%
+AI Muse edits v2 local (132 images)
+  original    AI  75.8% | Uncertain   4.5% | Likely authentic  19.7% | mean logit  -5.37 | edit check alone  75.8%
+  jpeg70      AI  75.8% | Uncertain   5.3% | Likely authentic  18.9% | mean logit  -5.50 | edit check alone  75.8%
+  whatsapp    AI  71.2% | Uncertain   6.8% | Likely authentic  22.0% | mean logit  -5.50 | edit check alone  71.2%
+  whatsapp2   AI  69.7% | Uncertain   7.6% | Likely authentic  22.7% | mean logit  -5.50 | edit check alone  69.7%
+  small       AI  67.4% | Uncertain   6.1% | Likely authentic  26.5% | mean logit  -5.72 | edit check alone  67.4%
+  screenshot  AI  76.5% | Uncertain   4.5% | Likely authentic  18.9% | mean logit  -5.40 | edit check alone  75.8%
+  crop        AI  61.4% | Uncertain   6.8% | Likely authentic  31.8% | mean logit  -6.31 | edit check alone  60.6%
+AI Muse edits v2 whole (66 images)
+  original    AI  95.5% | Uncertain  -0.0% | Likely authentic   4.5% | mean logit  -1.72 | edit check alone  95.5%
+  jpeg70      AI  95.5% | Uncertain  -0.0% | Likely authentic   4.5% | mean logit  -1.88 | edit check alone  95.5%
+  whatsapp    AI  93.9% | Uncertain  -0.0% | Likely authentic   6.1% | mean logit  -1.89 | edit check alone  93.9%
+  whatsapp2   AI  92.4% | Uncertain   0.0% | Likely authentic   7.6% | mean logit  -1.88 | edit check alone  92.4%
+  small       AI  93.9% | Uncertain   1.5% | Likely authentic   4.5% | mean logit  -2.28 | edit check alone  93.9%
+  screenshot  AI  95.5% | Uncertain  -0.0% | Likely authentic   4.5% | mean logit  -1.74 | edit check alone  95.5%
+  crop        AI  92.4% | Uncertain   1.5% | Likely authentic   6.1% | mean logit  -3.45 | edit check alone  92.4%
+AI SDXL (unseen) (150 images)
+  original    AI  94.7% | Uncertain   5.3% | Likely authentic   0.0% | mean logit  +3.95 | edit check alone  46.7%
+  jpeg70      AI  86.0% | Uncertain  14.0% | Likely authentic   0.0% | mean logit  +2.84 | edit check alone  27.3%
+  whatsapp    AI  89.3% | Uncertain  10.7% | Likely authentic   0.0% | mean logit  +3.19 | edit check alone  26.0%
+  whatsapp2   AI  89.3% | Uncertain  10.7% | Likely authentic   0.0% | mean logit  +3.18 | edit check alone  26.0%
+  small       AI  78.0% | Uncertain  22.0% | Likely authentic   0.0% | mean logit  +1.93 | edit check alone  22.0%
+  screenshot  AI  93.3% | Uncertain   6.7% | Likely authentic   0.0% | mean logit  +3.95 | edit check alone  47.3%
+  crop        AI  84.7% | Uncertain  15.3% | Likely authentic   0.0% | mean logit  +3.97 | edit check alone  11.3%
+AI PixArt (unseen) (150 images)
+  original    AI  98.7% | Uncertain   1.3% | Likely authentic   0.0% | mean logit +13.89 | edit check alone   4.0%
+  jpeg70      AI  95.3% | Uncertain   4.7% | Likely authentic   0.0% | mean logit +12.51 | edit check alone   2.7%
+  whatsapp    AI  97.3% | Uncertain   2.7% | Likely authentic   0.0% | mean logit +13.00 | edit check alone   2.7%
+  whatsapp2   AI  97.3% | Uncertain   2.7% | Likely authentic   0.0% | mean logit +12.96 | edit check alone   2.7%
+  small       AI  94.0% | Uncertain   6.0% | Likely authentic   0.0% | mean logit +11.09 | edit check alone   2.7%
+  screenshot  AI  98.7% | Uncertain   1.3% | Likely authentic   0.0% | mean logit +13.89 | edit check alone   5.3%
+  crop        AI  98.0% | Uncertain   1.3% | Likely authentic   0.7% | mean logit +12.50 | edit check alone   4.0%
+AI SD3.5 devcap (38 images)
+  original    AI  52.6% | Uncertain  21.1% | Likely authentic  26.3% | mean logit  +2.84 | edit check alone   0.0%
+  jpeg70      AI  42.1% | Uncertain  31.6% | Likely authentic  26.3% | mean logit  +1.68 | edit check alone   0.0%
+  whatsapp    AI  39.5% | Uncertain  34.2% | Likely authentic  26.3% | mean logit  +2.20 | edit check alone   0.0%
+  whatsapp2   AI  42.1% | Uncertain  31.6% | Likely authentic  26.3% | mean logit  +2.19 | edit check alone   0.0%
+  small       AI  31.6% | Uncertain  28.9% | Likely authentic  39.5% | mean logit  +0.96 | edit check alone   0.0%
+  screenshot  AI  50.0% | Uncertain  26.3% | Likely authentic  23.7% | mean logit  +2.85 | edit check alone   0.0%
+  crop        AI  44.7% | Uncertain  28.9% | Likely authentic  26.3% | mean logit  +1.93 | edit check alone   0.0%
+
+-> Real photos: no extra false alarms from compression or screenshots (polished dev 2.0-2.7%, crop 4.7% = 7 of 150;
+   OpenImages 0-0.7%; edit originals 0-2.7%).
+-> Muse Image pictures: 100% in every version, cropped copies included (Meta's watermark-based detector missed 55% of
+   cropped Muse images, Reuters, July 2026). Whole-image Muse edits 92-96%; local edits 76% -> 61-76%.
+-> Unseen generators stay AI or Uncertain under damage (SDXL 79-95%, PixArt 94-99%, none called authentic except PixArt
+   crop 0.7%). Weak spot as before: SD 3.5 (n = 38) 53% -> 32-50%, a quarter called authentic.
