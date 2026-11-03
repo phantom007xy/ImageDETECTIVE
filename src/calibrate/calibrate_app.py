@@ -26,8 +26,8 @@ PE_WEIGHTS = "weights/edit_check_v3/pe_EC3.pt"
 # The face-swap check: Meta's Perception Encoder fine-tuned on face crops (src/models/tune_face_pe.py, step 4,000 chosen on
 # dev: DFDC + OpenForensics swaps, self-blended fakes, real faces; results/face_pe_v1.txt) and its head; one more pass per
 # face. Before 2 Nov: swap_v3 (DINOv3, results/swap_head_v2.txt), swap_v2, dfdc_v1.
-SWAP = "weights/face_pe_v2/head_facepe.pt"
-SWAP_PE = "weights/face_pe_v2/pe_step1000.pt"
+SWAP = "weights/face_pe_v4/head_facepe.pt"
+SWAP_PE = "weights/face_pe_v4/pe_step14000.pt"
 # A second head on the same PE features, trained from EC3p with Google's pictures too (Gemini 3.1 Flash, Nano Banana Pro,
 # Gemini 2.5 restorations and edits): its own, higher line, so the Muse head keeps its line (results/head_g_v1.txt, 1 Nov)
 EDIT2 = "weights/edit_check_v3/head_EC3g.pt"

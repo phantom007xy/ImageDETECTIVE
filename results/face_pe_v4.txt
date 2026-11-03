@@ -1,0 +1,44 @@
+Face-swap model v4 (3 Nov 2026): Meta PE-Core-L/14 fine-tuned on face crops on Colab (A100), notebooks/colab_face_swap.ipynb.
+Controlled experiment, same data/steps/seed: run A without self-blended fakes vs run B with them (p 0.5); 20,000 steps,
+batch 32, from the original PE. Data: OpenForensics Val+Train+Test-Challenge, DFDC parts 0-2, RTFS-10k (inswapper/UniFace,
+real clips re-encoded like the swaps; coding check AUC 0.486), real faces from SID-Set, Commons, FairFace, Open Images,
+FaceID-550, Indian expressions; near-duplicates of dev/test faces removed. Strict line = 0.5% of every real face pool.
+
+== Colab dev/test (src/eval/face_pe_eval.py), swaps caught at the strict line ==
+checkpoint   OF dev  DFDC p3  RTFS dev | dev mean | OF test  RTFS test (unseen people and swapped-in identities)
+A  6000       99.0    40.8     74.2    |   71.3   |  99.2     70.1
+A 10000       95.4    43.2     86.0    |   74.9   |  96.3     86.9
+A 14000       91.8    45.3     89.8    |   75.6   |  92.2     88.9   <- chosen on dev
+A 20000       72.2    40.4     84.3    |   65.6   |  72.5     84.8
+B  6000       86.7    34.7     79.7    |   67.0   |  91.1     76.2
+B 10000       84.2    31.0     67.8    |   61.0   |  87.7     62.7
+B 14000       95.3    37.9     79.7    |   71.0   |  96.9     79.9
+B 20000       91.8    42.5     81.8    |   72.0   |  95.0     79.9
+RTFS test by tool (A 14000): inswapper 83.8%, inswapper+face enhancer 89.1%, UniFace 95.7%, UniFace+enhancer 87.5%.
+-> Self-blended fakes (B) did not help on any set; v4 = run A, step 14000 (weights/face_pe_v4, private).
+
+== Laptop (same crops as v2's tests) ==
+pe_step14000.pt + head_step14000.pt: strict line +0.20 (set by DFDC p3 real)
+  REAL faces above the line: polished dev 0.0% of 285 | OpenImages val 0.0% of 81 | OpenImages unseen 0.0% of 557 | Commons v3 dev 0.0% of 15 | close-ups 0.0% of 174 | selfies+portraits 0.0% of 78 | SID val 0.3% of 292 | DFDC p3 real 0.6% of 1452
+  OpenForensics test                               swaps caught  96.9% of 2270 | AUC 0.999 | its real faces above 0.3%
+  OpenForensics dev                                swaps caught  96.6% of 1459 | AUC 0.998 | its real faces above 0.3%
+  DFDC p3                                          swaps caught  38.9% of 1455 | AUC 0.919 | its real faces above 0.6%
+  WildDeepfake (never trained on, tighter crops)   swaps caught  13.8% of 3280 | AUC 0.830 | its real faces above 0.6%
+  AI-made faces above the line: Muse test faces 0.0% | SD faces 4.5% | GAN faces (TPDNE) 0.0%
+
+== In the app (python -m src.calibrate.calibrate_app, my phone faces included): swap line +0.22 ==
+  REAL faces polished faces         285 | swapped: 0.0% | some swap signs: 0.4%
+  REAL faces OpenImages faces        81 | swapped: 0.0% | some swap signs: 0.0%
+  REAL faces OpenImages unseen faces   557 | swapped: 0.0% | some swap signs: 0.2%
+  REAL faces Commons v3 dev faces    15 | swapped: 0.0% | some swap signs: 0.0%
+  REAL faces close-ups faces        174 | swapped: 0.0% | some swap signs: 0.6%
+  REAL faces selfies+portraits faces    78 | swapped: 0.0% | some swap signs: 0.0%
+  REAL faces phone faces            148 | swapped: 0.0% | some swap signs: 1.4%
+  REAL faces phone objects faces     20 | swapped: 0.0% | some swap signs: 0.0%
+  REAL faces DFDC p3 real          1452 | swapped: 0.5% | some swap signs: 5.0%
+  REAL faces SID val real           292 | swapped: 0.3% | some swap signs: 0.3%
+  SWAPS DFDC p3 swaps         1455 | swapped: 38.5% | some swap signs: 68.4%
+  SWAPS WildDeepfake          3280 | swapped: 13.7% | some swap signs: 32.4%
+  SWAPS OpenForensics test (photo swaps)  2270 | swapped: 96.9% | some swap signs: 99.2%
+v2 at its app line (+18.64): OpenForensics 25.0%, DFDC 10.0%, WildDeepfake 18.6% red. v4: 96.9% / 38.5% / 13.7%;
+WildDeepfake (never trained on, tight 224 px video crops) is the one set where v4 is not better.
