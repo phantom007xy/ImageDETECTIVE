@@ -15,6 +15,7 @@ Run from the repo root:  python -m app.server   (then open http://127.0.0.1:7860
 """
 
 import base64
+import contextlib
 import io
 import os
 import threading
@@ -37,7 +38,8 @@ HEAD_PATH = "weights/google_v1/head_G3tt.pt"
 EDIT_CHECK_PATH = "weights/edit_check_v3/head_EC3pf.pt"
 WEB = Path(__file__).parent / "web"
 MAX_BYTES = 20 * 1024 * 1024
-KEEP_SECONDS = 30 * 60
+KEEP_SECONDS = 29 * 60  # + a sweep every 30 s: an upload is gone at most 29.5 min after its check ("at most 30 minutes")
+SWEEP_SECONDS = 30
 FORMATS = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp"}
 
 # On a hosted demo the trained heads are not in the public code: they come from a PRIVATE Hugging Face model repo
@@ -47,13 +49,32 @@ if os.environ.get("HEADS_REPO"):  # hosted: our private heads repo (only changed
 detector = Detector(HEAD_PATH, edit_check=EDIT_CHECK_PATH)
 lock = threading.Lock()  # one check at a time
 memory = {}  # id -> (time, data); pictures for the follow-up steps, in memory only
+memory_lock = threading.Lock()  # memory is used by request threads and the cleaner
 
 TONE = {"AI-generated": "red", "Likely AI-generated": "red", "Likely AI-edited": "amber",
         "Part of this photo looks AI-made or AI-changed": "amber", "This face looks AI-made or AI-changed": "orange",
         "Likely authentic": "green", "Uncertain": "slate"}
 CONTEXT = "This photo doesn't look AI-made or AI-changed. It doesn't confirm when or where it was taken."
 
-app = FastAPI(title="ImageDETECTIVE", docs_url=None, redoc_url=None, openapi_url=None)
+def cleaner(stop):
+    """Deletes expired uploads every SWEEP_SECONDS, also when nobody uses the app."""
+    while not stop.wait(SWEEP_SECONDS):
+        forget_old()
+
+
+@contextlib.asynccontextmanager
+async def lifespan(_app):
+    stop = threading.Event()
+    thread = threading.Thread(target=cleaner, args=(stop,), daemon=True, name="upload-cleaner")
+    thread.start()
+    yield
+    stop.set()
+    thread.join(timeout=5)
+    with memory_lock:
+        memory.clear()  # nothing outlives the server
+
+
+app = FastAPI(title="ImageDETECTIVE", docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=WEB), name="static")
 
 
@@ -66,8 +87,23 @@ async def limit_upload(request: Request, call_next):
 
 
 def forget_old():
-    for key in [k for k, (t, _) in memory.items() if time.time() - t > KEEP_SECONDS]:
-        memory.pop(key, None)
+    with memory_lock:
+        for key in [k for k, (t, _) in memory.items() if time.time() - t > KEEP_SECONDS]:
+            memory.pop(key, None)
+
+
+def remember(data):
+    key = uuid.uuid4().hex
+    with memory_lock:
+        memory[key] = (time.time(), data)
+    return key
+
+
+def recall(key):
+    """The stored data of an upload, or None once it has expired."""
+    with memory_lock:
+        entry = memory.get(key)
+    return None if entry is None or time.time() - entry[0] > KEEP_SECONDS else entry[1]
 
 
 def data_url(image, long_side=1600):
@@ -180,10 +216,8 @@ def investigate(file: UploadFile):
     if not data:
         raise HTTPException(400, "The file is empty.")
     image, result = analyze(data)
-    forget_old()
-    key = uuid.uuid4().hex
     body, base = report(image, result)
-    memory[key] = (time.time(), {"image": image, "result": result, "base": base})
+    key = remember({"image": image, "result": result, "base": base})
     body["id"] = key
     return body
 
@@ -191,10 +225,9 @@ def investigate(file: UploadFile):
 @app.post("/api/investigate/{key}/explain")
 def investigate_more(key: str):
     """The second step: Meta's investigator (not for pictures called authentic) and the plain-language explanation."""
-    forget_old()
-    if key not in memory:
+    item = recall(key)
+    if item is None:
         raise HTTPException(410, "This investigation has expired. Please start it again.")
-    item = memory[key][1]
     image, result, base = item["image"], item["result"], item["base"]
     out = {"investigator": "not run", "named": None, "outline": None, "evidence": None, "explanation": None}
     outline, evidence, guess = None, None, None
@@ -243,19 +276,17 @@ def fool(body: Prompt):
         raise HTTPException(503, "Muse Image couldn't make this picture: Meta's safety filter refused it, the daily limit "
                                  "is reached, or the API is unavailable. No picture was substituted.")
     image, result = analyze(data)
-    forget_old()
-    key = uuid.uuid4().hex
-    memory[key] = (time.time(), {"data": data})
+    key = remember({"data": data})
     found, _ = report(image, result)
     return {"id": key, "picture": data_url(image), "report": found}
 
 
 @app.post("/api/fool/{key}/crop")
 def fool_crop(key: str):
-    forget_old()
-    if key not in memory or "data" not in memory[key][1]:
+    item = recall(key)
+    if item is None or "data" not in item:
         raise HTTPException(410, "This picture has expired. Please make a new one.")
-    data = muse_image.crop_and_resave(memory[key][1]["data"])
+    data = muse_image.crop_and_resave(item["data"])
     image, result = analyze(data)
     found, _ = report(image, result)
     return {"picture": data_url(image), "report": found}

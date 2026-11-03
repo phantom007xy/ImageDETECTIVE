@@ -14,18 +14,18 @@ ImageDETECTIVE is built for that flow: everyday phone photos, compressed and for
 
 ## Results at a glance
 
-All numbers are from the final app (whole image, edit check and faces together), **from the pixels alone** unless stated otherwise. A file that still carries its AI label is caught in every case. Details and commands: [results/](results/).
+Whole-photo numbers are the final app's verdict (whole image, edit check and faces together) **from the pixels alone**, unless marked otherwise; face-swap numbers are measured on face crops at the app's red line; rows marked \* come from tests run before the last recalibration (3 Nov) or at a training-time line. A file that still carries its AI label is caught in every case. Details and commands: [results/](results/).
 
 | AI images (most never used in training) | Caught |
 |---|---|
 | **Muse Image**, fresh test of 100 new prompts made on the last day (people, groups, low light, animals, food, scenes) | **100%** |
-| Muse Image, **cropped and re-saved** (Meta's watermark-based detector missed 55% of cropped Muse images, Reuters, July 2026) | **100%** |
+| Muse Image, **cropped and re-saved**\* (Meta's watermark-based detector missed 55% of cropped Muse images, Reuters, July 2026) | **100%** |
 | Pictures made by hand in the apps judges are likely to use: **ChatGPT / Meta AI / Nano Banana Pro / Nano Banana 2.1** (20 each) | **100% / 100% / 95% / 60%** |
 | The same 80 files as downloaded (their AI label read from the file) | 100% |
 | Generators never used in training: **PixArt-Σ / SDXL** | 98% / 92% |
 | GAN faces (thispersondoesnotexist / SFHQ) | 95% / 92% |
 | Muse Image edits of real photos: whole-image changes / local changes ("add a red bicycle") | 88% / 71% |
-| **Face swaps** (a face turns red): photo swaps (OpenForensics test) / today's swap tools inswapper + UniFace on people never seen (RTFS-10k test) / DFDC video swaps | **97% / 89% / 39%** |
+| **Face swaps**, per face crop (turns red): photo swaps (OpenForensics test, app line) / today's swap tools inswapper + UniFace on people never seen (RTFS-10k test\*, training-time line on Colab) / DFDC video swaps (app line) | **97% / 89% / 39%** |
 
 | Real photos called AI (any AI verdict) | n | Result |
 |---|---|---|
@@ -34,9 +34,9 @@ All numbers are from the final app (whole image, edit check and faces together),
 | My phone photos (calibration, private, offline) | 104 | 0% |
 | Polished professional photos (Wikimedia Commons, held out) | 330 | 4.8% |
 | Amateur photos (OpenImages, held out / used nowhere before) | 76 / 576 | 1.3% / 1.7% |
-| Real faces, in every real face pool, flagged as a swap | 1,500+ | **0%** |
+| Real faces flagged as a swap: photo pools (polished, OpenImages, close-ups, selfies, my phone photos) / video frames (DFDC) / SID-Set | 1,358 / 1,452 / 292 | **0%** / 0.5% / 0.3% |
 
-**Forwarded copies** (WhatsApp-like JPEG, a second forward, 800-px copies, screenshots, 70% crops) add no false alarms on real photos and keep Muse Image at 100% ([robustness](results/robustness_final_v1.txt)).
+**Forwarded copies\*** (WhatsApp-like JPEG, a second forward, 800-px copies, screenshots, 70% crops; whole image and edit check, no faces): compression and screenshots add no false alarms on the real photos tested (polished 2.0–2.7%, OpenImages 0–0.7%), but **cropping raised polished photos from 2.7% to 4.7%**; Muse Image stays at 100% in every version ([robustness](results/robustness_final_v1.txt)).
 
 ## What you get for one photo
 
@@ -72,7 +72,7 @@ flowchart LR
 3. **Faces (SAM 3).** SAM 3 runs locally with the prompt "face". Each face is scored twice: by the DINOv3 head (AI-made face) and by a **separate Perception Encoder fine-tuned on face crops for face swaps** (Colab A100, 20,000 steps): photo swaps (OpenForensics), video swaps (DFDC), today's swap tools (inswapper and UniFace, RTFS-10k), and real faces from six sources (FairFace, Open Images, FaceID-550, Indian faces, SID-Set, Commons) so that beauty filters and phone processing don't look like swaps.
 4. **File metadata.** An IPTC "trainedAlgorithmicMedia" label (Muse Image, ChatGPT and Gemini write one) or a C2PA manifest is strong evidence; a missing label proves nothing, because forwarding strips it.
 5. **Verdict and calibration.** All checks share **one false-alarm budget**: in every real-photo pool, at most 5% of real photos may get any AI verdict; the edit check alone at most 2%, a red face at most 0.5% of the real faces. The pools include my own phone photos, selfies and phone photos without people, measured offline on my laptop. Scores are temperature-scaled; "Uncertain" is capped at 15% of a balanced mix.
-6. **Investigator (Meta Model API).** Muse Spark names the single object most likely added or changed and SAM 3.1 outlines it (on Muse edits the outline lands on the truly changed area 96% of the time); for AI-made photos SAM 3.1 outlines the object at the hottest spot of the evidence map. Muse Spark then writes 2–3 sentences **from our numbers only**. The verdict never comes from Muse Spark and never waits on an API.
+6. **Investigator (Meta Model API).** Muse Spark names the single object most likely added or changed and SAM 3.1 outlines it (on 151 local Muse edits it named an object in 28; for those 28, SAM 3.1's outline landed on the truly changed area 96% of the time, so the outline is a hint, not a guarantee); for AI-made photos SAM 3.1 outlines the object at the hottest spot of the evidence map. Muse Spark then writes 2–3 sentences **from our numbers only**. The verdict never comes from Muse Spark and never waits on an API.
 7. **Try to fool it.** Type a prompt; **Muse Image** makes the picture, ImageDETECTIVE checks it at once, and "crop and re-save" shows what happens when the file's AI label is lost.
 
 ## Meta models: what each one does
@@ -100,18 +100,20 @@ Every model the app calls while running is a Meta model. Non-Meta tools were use
 
 - **Nano Banana 2.1** (Google): 60% caught from pixels (35% "Uncertain"); its original files are caught through their AI label, forwards lose it. **SD 3.5:** about half.
 - **Small local AI edits:** 71% caught, about 60% after a crop or heavy compression.
-- **Polished stock photos and phone photos without people** are more often "Uncertain" (about 1 in 4 professional photos) and sometimes "Likely AI" (3 of my 30 final-test object photos; 11–12% of the professional Unsplash photos in the Chameleon benchmark, which keeps only AI images humans took for real: 79–82% of them caught).
+- **Polished stock photos and phone photos without people** are more often "Uncertain" (about 1 in 4 professional photos) and sometimes "Likely AI" (3 of my 30 final-test object photos; 11–12% of the professional Unsplash photos in the Chameleon benchmark\*, which keeps only AI images humans took for real: 79–82% of them caught).
 - **Face swaps in tight video crops** (WildDeepfake): 14% turn red; photo swaps and today's swap tools are the strength.
 - **Not in scope:** classic manual editing without AI, a real photo shared with a false story, documents, video. "Likely authentic" means "no AI traces found", not "proven real".
 
 ## Privacy and safety
 
-- Uploaded photos are kept in memory only and deleted within 30 minutes; they are never used for training. For photos not called authentic, the investigator sends a smaller copy to Meta's Model API in **standard mode**, where Meta doesn't train on it.
+- Uploaded photos are kept in memory only and deleted at most 30 minutes after their check (a background sweep runs every 30 s, also when nobody uses the app); they are never used for training. For photos not called authentic, the investigator sends a smaller copy to Meta's Model API in **standard mode**, where Meta doesn't train on it.
 - Muse Image in the app makes pictures **from text prompts only**: it never edits uploaded photos, and it refuses prompts for real or famous people or their lookalikes (a word list, on top of Meta's own safety filter).
 - All Muse edits for training and testing were made from **people-free** photos with free licences, or from photos of myself.
 - My own phone photos and selfies stayed on my laptop: tests and calibration ran fully offline, and only totals left it.
 
 ## Run it yourself
+
+**Note first:** the trained heads, the two fine-tuned Perception Encoders and their calibration files are **private and not in this repository** (they are trained partly on DFDC, whose frames may not be redistributed). Installing the code alone does not give a working detector: the app expects them under `weights/` (`google_v1/head_G3tt.pt` + `_calibration.json`, `edit_check_v3/` with `head_EC3pf.pt`, `head_EC3g.pt`, `pe_EC3.pt` + calibration, `face_pe_v4/` with `head_facepe.pt` and `pe_step14000.pt`), or downloads them at start from a private Hugging Face repo set in `HEADS_REPO`. To try it, use the [live demo](https://136-114-230-97.sslip.io). Every training step that makes these files is in the code.
 
 Python 3.12. Install PyTorch for your GPU first (see [requirements.txt](requirements.txt)), then:
 
@@ -123,7 +125,7 @@ python -m app.server         # http://127.0.0.1:7860
 
 The investigator and "Try to fool it" need a Meta Model API key (`MODEL_API_KEY` in the environment or in `.env`); the daily spending cap is `API_DAILY_CAP_USD` (default $3). Without a key, the app still gives the full verdict. The hosted demo runs on a Google Cloud C3 CPU machine in bf16 ([deploy/gcp_vm_setup.sh](deploy/gcp_vm_setup.sh)); on a laptop GPU a photo takes about a second.
 
-The trained heads and the two fine-tuned Perception Encoders are **not in this repository**: they are trained partly on DFDC, whose frames may not be redistributed, so the demo loads them from a private model repository. Every training step is in [src/](src/), [scripts/](scripts/) and the Colab launcher [notebooks/colab_face_swap.ipynb](notebooks/colab_face_swap.ipynb).
+Training code: [src/](src/), [scripts/](scripts/) and the Colab launcher [notebooks/colab_face_swap.ipynb](notebooks/colab_face_swap.ipynb).
 
 ## Data used
 
