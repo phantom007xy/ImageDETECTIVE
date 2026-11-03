@@ -35,7 +35,8 @@ PE_DIR = "features/pe_ec3"  # its features of the public pools (src/features/ext
 GIVE_UP = 1
 # <folder name> of the private test. My first 30 selfies ("originals") are TRAINING data of head_EC3p since 1 Nov,
 # so they are no calibration pool any more; new test selfies (other place, clothes, light) take their place.
-PRIVATE = {"phone": "data/private/phone_v1", "new selfies": "data/private/test_selfies"}
+PRIVATE = {"phone": "data/private/phone_v1", "new selfies": "data/private/test_selfies",
+           "phone objects": "data/private/phone_objects"}  # new phone photos without people (3 Nov; calibration only)
 # Real photos used nowhere else (src/eval/leak_check.py): unseen OpenImages photos and Commons phone photos (dev part).
 NEW_REAL = {"OpenImages unseen": "sid_reals_0_9_unseen", "Commons v3 dev": "commons_v3_dev",
             # real tight face close-ups (like profile pictures) and real Commons selfies and portraits (1 Nov)
