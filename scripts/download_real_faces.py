@@ -87,7 +87,8 @@ def openimages(out, n, seed, workers, splits):
     with httpx.Client(timeout=300, follow_redirects=True) as client:
         for split in splits:
             labels = client.get(OI_LABELS[split]).text.splitlines()
-            ids = sorted({line.split(",")[0] for line in labels[1:] if f",{HUMAN_FACE}," in line and line.endswith(",1")} - held)
+            ids = sorted({line.split(",")[0] for line in labels[1:]  # confidence is written "1.0" (mostly) or "1"
+                          if f",{HUMAN_FACE}," in line and float(line.rsplit(",", 1)[1]) == 1.0} - held)
             meta.update({r["ImageID"]: r for r in csv.DictReader(io.StringIO(client.get(OI_IMAGES.format(split)).text))})
             ids = [i for i in ids if i in meta and meta[i].get("License", "").startswith("https://creativecommons.org/licenses/by/2.0")
                    and meta[i].get("Rotation", "") in ("", "0", "0.0")]  # stored upright (no rotation needed)
