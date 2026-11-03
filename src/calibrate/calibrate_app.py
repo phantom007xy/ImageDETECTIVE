@@ -33,6 +33,9 @@ SWAP_PE = "weights/face_pe_v2/pe_step1000.pt"
 EDIT2 = "weights/edit_check_v3/head_EC3g.pt"
 PE_DIR = "features/pe_ec3"  # its features of the public pools (src/features/extract_pe.py --pe-weights)
 GIVE_UP = 1
+# The edit check alone may flag at most this share of every real pool (the whole verdict stays <= 5%). 0.5% let one
+# outlier among my 100 new object photos set the line (local Muse edits 76% -> 24%; 3 Nov), so it gets 2% (local edits 71%, Gemini dev 90%; my 100 objects 3%, judge test 3 of 60 real photos).
+EDIT_RATE = 0.02
 # <folder name> of the private test. My first 30 selfies ("originals") are TRAINING data of head_EC3p since 1 Nov,
 # so they are no calibration pool any more; new test selfies (other place, clothes, light) take their place.
 PRIVATE = {"phone": "data/private/phone_v1", "new selfies": "data/private/test_selfies",
@@ -95,7 +98,7 @@ def main():
     pe_name = Path(PE_WEIGHTS).stem
     pools.update({name: (p + "_app.npz", f"{p}_{pe_name}.npz") for name, p in private.items()
                   if Path(f"{p}_{pe_name}.npz").exists()})
-    args = ["--head", EDIT, "--pe-weights", PE_WEIGHTS, "--whole-head", HEAD, "--give-up", str(GIVE_UP), "--head2", EDIT2,
+    args = ["--head", EDIT, "--pe-weights", PE_WEIGHTS, "--whole-head", HEAD, "--give-up", str(GIVE_UP), "--rate", str(EDIT_RATE), "--head2", EDIT2,
             "--out", EDIT.replace(".pt", "_calibration.json")]
     for name, (whole, pe) in pools.items():
         args += ["--pool", f"{name}:{whole}:{pe}"]

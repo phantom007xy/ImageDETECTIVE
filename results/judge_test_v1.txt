@@ -28,3 +28,22 @@ edit flags, metadata label and face results identical to the detector's for 80 o
   muse_test_v2/object_food                   13 |     38.5%     23.1%     38.5%      0.0%      0.0%      0.0% |     100.0% |       13 |    100.0%
   muse_test_v2/people                        60 |     30.0%     60.0%     10.0%      0.0%      0.0%      0.0% |     100.0% |       60 |    100.0%
   muse_test_v2/scene                         13 |     38.5%     61.5%      0.0%      0.0%      0.0%      0.0% |     100.0% |       13 |    100.0%
+
+== Recalibrated 3 Nov ~17:45 with a new private pool: 100 new phone photos without people (data/private/phone_objects) ==
+The first judge test (4 of 30 new object photos called AI) showed the pools lacked phone photos without people. With the new
+pool and the edit check allowed 2% of every real pool (was 0.5%: one outlier then pushed its line to +13.71 and local Muse
+edits fell to 24%), edit line +5.41, second head +5.40; every real pool <= 5% together (polished dev 4.8%, phone objects 3%).
+Private judge test (my new real photos, totals only): new selfies 0 of 30 called AI; new object photos 3 of 30 (10%,
+all 'Likely AI-generated', none 'AI-generated'); together 3 of 60 = 5.0%. The 0.5% version: 2 of 30 objects, local Muse edits 24%.
+-- judge_test_ai_v1, recalibrated:
+  source                                      n |    AI-gen Likely AI AI-edited   AI face Uncertain Authentic | AI verdict | AI label | with label
+  judge/chatgpt                              20 |      5.0%     60.0%     35.0%      0.0%      0.0%      0.0% |     100.0% |       20 |    100.0%
+  judge/metaai                               20 |     45.0%     50.0%      5.0%      0.0%      0.0%      0.0% |     100.0% |       20 |    100.0%
+  judge/nanobanana_2_1                       20 |      0.0%     60.0%      0.0%      0.0%     35.0%      5.0% |      60.0% |       20 |    100.0%
+  judge/nanobanana_pro                       20 |      5.0%     85.0%      5.0%      0.0%      5.0%      0.0% |      95.0% |       20 |    100.0%
+-- muse_image_test_v2, recalibrated:
+  source                                      n |    AI-gen Likely AI AI-edited   AI face Uncertain Authentic | AI verdict | AI label | with label
+  muse_test_v2/animal                        14 |     57.1%     35.7%      7.1%      0.0%      0.0%      0.0% |     100.0% |       14 |    100.0%
+  muse_test_v2/object_food                   13 |     38.5%     30.8%     30.8%      0.0%      0.0%      0.0% |     100.0% |       13 |    100.0%
+  muse_test_v2/people                        60 |     30.0%     60.0%     10.0%      0.0%      0.0%      0.0% |     100.0% |       60 |    100.0%
+  muse_test_v2/scene                         13 |     38.5%     61.5%      0.0%      0.0%      0.0%      0.0% |     100.0% |       13 |    100.0%
