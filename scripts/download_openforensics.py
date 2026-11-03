@@ -119,6 +119,7 @@ def main():
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--gap", type=float, default=0.5, help="seconds between requests (two runs at once: 1.0 each)")
+    parser.add_argument("--list-only", action="store_true", help="only write the list of the photos already here")
     args = parser.parse_args()
     GAP[0] = args.gap
 
@@ -126,6 +127,9 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     fakes = annotations(args.data_dir / f"{args.split}_poly.json")
     print(f"{args.split}: {len(fakes)} annotated photos, {sum(v > 0 for v in fakes.values())} with a fake face", flush=True)
+    if args.list_only:  # a run that stopped while writing its list: the photos are already here
+        write_list(args.split, out, fakes, sorted(fakes))
+        return
 
     with httpx.Client(timeout=300, follow_redirects=True) as client:
         where = {}  # photo name -> (zip on disk or URL, ZipInfo)
@@ -176,9 +180,14 @@ def main():
         if failed:
             print(f"{len(failed)} photos failed after 5 tries (left out; run again to retry)")
 
+    write_list(args.split, out, fakes, names)
+
+
+def write_list(split, out, fakes, names):
     names = [n for n in names if (out / n).exists()]
-    rows = [{"path": str(out / n), "label": int(fakes[n] > 0), "source": f"openforensics/{args.split}"} for n in names]
-    lst = Path(f"features/lists/openforensics_{args.split}.csv")
+    rows = [{"path": str(out / n), "label": int(fakes[n] > 0), "source": f"openforensics/{split}"} for n in names]
+    lst = Path(f"features/lists/openforensics_{split}.csv")
+    lst.parent.mkdir(parents=True, exist_ok=True)  # features/ is not in git: missing in a fresh clone (Colab)
     with open(lst, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["path", "label", "source"], lineterminator="\n")
         writer.writeheader()

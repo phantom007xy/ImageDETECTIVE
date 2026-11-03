@@ -44,6 +44,7 @@ HELD_LISTS = ["features/lists/sid_reals_0_9_unseen.csv", "features/lists/muse_pa
 
 def write_list(name, paths, source):
     out = Path(f"features/lists/real_{name}.csv")
+    out.parent.mkdir(parents=True, exist_ok=True)  # features/ is not in git: missing in a fresh clone (Colab)
     with open(out, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=["path", "label", "source"], lineterminator="\n")
         w.writeheader()
