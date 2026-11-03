@@ -29,7 +29,7 @@ Before you start:
 2. Secrets (key icon on the left), each with notebook access on: **HF_TOKEN** = your Hugging Face token (SAM 3 is
    gated); **KAGGLE_USERNAME** and **KAGGLE_KEY** = the two values in your kaggle.json (for RTFS-10k; without them the
    run goes on without it)
-3. `My Drive/ImageDETECTIVE/FaceCrops_colab.zip` uploaded.
+3. `My Drive/ImageDETECTIVE/FaceCrops_colab.zip` (or the unzipped `FaceCrops` folder) uploaded.
 4. Keep this tab open and the laptop awake (Google AI Pro has no background execution).
 
 Logs, checkpoints and results go to `{DRIVE}/` (private). DFDC data and the trained weights must never be shared."""),
@@ -70,14 +70,10 @@ for key in ('KAGGLE_USERNAME', 'KAGGLE_KEY'):
 from huggingface_hub import login
 login(os.environ['HF_TOKEN'])
 !cd /content/ImageDETECTIVE && git log --oneline -1"""),
-    ("code", """# 3. Our existing face crops (DFDC, OpenForensics Val, SID-Set, Commons, dev and test pools), paths made Colab paths
-if not os.path.exists('/content/FaceCrops'):
-    !cp "$DRIVE/FaceCrops_colab.zip" /content/ && unzip -q /content/FaceCrops_colab.zip -d /content/ && rm /content/FaceCrops_colab.zip
-    import glob
-    for f in glob.glob('/content/FaceCrops/*.csv'):
-        s = open(f).read().replace('D:\\\\Datasets\\\\FaceCrops', '/content/FaceCrops').replace('\\\\', '/')
-        open(f, 'w').write(s)
-!ls /content/FaceCrops/*.csv | wc -l && head -2 /content/FaceCrops/dfdc_train.csv"""),
+    ("code", """# 3. Our existing face crops (DFDC, OpenForensics Val, SID-Set, Commons, dev and test pools): from FaceCrops_colab.zip
+#    or the uploaded FaceCrops folder in Drive; paths made Colab paths, rows whose file is missing dropped
+run(f'python scripts/colab_facecrops.py --drive {DRIVE} --out /content/FaceCrops', 'facecrops')
+!tail -20 $DRIVE/logs/facecrops.txt"""),
     ("code", """# 4. Downloads (Colab's fast network): OpenForensics Train + Test-Challenge (CC BY 4.0), RTFS-10k (CC BY-SA 4.0)
 #    and the new real-face sets (CC BY)
 OF = '/content/data/OpenForensics'
