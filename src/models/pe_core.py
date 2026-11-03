@@ -19,6 +19,7 @@ from huggingface_hub import hf_hub_download
 from timm.data import resolve_data_config
 
 from src.data import preprocess
+from src.models.backbone import pick_dtype
 
 PE_NAME = "vit_pe_core_large_patch14_336.fb"
 PE_REPO = "timm/vit_pe_core_large_patch14_336.fb"
@@ -42,9 +43,7 @@ def load_pe(pretrained=True, **kwargs):
 class PECore:
     def __init__(self, device=None, tuned_path=None):
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
-        # bf16 on GPUs that support it, else fp32 (as for DINOv3; fp16 is not used)
-        cuda_bf16 = self.device.type == "cuda" and torch.cuda.get_device_capability(self.device)[0] >= 8
-        self.dtype = torch.bfloat16 if cuda_bf16 else torch.float32
+        self.dtype = pick_dtype(self.device)  # as for DINOv3: bf16 on capable GPUs and AMX CPUs, else fp32 (never fp16)
         model = load_pe(pretrained=tuned_path is None)
         if tuned_path:  # a fine-tuned PE (src/models/tune_pe.py) brings all its weights (strict: none may be missing)
             model.load_state_dict(torch.load(tuned_path, map_location="cpu"))

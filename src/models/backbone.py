@@ -4,6 +4,8 @@ DINOv3 returns one token per 16x16 patch, plus 1 class token and 4 "register" to
 start. We only use the patch tokens.
 """
 
+from pathlib import Path
+
 import torch
 from transformers import AutoModel
 
@@ -22,13 +24,25 @@ def load_local_first(loader, name, **kwargs):
         return loader(name, **kwargs)
 
 
+def cpu_has_amx_bf16():
+    """Intel CPUs with AMX (e.g. Google Cloud C3) do bf16 matrix maths in hardware: about 3x faster than fp32 there
+    (SAM 3 on a c3-standard-8: 16.3 s -> 5.8 s, same faces; 3 Nov). Linux only (read from /proc/cpuinfo)."""
+    try:
+        return "amx_bf16" in Path("/proc/cpuinfo").read_text()
+    except OSError:
+        return False
+
+
 def pick_dtype(device):
-    """bf16 on GPUs that support it natively (RTX 30xx and newer, A100, L4), otherwise fp32.
+    """bf16 on GPUs that support it natively (RTX 30xx and newer, A100, L4) and on CPUs with AMX, otherwise fp32.
 
     Not fp16: DINOv3 ViT-L overflows inside the network in fp16 and every output becomes NaN
-    (checked 29 Oct). bf16 has the same range as fp32 and matched it (cosine 0.9999).
+    (checked 29 Oct). bf16 has the same range as fp32 and matched it (cosine 0.9999); the app's lines were
+    calibrated with bf16 features (laptop GPU).
     """
     if device.type == "cuda" and torch.cuda.get_device_capability(device)[0] >= 8:
+        return torch.bfloat16
+    if device.type == "cpu" and cpu_has_amx_bf16():
         return torch.bfloat16
     return torch.float32
 
