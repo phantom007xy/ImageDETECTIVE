@@ -1,0 +1,101 @@
+id,category,style,size,prompt
+mi_test2_001,people/selfie,simple,,a selfie of a man with a beard at a bus stop
+mi_test2_002,people/selfie,detailed,768x1024,"front camera selfie of a woman in a yellow kurta at a Diwali market at night, string lights, slight motion blur"
+mi_test2_003,people/selfie,simple,,a selfie of a woman wearing sunglasses on a beach
+mi_test2_004,people/selfie,detailed,768x1024,"phone selfie of a middle-aged man inside an office lift, fluorescent light, slightly grainy"
+mi_test2_005,people/selfie,simple,,a selfie of two colleagues at a conference
+mi_test2_006,people/selfie,detailed,768x1024,"selfie of a young man on a scooter at a traffic signal in Bangalore, helmet in his hand, afternoon sun"
+mi_test2_007,people/selfie,simple,,a mirror selfie of a woman in a gym
+mi_test2_008,people/selfie,detailed,768x1024,"selfie of an elderly woman in a saree in a temple courtyard, soft morning light, front camera"
+mi_test2_009,people/selfie,simple,,a selfie at a cricket stadium
+mi_test2_010,people/selfie,detailed,768x1024,"three adult friends taking a selfie on a hill top at sunset, wind in their hair, phone front camera"
+mi_test2_011,people/selfie,simple,,a selfie of a man in a raincoat in the rain
+mi_test2_012,people/selfie,detailed,768x1024,"late night selfie of a young woman studying in a hostel room, desk lamp light, tired eyes"
+mi_test2_013,people/group,simple,,a group photo of office colleagues at a farewell party
+mi_test2_014,people/group,detailed,1024x768,"wedding guests posing for a group photo in front of a decorated stage at an Indian wedding, flash photography"
+mi_test2_015,people/group,simple,,a group photo of adult friends at a picnic
+mi_test2_016,people/group,detailed,1024x768,"a college football team posing after a match on a muddy field, overcast day"
+mi_test2_017,people/group,simple,,friends posing at a restaurant table
+mi_test2_018,people/group,detailed,1024x768,"five coworkers at a team lunch in a roadside dhaba, plates of food, natural light, shot on a phone"
+mi_test2_019,people/group,simple,,a group of hikers on a mountain trail
+mi_test2_020,people/group,detailed,1024x768,"a birthday party group photo of adults around a cake with candles, warm indoor light"
+mi_test2_021,people/group,simple,,graduates throwing their caps in the air
+mi_test2_022,people/group,detailed,1024x768,"a group of street vendors chatting near their carts in Old Delhi, early morning haze"
+mi_test2_023,people/group,simple,,a band posing backstage
+mi_test2_024,people/group,detailed,1024x768,"adult neighbours celebrating Holi with colored powder on their faces, bright daylight"
+mi_test2_025,people/portrait,simple,,portrait of a woman with curly hair
+mi_test2_026,people/portrait,detailed,768x1024,"close-up portrait of a fisherman with weathered skin at a harbour in Kerala, golden hour"
+mi_test2_027,people/portrait,simple,,a portrait of a young man in a suit
+mi_test2_028,people/portrait,detailed,768x1024,"studio portrait of a woman with short grey hair, plain blue background, soft box lighting"
+mi_test2_029,people/portrait,simple,,headshot of a smiling nurse
+mi_test2_030,people/portrait,detailed,768x1024,"portrait of a potter at his wheel, clay on his hands, light from a side window"
+mi_test2_031,people/portrait,simple,,a portrait of a woman with freckles
+mi_test2_032,people/portrait,detailed,,"professional headshot of a man in his 40s, blurred office background"
+mi_test2_033,people/portrait,simple,,portrait of an old man with a white beard
+mi_test2_034,people/portrait,detailed,768x1024,"portrait of a young woman with a nose ring in a sunflower field, shallow depth of field"
+mi_test2_035,people/portrait,simple,,portrait of a chef in a kitchen
+mi_test2_036,people/portrait,detailed,768x1024,"black and white portrait of a saxophone player on stage, single spotlight"
+mi_test2_037,people/candid,simple,,a man reading a newspaper at a tea stall
+mi_test2_038,people/candid,detailed,1024x768,"a woman laughing while talking on the phone on a busy street, candid shot from across the road"
+mi_test2_039,people/candid,simple,,people waiting at a railway station
+mi_test2_040,people/candid,detailed,1024x768,"a delivery rider checking his phone next to his motorbike in the rain, street lights"
+mi_test2_041,people/candid,simple,,a woman jogging in a park in the morning
+mi_test2_042,people/candid,detailed,,"a shopkeeper arranging fruits at a market stall, candid, natural light"
+mi_test2_043,people/candid,simple,,a man fixing a bicycle by the roadside
+mi_test2_044,people/candid,detailed,1024x768,"two old men playing chess in a park, afternoon shade, candid street photo"
+mi_test2_045,people/candid,simple,,a couple walking on a beach at sunset
+mi_test2_046,people/candid,detailed,,"a barista making coffee behind the counter, candid photo taken by a customer on a phone"
+mi_test2_047,people/candid,simple,,college students sitting on stairs outside a building
+mi_test2_048,people/candid,detailed,1024x768,"a farmer walking through a green rice field carrying a basket, cloudy sky"
+mi_test2_049,people/indoor_lowlight,simple,,a man watching tv in a dark room
+mi_test2_050,people/indoor_lowlight,detailed,,"dimly lit living room, a woman reading a book under a single lamp, noisy phone photo"
+mi_test2_051,people/indoor_lowlight,simple,,people at a concert in the dark
+mi_test2_052,people/indoor_lowlight,detailed,1024x768,"adult friends playing cards at night on a terrace under a single bulb"
+mi_test2_053,people/indoor_lowlight,simple,,a dinner party by candlelight
+mi_test2_054,people/indoor_lowlight,detailed,,"a man cooking in a small kitchen at night, yellow tube light, slightly blurry phone photo"
+mi_test2_055,people/indoor_lowlight,simple,,a woman working on a laptop in a dark cafe
+mi_test2_056,people/indoor_lowlight,detailed,1024x768,"a night shift security guard in a dim hotel lobby, low light grain"
+mi_test2_057,people/indoor_lowlight,simple,,a couple watching a movie at home at night
+mi_test2_058,people/indoor_lowlight,detailed,,"a musician playing guitar in a dim bar, warm stage light, phone camera"
+mi_test2_059,people/indoor_lowlight,simple,,people dancing at a wedding party at night
+mi_test2_060,people/indoor_lowlight,detailed,1024x768,"an auto rickshaw driver waiting at night under a street light, rainy reflections"
+mi_test2_061,animal,simple,,a cat sleeping on a laptop
+mi_test2_062,animal,detailed,,"a stray dog lying on a warm road at noon in an Indian village, phone photo"
+mi_test2_063,animal,simple,,a cow on a city street
+mi_test2_064,animal,detailed,1024x768,"a parrot eating a green chili on a balcony railing, morning light"
+mi_test2_065,animal,simple,,a horse in a field
+mi_test2_066,animal,detailed,,"a goat standing on a pile of bricks, overcast day"
+mi_test2_067,animal,simple,,a dog playing fetch at the beach
+mi_test2_068,animal,detailed,1024x768,"monkeys sitting on a temple wall, one of them eating a banana"
+mi_test2_069,animal,simple,,a puppy in a basket
+mi_test2_070,animal,detailed,,"an elephant bathing in a river in Kerala, splashing water"
+mi_test2_071,animal,simple,,a pigeon on a window sill
+mi_test2_072,animal,detailed,,"a black cat on a car bonnet at night, its eyes reflecting the flash"
+mi_test2_073,animal,simple,,goldfish in a fish tank
+mi_test2_074,animal,detailed,1024x768,"a camel resting in the Thar desert at sunset"
+mi_test2_075,object_food,simple,,a cup of masala chai on a wooden table
+mi_test2_076,object_food,detailed,,"a plate of masala dosa with chutney and sambar on a banana leaf, top view, restaurant light"
+mi_test2_077,object_food,simple,,a pair of old sneakers
+mi_test2_078,object_food,detailed,,"a cluttered study desk with books, a laptop and a coffee mug, evening window light"
+mi_test2_079,object_food,simple,,a bowl of fruits on a kitchen counter
+mi_test2_080,object_food,detailed,,"a vintage film camera on a shelf next to plants, phone photo"
+mi_test2_081,object_food,simple,,a stack of pancakes with honey
+mi_test2_082,object_food,detailed,,"a bicycle parked against a blue wall in a narrow lane"
+mi_test2_083,object_food,simple,,a bunch of keys on a table
+mi_test2_084,object_food,detailed,,"pani puri on a steel plate at a roadside stall, evening, phone photo"
+mi_test2_085,object_food,simple,,a bouquet of flowers in a glass vase
+mi_test2_086,object_food,detailed,,"an open refrigerator with vegetables and milk packets, harsh inside light"
+mi_test2_087,object_food,simple,,a birthday cake on a table
+mi_test2_088,scene,simple,,a busy market street
+mi_test2_089,scene,detailed,1024x768,"monsoon rain on a street in Kolkata with yellow taxis, wet reflections"
+mi_test2_090,scene,simple,,a mountain lake at sunrise
+mi_test2_091,scene,detailed,1024x768,"a highway dhaba at night with trucks parked outside, neon signs"
+mi_test2_092,scene,simple,,a city skyline at dusk
+mi_test2_093,scene,detailed,,"an empty classroom with wooden benches and a green chalkboard, afternoon light"
+mi_test2_094,scene,simple,,a beach with palm trees
+mi_test2_095,scene,detailed,1024x768,"a narrow staircase in an old Mumbai chawl, peeling paint, harsh sunlight"
+mi_test2_096,scene,simple,,a snowy village
+mi_test2_097,scene,detailed,1024x768,"a flooded street after heavy rain with adults wading through the water"
+mi_test2_098,scene,simple,,a temple lit up at night
+mi_test2_099,scene,detailed,,"a crowded metro coach during rush hour, adults holding the handles"
+mi_test2_100,scene,simple,,a sunflower field under a blue sky

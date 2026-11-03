@@ -20,3 +20,11 @@ all                80 |                                                         
 == Same numbers in the web app (src/eval/ui_same_numbers.py) ==
 The 80 pictures through the web app's real upload path (app/server.py, /api/investigate): verdict, AI evidence,
 edit flags, metadata label and face results identical to the detector's for 80 of 80 (results/ui_numbers_judge_ai.json).
+
+== Fresh Muse Image test v2 (100 new prompts, made 3 Nov; data/prompts/muse_image_test_v2.csv; never used for any choice) ==
+100 pictures from muse_image_test_v2.csv (0 unreadable). Pixels only, as the app sees them; 'AI verdict' = any verdict that says AI. Then the file's AI label.
+  source                                      n |    AI-gen Likely AI AI-edited   AI face Uncertain Authentic | AI verdict | AI label | with label
+  muse_test_v2/animal                        14 |     57.1%     35.7%      7.1%      0.0%      0.0%      0.0% |     100.0% |       14 |    100.0%
+  muse_test_v2/object_food                   13 |     38.5%     23.1%     38.5%      0.0%      0.0%      0.0% |     100.0% |       13 |    100.0%
+  muse_test_v2/people                        60 |     30.0%     60.0%     10.0%      0.0%      0.0%      0.0% |     100.0% |       60 |    100.0%
+  muse_test_v2/scene                         13 |     38.5%     61.5%      0.0%      0.0%      0.0%      0.0% |     100.0% |       13 |    100.0%
