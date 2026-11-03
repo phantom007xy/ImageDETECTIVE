@@ -42,7 +42,7 @@ FORMATS = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp"}
 
 # On a hosted demo the trained heads are not in the public code: they come from a PRIVATE Hugging Face model repo
 # (scripts/upload_heads.py), read with the host's token (DFDC rule: the weights are never published).
-if os.environ.get("HEADS_REPO") and not Path(HEAD_PATH).exists():
+if os.environ.get("HEADS_REPO"):  # hosted: our private heads repo (only changed files are downloaded again)
     snapshot_download(os.environ["HEADS_REPO"], local_dir="weights", token=os.environ.get("HF_TOKEN"))
 detector = Detector(HEAD_PATH, edit_check=EDIT_CHECK_PATH)
 lock = threading.Lock()  # one check at a time
