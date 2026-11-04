@@ -6,7 +6,7 @@
 
 Built for the **Meta Global AI Developer Hackathon 2026** (Indie Developer track, theme "Build for Your World"), 26 Oct – 4 Nov 2026. **Built with DINOv3**, Meta's Perception Encoder, SAM 3 / SAM 3.1, Muse Image and Muse Spark.
 
-> **Live demo:** https://136-114-230-97.sslip.io (until 9 Nov 2026; about 10 s per photo on a CPU server) · **3-minute video:** *link follows*
+> **Live demo:** https://136-114-230-97.sslip.io (until 9 Nov 2026; about 10 s per photo on a CPU server) · **3-minute video:** [Watch on YouTube](https://youtu.be/U6yS_9pD8Io)
 
 ## Why
 
