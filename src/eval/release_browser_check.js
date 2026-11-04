@@ -83,6 +83,54 @@ async function investigateFixture() {
   await waitFor("!document.getElementById('report-body').hidden && document.querySelector('#verdict .verdict-title').textContent === 'Likely authentic'", "No rendered authentic verdict");
   await waitFor("document.getElementById('details-list').textContent.includes('No clear AI signs were found')", "Mocked explanation did not render");
 }
+async function checkFullImageFit(label) {
+  const measurements = [];
+  for (const [width, height] of [[400, 1600], [1800, 300], [1200, 1200]]) {
+    await navigate("investigate");
+    await evaluate(`(async()=>{
+      const canvas=document.createElement('canvas');canvas.width=${width};canvas.height=${height};
+      const ctx=canvas.getContext('2d');ctx.fillStyle='#ddd';ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='red';ctx.fillRect(0,0,canvas.width,24);
+      ctx.fillStyle='lime';ctx.fillRect(0,canvas.height-24,canvas.width,24);
+      ctx.fillStyle='blue';ctx.fillRect(0,0,24,canvas.height);
+      ctx.fillStyle='yellow';ctx.fillRect(canvas.width-24,0,24,canvas.height);
+      const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+      const transfer=new DataTransfer();transfer.items.add(new File([blob],'fit-${width}x${height}.png',{type:'image/png'}));
+      const input=document.getElementById('file-input');input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));
+      window.fitFixture=canvas.toDataURL('image/png');
+    })()`);
+    await waitFor(`document.getElementById('preview').complete && document.getElementById('preview').naturalWidth===${width}`, "Synthetic preview did not load");
+    async function contained(selector, parent) {
+      const state = await evaluate(`(()=>{const image=document.querySelector('${selector}'),box=document.querySelector('${parent}');
+        const i=image.getBoundingClientRect(),b=box.getBoundingClientRect();
+        return {imageWidth:i.width,imageHeight:i.height,boxWidth:b.width,boxHeight:b.height,fit:getComputedStyle(image).objectFit,
+          inside:i.width>0 && i.height>0 && i.left>=b.left-1 && i.top>=b.top-1 && i.right<=b.right+1 && i.bottom<=b.bottom+1};})()`);
+      assert(state.inside && state.fit === "contain", `${label} ${width}x${height} ${selector} clips the image: ${JSON.stringify(state)}`);
+      return state;
+    }
+    const preview = await contained("#preview", "#drop");
+    await click("#go");
+    await waitFor("!document.getElementById('report-body').hidden && !document.getElementById('go').disabled && document.getElementById('viewer-img').complete", "Synthetic report did not load");
+    const evidence = await contained("#viewer-img", "#viewer");
+    await click("#tab-original");
+    await waitFor(`document.getElementById('viewer-img').complete && document.getElementById('viewer-img').naturalWidth===${width}`, "Original tab did not load");
+    const original = await contained("#viewer-img", "#viewer");
+    if (height > width) {
+      await evaluate("document.getElementById('drop').scrollIntoView({block:'center'})");
+      await screenshot(`browser-${label}-portrait-upload.png`);
+      await evaluate("document.getElementById('viewer').scrollIntoView({block:'center'})");
+      await screenshot(`browser-${label}-portrait-result.png`);
+    }
+    await navigate("fool");
+    await evaluate("document.getElementById('fool-result').hidden=false;document.getElementById('fool-img').src=window.fitFixture");
+    await waitFor("document.getElementById('fool-img').complete && document.getElementById('fool-img').naturalWidth>0", "Synthetic generated-image view did not load");
+    const generated = await contained("#fool-img", "#fool-viewer");
+    measurements.push({width,height,preview,evidence,original,generated});
+    await evaluate("document.getElementById('fool-result').hidden=true");
+  }
+  await navigate("investigate");
+  return measurements;
+}
 (async () => {
   try {
     await new Promise((resolve, reject) => { socket.addEventListener("open", resolve, { once: true }); socket.addEventListener("error", reject, { once: true }); });
@@ -158,6 +206,14 @@ async function investigateFixture() {
       assert(await evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Mobile report has horizontal overflow");
       await evaluate("document.getElementById('report-heading').scrollIntoView({block:'start'})");
       await screenshot("browser-mobile-result.png");
+    });
+    await check("desktop_portrait_wide_square_images_fit", async () => {
+      await viewport(1280, 900, false);
+      return await checkFullImageFit("desktop");
+    });
+    await check("mobile_portrait_wide_square_images_fit", async () => {
+      await viewport(375, 812, true);
+      return await checkFullImageFit("mobile");
     });
     await check("frontend_has_no_javascript_exceptions", async () => {
       assert(report.javascript_errors.length === 0, report.javascript_errors.join("\n"));

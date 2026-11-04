@@ -93,7 +93,7 @@ h2 { font-size: 23px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.
 
 /* ---- upload ---- */
 .drop { margin-top: 16px; height: 244px; background: var(--panel); border: 1px dashed var(--border); border-radius: 12px;
-  display: grid; place-items: center; cursor: pointer; position: relative; overflow: hidden; }
+  display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; }
 .drop:hover, .drop.dragging { background: var(--raised); border-color: var(--muted); }
 .drop-empty { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 20px; text-align: center; }
 .drop-empty svg { width: 30px; height: 30px; fill: none; stroke: var(--secondary); stroke-width: 1.6; stroke-linecap: round;
@@ -101,7 +101,8 @@ h2 { font-size: 23px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.
 .drop-title { font-size: 18px; font-weight: 500; }
 .drop-sub { color: var(--secondary); font-size: 15px; }
 .drop-help { color: var(--muted); font-size: 13px; margin-top: 6px; }
-.preview { width: 100%; height: 100%; object-fit: contain; display: block; padding: 10px; }
+.preview { width: 100%; height: 100%; min-width: 0; min-height: 0; max-height: 100%; object-fit: contain;
+  display: block; padding: 10px; }
 .file-row { margin-top: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px;
   color: var(--secondary); }
 .file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
@@ -140,8 +141,8 @@ h2 { font-size: 23px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.
 .tab:hover { color: var(--text); }
 .tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--text); }
 .viewer { margin-top: 14px; height: 320px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel);
-  overflow: hidden; display: grid; place-items: center; }
-.viewer img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.viewer img { width: 100%; height: 100%; min-width: 0; min-height: 0; max-height: 100%; object-fit: contain; display: block; }
 .legend { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--secondary); }
 .legend span { display: inline-flex; align-items: center; gap: 7px; }
 .swatch { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
