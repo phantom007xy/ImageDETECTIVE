@@ -6,7 +6,7 @@ The strongest story is an everyday forwarded photo, a visible investigation, and
 
 | Time | Show | Say |
 |---|---|---|
-| 0:00–0:20 | Upload screen and four example buttons | "A forwarded photo can look convincing. ImageDETECTIVE checks AI generation, AI edits and individual faces, then shows the evidence." |
+| 0:00–0:20 | Upload screen; prepare the four public files from `app/examples/` in your file picker | "A forwarded photo can look convincing. ImageDETECTIVE checks AI generation, AI edits and individual faces, then shows the evidence." |
 | 0:20–0:40 | Real phone-photo example | "This example has no clear AI signs. That does not verify the story, date or location." |
 | 0:40–1:05 | Red-bicycle edit example; evidence and checks | "The whole-image check misses this subtle edit. Our fine-tuned Perception Encoder raises the alert. The map explains that check, inside the centre square it analysed; it is not an edit mask." |
 | 1:05–1:25 | Group-photo example; numbered face boxes | "Faces are checked separately for AI generation and swaps. Small faces can remain unchecked; each box shows its result." |
@@ -21,7 +21,7 @@ Record the working app after the hosted checks below pass. Use the report's fina
 
 1. Publish code and the updated private edit calibration JSON together through the existing deployment process. The code, weights and calibration in the local report must match the deployed assets. Keep weights, keys, `.env`, private photos and private per-image results out of GitHub.
 2. Confirm `/healthz` returns HTTP 200 and every required detector component is ready. A running web server alone does not establish detector readiness.
-3. Open all four public samples. Confirm the same verdicts as `results/hardened_2026-11-04/gpu_samples.json`, allowing documented CPU/GPU score differences. Inspect face boxes and the PE centre-square map on mobile as well as desktop.
+3. Upload the four public files from `app/examples/` using the file picker. Confirm the same verdicts as `results/hardened_2026-11-04/gpu_samples.json`, allowing documented CPU/GPU score differences. Inspect face boxes and the PE centre-square map on mobile as well as desktop.
 4. Recheck the public OpenImages boundary case identified in `cross_device_boundary.json`. It must no longer receive an unqualified pixel-only `AI-generated` verdict. This single check does not establish a hosted-wide false-alarm rate.
 5. Confirm an invalid image and an oversized upload produce a clear error. Confirm local results remain available when the optional Meta API is unavailable or over budget.
 6. After pushing the reviewed changes, check the actual GitHub Actions result. A workflow file alone is not a passing CI run.

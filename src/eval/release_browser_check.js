@@ -120,10 +120,9 @@ async function investigateFixture() {
       await click("#tab-original"); assert(await evaluate("document.getElementById('viewer-img').src.startsWith('blob:') && document.getElementById('tab-original').getAttribute('aria-selected') === 'true'"), "Original tab did not show original file");
       await click("#tab-evidence"); assert(await evaluate("document.getElementById('viewer-img').src.startsWith('data:image/jpeg;base64,') && document.getElementById('tab-evidence').getAttribute('aria-selected') === 'true'"), "Evidence tab did not restore evidence");
     });
-    await check("one_click_public_example_uses_normal_investigation", async () => {
-      await click('[data-example="real"]');
-      await waitFor("document.getElementById('file-name').textContent === '1_real_phone_photo.jpg' && !document.getElementById('report-body').hidden && !document.getElementById('go').disabled", "Example did not complete its investigation");
-      assert(await evaluate("document.querySelector('#verdict .verdict-title').textContent === 'Likely authentic'"), "Unexpected example verdict");
+    await check("upload_interface_has_no_example_gallery", async () => {
+      assert(await evaluate("!document.querySelector('[data-example], .examples') && !document.body.textContent.includes('Try an example, or upload your own image below')"), "Removed example gallery is still visible");
+      assert(await evaluate("!!document.getElementById('drop') && !!document.getElementById('file-input')"), "Upload controls are missing");
       assert(await evaluate("document.getElementById('evidence-source').textContent.includes('DINOv3') && document.getElementById('evidence-description').textContent.length > 20"), "Evidence source or coverage note missing");
     });
     await check("corrupt_replacement_clears_stale_result", async () => {

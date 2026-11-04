@@ -51,7 +51,7 @@ Whole-photo numbers are the app's verdict (whole image, edit check and faces tog
 | **Likely authentic** | Nothing points to AI. Always shown with: *"This photo doesn't look AI-made or AI-changed. It doesn't confirm when or where it was taken."* |
 | **Uncertain** | Everything in between. We would rather say this than guess |
 
-Next to the verdict: an AI evidence score, the **evidence map**, numbered **face boxes** with their own scores (red = changes the verdict, orange = some signs, green = no clear signs), a table of everything that was checked (including the file's metadata), and the **investigator**: Muse Spark names what was most likely changed, SAM 3.1 outlines it, and Muse Spark explains the numbers in 2–3 plain sentences. Four public examples use the same upload path as your own photo, including the original file metadata.
+Next to the verdict: an AI evidence score, the **evidence map**, numbered **face boxes** with their own scores (red = changes the verdict, orange = some signs, green = no clear signs), a table of everything that was checked (including the file's metadata), and the **investigator**: Muse Spark names what was most likely changed, SAM 3.1 outlines it, and Muse Spark explains the numbers in 2–3 plain sentences. The upload path reads the original file bytes, including its metadata.
 
 The map names its source. DINOv3 covers the whole photo; when a PE head raises the alert, its contribution map covers only the outlined centre square that PE actually analysed. The map explains the classifier score; it does not establish the boundary of a real edit. A face alert is shown by its face box.
 
@@ -234,7 +234,7 @@ export API_DAILY_CAP_USD=0
 python -m app.server
 ```
 
-Open **http://127.0.0.1:7860**. After the models load, **http://127.0.0.1:7860/healthz** should return HTTP 200, `status: ready`, and all five component checks should be `true`. Startup fails if a required detector branch is missing. Try the four public example buttons, then upload your own JPG, PNG or WEBP (up to 20 MB / 40 MP). Stop the server with Ctrl+C.
+Open **http://127.0.0.1:7860**. After the models load, **http://127.0.0.1:7860/healthz** should return HTTP 200, `status: ready`, and all five component checks should be `true`. Startup fails if a required detector branch is missing. Upload your JPG, PNG or WEBP (up to 20 MB / 40 MP) to start an investigation. Stop the server with Ctrl+C.
 
 ### 5. Optional Meta API features
 

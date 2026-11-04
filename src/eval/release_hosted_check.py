@@ -41,8 +41,8 @@ def main():
         check("detector_ready", health.status_code == 200 and all(health.json().get("checks", {}).values()),
               status=health.status_code, body=health.json())
         home = client.get("/")
-        check("four_clickable_public_examples", home.status_code == 200 and all(
-            f'data-example="{name}"' in home.text for name, _, _ in EXAMPLES))
+        check("upload_without_example_gallery", home.status_code == 200 and 'id="drop"' in home.text
+              and 'data-example=' not in home.text and 'Try an example, or upload your own image below' not in home.text)
         for name, filename, expected in EXAMPLES:
             data = (Path("app/examples") / filename).read_bytes()
             sample = client.get("/examples/" + name)
