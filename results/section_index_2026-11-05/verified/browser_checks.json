@@ -1,0 +1,484 @@
+{
+  "successful": true,
+  "scope": "Real Chrome interactions; actual frontend/ASGI; synthetic uploads; fake CPU detector",
+  "external_operations_attempted": {
+    "external_network": 0,
+    "download": 0,
+    "cuda": 0,
+    "paid_api": 0,
+    "spending_file_write": 0
+  },
+  "checks": [
+    {
+      "id": "desktop_home_and_initial_state",
+      "status": "passed",
+      "seconds": 0.061,
+      "measurements": {
+        "title": "ImageDETECTIVE",
+        "disabled": true,
+        "width": 1280,
+        "overflow": false
+      }
+    },
+    {
+      "id": "navigation_fool_about_investigate",
+      "status": "passed",
+      "seconds": 0.099
+    },
+    {
+      "id": "theme_toggle_roundtrip",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "id": "desktop_real_upload_verdict_evidence_details",
+      "status": "passed",
+      "seconds": 0.15,
+      "measurements": {
+        "verdict": "Likely authentic",
+        "evidence": true,
+        "context": "This photo doesn't look AI-made or AI-changed. It doesn't confirm when or where it was taken.",
+        "details": true
+      }
+    },
+    {
+      "id": "evidence_original_tabs",
+      "status": "passed",
+      "seconds": 0.002
+    },
+    {
+      "id": "upload_interface_has_no_example_gallery",
+      "status": "passed",
+      "seconds": 0.001
+    },
+    {
+      "id": "corrupt_replacement_clears_stale_result",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "id": "browser_fetch_corrupt_server_upload_rejected",
+      "status": "passed",
+      "seconds": 0.022,
+      "measurements": {
+        "status": 400,
+        "detail": "This file could not be read as an image. It may be damaged; please try another file."
+      }
+    },
+    {
+      "id": "valid_upload_recovers_after_corrupt_file",
+      "status": "passed",
+      "seconds": 0.085
+    },
+    {
+      "id": "generation_api_unavailable_shows_recoverable_error",
+      "status": "passed",
+      "seconds": 0.099
+    },
+    {
+      "id": "mobile_layout_sidebar_and_navigation",
+      "status": "passed",
+      "seconds": 0.256,
+      "measurements": {
+        "width": 375,
+        "scrollWidth": 375,
+        "mainWidth": 313.421875,
+        "sidebarOpen": false
+      }
+    },
+    {
+      "id": "mobile_upload_and_report",
+      "status": "passed",
+      "seconds": 0.153
+    },
+    {
+      "id": "desktop_portrait_wide_square_images_fit",
+      "status": "passed",
+      "seconds": 2.666,
+      "measurements": [
+        {
+          "width": 400,
+          "height": 1600,
+          "preview": {
+            "imageWidth": 814,
+            "imageHeight": 242,
+            "boxWidth": 816,
+            "boxHeight": 244,
+            "fit": "contain",
+            "inside": true
+          },
+          "evidence": {
+            "imageWidth": 814,
+            "imageHeight": 318,
+            "boxWidth": 816,
+            "boxHeight": 320,
+            "fit": "contain",
+            "inside": true
+          },
+          "original": {
+            "imageWidth": 814,
+            "imageHeight": 318,
+            "boxWidth": 816,
+            "boxHeight": 320,
+            "fit": "contain",
+            "inside": true
+          },
+          "generated": {
+            "imageWidth": 754,
+            "imageHeight": 318,
+            "boxWidth": 756,
+            "boxHeight": 320,
+            "fit": "contain",
+            "inside": true
+          }
+        },
+        {
+          "width": 1800,
+          "height": 300,
+          "preview": {
+            "imageWidth": 814,
+            "imageHeight": 242,
+            "boxWidth": 816,
+            "boxHeight": 244,
+            "fit": "contain",
+            "inside": true
+          },
+          "evidence": {
+            "imageWidth": 814,
+            "imageHeight": 318,
+            "boxWidth": 816,
+            "boxHeight": 320,
+            "fit": "contain",
+            "inside": true
+          },
+          "original": {
+            "imageWidth": 814,
+            "imageHeight": 318,
+            "boxWidth": 816,
+            "boxHeight": 320,
+            "fit": "contain",
+            "inside": true
+          },
+          "generated": {
+            "imageWidth": 754,
+            "imageHeight": 318,
+            "boxWidth": 756,
+            "boxHeight": 320,
+            "fit": "contain",
+            "inside": true
+          }
+        },
+        {
+          "width": 1200,
+          "height": 1200,
+          "preview": {
+            "imageWidth": 814,
+            "imageHeight": 242,
+            "boxWidth": 816,
+            "boxHeight": 244,
+            "fit": "contain",
+            "inside": true
+          },
+          "evidence": {
+            "imageWidth": 814,
+            "imageHeight": 318,
+            "boxWidth": 816,
+            "boxHeight": 320,
+            "fit": "contain",
+            "inside": true
+          },
+          "original": {
+            "imageWidth": 814,
+            "imageHeight": 318,
+            "boxWidth": 816,
+            "boxHeight": 320,
+            "fit": "contain",
+            "inside": true
+          },
+          "generated": {
+            "imageWidth": 754,
+            "imageHeight": 318,
+            "boxWidth": 756,
+            "boxHeight": 320,
+            "fit": "contain",
+            "inside": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "mobile_portrait_wide_square_images_fit",
+      "status": "passed",
+      "seconds": 0.762,
+      "measurements": [
+        {
+          "width": 400,
+          "height": 1600,
+          "preview": {
+            "imageWidth": 272,
+            "imageHeight": 218,
+            "boxWidth": 274,
+            "boxHeight": 220,
+            "fit": "contain",
+            "inside": true
+          },
+          "evidence": {
+            "imageWidth": 273,
+            "imageHeight": 258,
+            "boxWidth": 275,
+            "boxHeight": 260,
+            "fit": "contain",
+            "inside": true
+          },
+          "original": {
+            "imageWidth": 273,
+            "imageHeight": 258,
+            "boxWidth": 275,
+            "boxHeight": 260,
+            "fit": "contain",
+            "inside": true
+          },
+          "generated": {
+            "imageWidth": 273,
+            "imageHeight": 258,
+            "boxWidth": 275,
+            "boxHeight": 260,
+            "fit": "contain",
+            "inside": true
+          }
+        },
+        {
+          "width": 1800,
+          "height": 300,
+          "preview": {
+            "imageWidth": 273,
+            "imageHeight": 218,
+            "boxWidth": 275,
+            "boxHeight": 220,
+            "fit": "contain",
+            "inside": true
+          },
+          "evidence": {
+            "imageWidth": 273,
+            "imageHeight": 258,
+            "boxWidth": 275,
+            "boxHeight": 260,
+            "fit": "contain",
+            "inside": true
+          },
+          "original": {
+            "imageWidth": 273,
+            "imageHeight": 258,
+            "boxWidth": 275,
+            "boxHeight": 260,
+            "fit": "contain",
+            "inside": true
+          },
+          "generated": {
+            "imageWidth": 273,
+            "imageHeight": 258,
+            "boxWidth": 275,
+            "boxHeight": 260,
+            "fit": "contain",
+            "inside": true
+          }
+        },
+        {
+          "width": 1200,
+          "height": 1200,
+          "preview": {
+            "imageWidth": 273,
+            "imageHeight": 218,
+            "boxWidth": 275,
+            "boxHeight": 220,
+            "fit": "contain",
+            "inside": true
+          },
+          "evidence": {
+            "imageWidth": 273,
+            "imageHeight": 258,
+            "boxWidth": 275,
+            "boxHeight": 260,
+            "fit": "contain",
+            "inside": true
+          },
+          "original": {
+            "imageWidth": 273,
+            "imageHeight": 258,
+            "boxWidth": 275,
+            "boxHeight": 260,
+            "fit": "contain",
+            "inside": true
+          },
+          "generated": {
+            "imageWidth": 273,
+            "imageHeight": 258,
+            "boxWidth": 275,
+            "boxHeight": 260,
+            "fit": "contain",
+            "inside": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_index_about_structure_layout_and_themes",
+      "status": "passed",
+      "seconds": 0.556,
+      "measurements": {
+        "headings": [
+          "How the investigation works",
+          "How the verdict is set",
+          "How to read the evidence colours",
+          "Known limitations",
+          "What happens to your upload",
+          "Source code"
+        ],
+        "labels": [
+          "How the investigation works",
+          "How the verdict is set",
+          "How to read the evidence colours",
+          "Known limitations",
+          "What happens to your upload",
+          "Source code"
+        ],
+        "gap": 24,
+        "width": 216,
+        "active": 1,
+        "overflow": false
+      }
+    },
+    {
+      "id": "section_index_tracks_up_down_fast_scroll_and_bottom",
+      "status": "passed",
+      "seconds": 0.931
+    },
+    {
+      "id": "section_index_click_offset_hash_history_and_wrapped_markers",
+      "status": "passed",
+      "seconds": 0.343,
+      "measurements": {
+        "wrappedRowHeight": 81,
+        "marker": {
+          "dx": 0,
+          "dy": 0
+        }
+      }
+    },
+    {
+      "id": "section_index_sidebar_reflows_without_overlap",
+      "status": "passed",
+      "seconds": 0.713,
+      "measurements": {
+        "mainLeft": 291.5,
+        "sideRight": 230,
+        "scrim": "none",
+        "overflow": false
+      }
+    },
+    {
+      "id": "section_index_investigation_empty_loading_results_and_details",
+      "status": "passed",
+      "seconds": 1.947,
+      "measurements": {
+        "subsectionIndent": 18,
+        "apiCallsDuringNavigation": 0
+      }
+    },
+    {
+      "id": "section_index_mobile_disclosure_own_scroll_and_light_theme",
+      "status": "passed",
+      "seconds": 1.93
+    },
+    {
+      "id": "section_index_keyboard_reduced_motion_and_scroll_interruption",
+      "status": "passed",
+      "seconds": 1.003,
+      "measurements": {
+        "reduced": true,
+        "duration": "0s",
+        "allButtonsTabbable": true,
+        "offset": 19.6875
+      }
+    },
+    {
+      "id": "section_index_repeated_routes_have_no_duplicate_click_handlers",
+      "status": "passed",
+      "seconds": 1.027,
+      "measurements": {
+        "navigationScrollCalls": 1,
+        "apiCalls": 0
+      }
+    },
+    {
+      "id": "section_index_short_page_zoom_and_dynamic_compact_layout",
+      "status": "passed",
+      "seconds": 0.701
+    },
+    {
+      "id": "frontend_has_no_javascript_exceptions",
+      "status": "passed",
+      "seconds": 0,
+      "measurements": {
+        "blocked_external_resources": 1,
+        "local_requests": 30
+      }
+    }
+  ],
+  "screenshots": [
+    "browser-desktop-home.png",
+    "browser-desktop-result.png",
+    "browser-mobile-home.png",
+    "browser-mobile-result.png",
+    "browser-desktop-portrait-upload.png",
+    "browser-desktop-portrait-result.png",
+    "browser-mobile-portrait-upload.png",
+    "browser-mobile-portrait-result.png",
+    "index-about-desktop-dark.png",
+    "index-about-desktop-light.png",
+    "index-about-sidebar-open.png",
+    "index-investigation-empty-desktop.png",
+    "index-investigation-result-desktop.png",
+    "index-about-mobile-light.png",
+    "index-investigation-mobile-dark.png"
+  ],
+  "javascript_errors": [],
+  "blocked_external_resources": [
+    "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+  ],
+  "local_requests": 30,
+  "local_request_paths": [
+    "/",
+    "/static/style.css",
+    "/static/section-index.js",
+    "/static/app.js",
+    "/static/logo.png",
+    "/static/logo.png",
+    "/api/investigate",
+    "/api/investigate/e1fff59c93c94dd3a2790faaa75b556f/explain",
+    "/api/investigate",
+    "/api/investigate",
+    "/api/investigate/11a81318a389485d8cb0ef1cb701084e/explain",
+    "/api/fool",
+    "/api/investigate",
+    "/api/investigate/bef1010f3f5141afabe8ef029e4c4830/explain",
+    "/api/investigate",
+    "/api/investigate/3b17ca08ccbe47a48f784e6afb082991/explain",
+    "/api/investigate",
+    "/api/investigate/8fa2885eae104f60bcd50e9f08d070be/explain",
+    "/api/investigate",
+    "/api/investigate/c03d31391fb94488a820300fe4aee28b/explain",
+    "/api/investigate",
+    "/api/investigate/5339de0ed42a4dc58502291f60122899/explain",
+    "/api/investigate",
+    "/api/investigate/74e7de1ada3441b1affc84b19b7cf001/explain",
+    "/api/investigate",
+    "/api/investigate/675854258e8d4852ba37273a9da9fa28/explain",
+    "/api/investigate",
+    "/api/investigate/741b6636a0e84ce5bd2fb6175d3b6a30/explain",
+    "/api/investigate",
+    "/api/investigate/6a161f3d123547b7a709ed35da47392c/explain"
+  ],
+  "detector_calls": 11,
+  "seconds": 17.691
+}

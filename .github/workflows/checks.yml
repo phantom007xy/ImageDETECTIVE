@@ -34,4 +34,6 @@ jobs:
           python scripts/check_setup.py --checks-only
           python -m src.eval.app_release_check --output results/ci/app_checks.json
       - name: Frontend syntax
-        run: node --check app/web/app.js
+        run: |
+          node --check app/web/app.js
+          node --check app/web/section-index.js

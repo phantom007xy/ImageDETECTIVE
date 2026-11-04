@@ -7,6 +7,8 @@ const report = { successful: false, checks: [], screenshots: [], javascript_erro
   blocked_external_resources: [], local_requests: 0, local_request_paths: [] };
 const pending = new Map();
 let nextId = 1, sessionId;
+let holdInvestigations = false;
+const heldInvestigations = [];
 const socket = new WebSocket(websocketUrl);
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 function call(method, params = {}, browser = false) {
@@ -36,7 +38,11 @@ socket.addEventListener("message", (event) => {
     const { requestId, request } = message.params;
     let local = false;
     try { const url = new URL(request.url); local = ["127.0.0.1", "localhost", "[::1]"].includes(url.hostname); } catch (_) {}
-    if (local) { report.local_requests++; report.local_request_paths.push(new URL(request.url).pathname); call("Fetch.continueRequest", { requestId }).catch(() => {}); }
+    if (local) {
+      report.local_requests++; report.local_request_paths.push(new URL(request.url).pathname);
+      if (holdInvestigations && new URL(request.url).pathname === "/api/investigate") heldInvestigations.push(requestId);
+      else call("Fetch.continueRequest", { requestId }).catch(() => {});
+    }
     else { report.blocked_external_resources.push(request.url);
       call("Fetch.failRequest", { requestId, errorReason: "BlockedByClient" }).catch(() => {}); }
   }
@@ -75,6 +81,9 @@ async function viewport(width, height, mobile) {
 async function navigate(page) {
   await click(`a[data-page="${page}"]`);
   await waitFor(`!document.querySelector('[data-page="${page}"].page').hidden`, `Navigation to ${page} failed`);
+  if (page === "about" || page === "investigate") {
+    await waitFor("document.querySelectorAll('.section-index-link[aria-current=location]').length===1", "Route outline has not finished its animation-frame update");
+  }
 }
 async function investigateFixture() {
   await upload(fixture);
@@ -130,6 +139,23 @@ async function checkFullImageFit(label) {
   }
   await navigate("investigate");
   return measurements;
+}
+function apiCount() { return report.local_request_paths.filter((p) => p.startsWith("/api/")).length; }
+async function activeSection() {
+  return await evaluate("document.querySelector('.section-index-link[aria-current=location]')?.dataset.target");
+}
+async function jumpToHeading(id) {
+  await evaluate(`(()=>{const h=document.getElementById(${JSON.stringify(id)}),bar=document.querySelector('.topbar');window.scrollTo({top:h.getBoundingClientRect().top+scrollY-bar.getBoundingClientRect().bottom-16,behavior:'instant'});})()`);
+}
+async function assertMarkerAligned() {
+  await delay(240);
+  const state = await evaluate(`(()=>{
+    const a=document.querySelector('.section-index-link[aria-current=location] .section-index-dot').getBoundingClientRect();
+    const b=document.querySelector('.section-index-active').getBoundingClientRect();
+    return {dx:Math.abs(a.x+a.width/2-b.x-b.width/2),dy:Math.abs(a.y+a.height/2-b.y-b.height/2)};
+  })()`);
+  assert(state.dx < 1.5 && state.dy < 1.5, "Active marker does not follow the actual rendered dot: " + JSON.stringify(state));
+  return state;
 }
 (async () => {
   try {
@@ -214,6 +240,192 @@ async function checkFullImageFit(label) {
     await check("mobile_portrait_wide_square_images_fit", async () => {
       await viewport(375, 812, true);
       return await checkFullImageFit("mobile");
+    });
+    await check("section_index_about_structure_layout_and_themes", async () => {
+      await viewport(1440, 900, false);
+      await navigate("about");
+      await evaluate("window.scrollTo({top:0,behavior:'instant'})");
+      await waitFor("document.querySelectorAll('.section-index-link').length===6 && document.getElementById('section-index-disclosure').open", "About index not initialized");
+      const state = await evaluate(`(()=>{
+        const main=document.getElementById('main').getBoundingClientRect(),nav=document.getElementById('section-index').getBoundingClientRect();
+        return {headings:[...document.querySelectorAll('#page-about h2,#page-about h3')].map(h=>h.textContent.trim()),
+          labels:[...document.querySelectorAll('.section-index-link')].map(b=>b.textContent.trim()),
+          gap:nav.left-main.right,width:nav.width,active:document.querySelectorAll('.section-index-link[aria-current=location]').length,
+          overflow:document.documentElement.scrollWidth>innerWidth+1};})()`);
+      assert(JSON.stringify(state.headings)===JSON.stringify(state.labels), "About outline differs from actual headings");
+      assert(state.gap>=20 && state.width>=200 && state.width<=230 && state.active===1 && !state.overflow, "Invalid desktop outline layout: "+JSON.stringify(state));
+      assert(await activeSection()==="about-how-it-works", "First entry not active above the first section");
+      await assertMarkerAligned();
+      await screenshot("index-about-desktop-dark.png");
+      await click("#theme-toggle");
+      await screenshot("index-about-desktop-light.png");
+      await click("#theme-toggle");
+      return state;
+    });
+    await check("section_index_tracks_up_down_fast_scroll_and_bottom", async () => {
+      const before=apiCount();
+      for (const id of ["about-how-it-works","about-evidence","about-upload-privacy","about-limitations","about-verdict","about-how-it-works"]) {
+        await jumpToHeading(id);
+        const expected=await evaluate("document.scrollingElement.scrollHeight-(scrollY+innerHeight)<=3") ? "about-source-code" : id;
+        await waitFor(`document.querySelector('.section-index-link[aria-current=location]')?.dataset.target==='${expected}'`, "Incorrect scroll selection: "+id);
+        assert(await evaluate("document.querySelectorAll('.section-index-link[aria-current=location]').length===1"), "Outline has multiple active entries");
+      }
+      await evaluate("window.scrollTo({top:document.scrollingElement.scrollHeight,behavior:'instant'})");
+      await waitFor("document.querySelector('.section-index-link[aria-current=location]')?.dataset.target==='about-source-code'", "Last entry not active at page bottom");
+      await assertMarkerAligned();
+      await jumpToHeading("about-how-it-works");
+      await waitFor("document.querySelector('.section-index-link[aria-current=location]')?.dataset.target==='about-how-it-works'", "Fast upward scroll did not restore first entry");
+      const focus=await evaluate("document.activeElement.id");
+      await evaluate("window.scrollBy({top:35,behavior:'instant'})");
+      await delay(220);
+      assert(await activeSection()==="about-how-it-works", "Marker moved while reading within one section");
+      assert(await evaluate("document.activeElement.id")===focus, "Ordinary scrolling stole keyboard focus");
+      assert(apiCount()===before, "Outline scrolling issued API calls");
+    });
+    await check("section_index_click_offset_hash_history_and_wrapped_markers", async () => {
+      const before=apiCount(), history=await evaluate("history.length"), hash=await evaluate("location.hash");
+      await evaluate("document.querySelector('.section-index-link[data-target=about-how-it-works] span:last-child').style.maxWidth='100px'");
+      await click('.section-index-link[data-target="about-how-it-works"]');
+      await waitFor("Math.abs(document.getElementById('about-how-it-works').getBoundingClientRect().top-document.querySelector('.topbar').getBoundingClientRect().bottom-20)<3", "Heading did not clear the sticky header");
+      await waitFor("document.querySelector('.section-index-link[aria-current=location]')?.dataset.target==='about-how-it-works'", "Click did not update active entry");
+      const marker=await assertMarkerAligned();
+      const row=await evaluate("document.querySelector('.section-index-link[data-target=about-how-it-works]').getBoundingClientRect().height");
+      assert(row>45, "Wrapped-label case did not actually wrap");
+      assert(await evaluate("location.hash")===hash && await evaluate("history.length")===history, "Section navigation changed routing/history");
+      assert(apiCount()===before, "Clicking the outline issued API calls");
+      await evaluate("document.querySelector('.section-index-link[data-target=about-how-it-works] span:last-child').style.maxWidth=''");
+      return {wrappedRowHeight:row,marker};
+    });
+    await check("section_index_sidebar_reflows_without_overlap", async () => {
+      await viewport(1180,900,false);
+      await click("#sidebar-toggle");
+      await waitFor("getComputedStyle(document.getElementById('section-index')).getPropertyValue('--index-wide').trim()==='0'", "Open sidebar did not switch narrow content to compact outline");
+      assert(await evaluate("document.documentElement.scrollWidth<=innerWidth+1"), "Sidebar/index caused overflow");
+      await click("#sidebar-toggle");
+      await waitFor("getComputedStyle(document.getElementById('section-index')).getPropertyValue('--index-wide').trim()==='1'", "Closed sidebar did not restore wide outline");
+      await viewport(1440,900,false);
+      await click("#sidebar-toggle");
+      await delay(240);
+      const state=await evaluate("({mainLeft:document.getElementById('main').getBoundingClientRect().left,sideRight:document.getElementById('sidebar').getBoundingClientRect().right,scrim:getComputedStyle(document.getElementById('scrim')).display,overflow:document.documentElement.scrollWidth>innerWidth+1})");
+      assert(state.mainLeft>=state.sideRight && state.scrim==='none' && !state.overflow, "Open desktop navigation overlaps or blocks the content");
+      await screenshot("index-about-sidebar-open.png");
+      await click("#sidebar-toggle");
+      return state;
+    });
+    await check("section_index_investigation_empty_loading_results_and_details", async () => {
+      await viewport(1440,900,false); await navigate("investigate");
+      await upload(fixture);
+      await waitFor("document.querySelectorAll('.section-index-link').length===3", "Details link persisted after replacing the image");
+      await screenshot("index-investigation-empty-desktop.png");
+      holdInvestigations=true;
+      await click("#go");
+      await waitFor("document.getElementById('go').getAttribute('aria-busy')==='true'", "Could not observe investigating state");
+      assert(await evaluate("!document.querySelector('.section-index-link[data-target=investigation-details-heading]')"), "Nonexistent results are linked during investigation");
+      holdInvestigations=false;
+      for (const requestId of heldInvestigations.splice(0)) await call("Fetch.continueRequest",{requestId});
+      await waitFor("document.querySelectorAll('.section-index-link').length===4 && !document.getElementById('go').disabled", "Results did not add the details subsection");
+      await waitFor("document.getElementById('details-list').textContent.includes('No clear AI signs were found')", "Mocked optional result did not settle");
+      const before=apiCount();
+      assert(await evaluate("!document.querySelector('#report-body details').open"), "Details started open unexpectedly");
+      await click('.section-index-link[data-target="investigation-details-heading"]');
+      await waitFor("document.querySelector('#report-body details').open && document.querySelector('.section-index-link[aria-current=location]')?.dataset.target==='investigation-details-heading'", "Outline click did not expand/select details");
+      assert(await evaluate("document.getElementById('investigation-details-heading').tabIndex===0"), "Native disclosure keyboard access was removed");
+      await evaluate("document.querySelector('.section-index-link[data-target=investigation-details-heading] span:last-child').style.maxWidth='85px'");
+      await assertMarkerAligned();
+      const nested=await evaluate("document.querySelector('.section-index-link[data-level=\"3\"] .section-index-dot').getBoundingClientRect().left-document.querySelector('.section-index-link[data-target=report-heading] .section-index-dot').getBoundingClientRect().left");
+      assert(nested>=16,"Subsection marker is not indented");
+      await screenshot("index-investigation-result-desktop.png");
+      await evaluate("document.querySelector('.section-index-link[data-target=investigation-details-heading] span:last-child').style.maxWidth='';document.querySelector('#report-body details').open=false");
+      const state=await evaluate("({preview:document.getElementById('preview').src,name:document.getElementById('file-name').textContent,verdict:document.querySelector('#verdict .verdict-title').textContent})");
+      for(let i=0;i<5;i++){await navigate("about");await navigate("fool");await navigate("investigate");}
+      assert(await evaluate(`document.getElementById('preview').src===${JSON.stringify(state.preview)} && document.getElementById('file-name').textContent===${JSON.stringify(state.name)} && document.querySelector('#verdict .verdict-title').textContent===${JSON.stringify(state.verdict)} && !document.getElementById('report-body').hidden`), "Routing lost the upload or report state");
+      assert(apiCount()===before,"Outline/route navigation duplicated investigation/API calls");
+      return {subsectionIndent:nested,apiCallsDuringNavigation:apiCount()-before};
+    });
+    await check("section_index_mobile_disclosure_own_scroll_and_light_theme", async () => {
+      await viewport(375,500,true); await navigate("about");
+      await waitFor("!document.getElementById('section-index-disclosure').open", "Compact outline did not start collapsed");
+      await click("#section-index-disclosure > summary");
+      await waitFor("document.getElementById('section-index-disclosure').open", "Compact outline would not open");
+      const overflow=await evaluate("(()=>{const n=document.querySelector('.section-index-scroll');return n.scrollHeight>n.clientHeight+5;})()");
+      assert(overflow,"Short-viewport outline did not exercise independent scrolling");
+      await evaluate("window.scrollTo({top:document.scrollingElement.scrollHeight,behavior:'instant'})");
+      await waitFor("document.querySelector('.section-index-link[aria-current=location]')?.dataset.target==='about-source-code'", "Mobile bottom selection is wrong");
+      assert(await evaluate("(()=>{const a=document.querySelector('.section-index-link[aria-current=location]').getBoundingClientRect(),b=document.querySelector('.section-index-scroll').getBoundingClientRect();return a.top>=b.top-1 && a.bottom<=b.bottom+1;})()"),"The active entry was not revealed inside the outline's own scroll area");
+      const before=await evaluate("scrollY");
+      await evaluate("document.querySelector('.section-index-scroll').scrollTop=0");
+      await delay(120);
+      assert(Math.abs(await evaluate("scrollY")-before)<2,"Scrolling the outline moved the main document");
+      await click('.section-index-link[data-target="about-how-it-works"]');
+      await waitFor("!document.getElementById('section-index-disclosure').open && document.activeElement.id==='about-how-it-works'", "Mobile click did not close the outline and focus its target");
+      await waitFor("Math.abs(document.getElementById('about-how-it-works').getBoundingClientRect().top-document.querySelector('.topbar').getBoundingClientRect().bottom-20)<3", "Mobile target did not settle below the sticky header");
+      assert(await evaluate("location.hash")==="#/about", "Mobile outline broke hash routing");
+      await viewport(375,812,true);
+      await evaluate("window.scrollTo({top:0,behavior:'instant'})");
+      await click("#section-index-disclosure > summary");
+      await click("#theme-toggle");
+      await evaluate("document.activeElement.blur();window.scrollTo({top:0,behavior:'instant'})");
+      await delay(150);
+      await screenshot("index-about-mobile-light.png");
+      assert(await evaluate("document.documentElement.scrollWidth<=innerWidth+1"),"Mobile outline overflows horizontally");
+      await click("#theme-toggle");
+      await navigate("investigate");
+      await screenshot("index-investigation-mobile-dark.png");
+    });
+    await check("section_index_keyboard_reduced_motion_and_scroll_interruption", async () => {
+      await viewport(1440,900,false);await navigate("about");
+      await call("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+      await waitFor("document.getElementById('section-index-disclosure').open && getComputedStyle(document.getElementById('section-index')).getPropertyValue('--index-wide').trim()==='1'", "Desktop outline did not finish route layout");
+      await evaluate("window.scrollTo({top:0,behavior:'instant'});document.querySelector('.section-index-link[data-target=about-how-it-works]').focus()");
+      assert(await evaluate("document.activeElement.dataset.target==='about-how-it-works'"),"Visible outline button could not receive keyboard focus");
+      await call("Input.dispatchKeyEvent",{type:"keyDown",key:"Enter",code:"Enter",windowsVirtualKeyCode:13,nativeVirtualKeyCode:13,text:"\r",unmodifiedText:"\r"});
+      await call("Input.dispatchKeyEvent",{type:"keyUp",key:"Enter",code:"Enter",windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
+      await waitFor("document.activeElement.id==='about-how-it-works'", "Keyboard could not activate the outline");
+      const state=await evaluate("({reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,duration:getComputedStyle(document.querySelector('.section-index-active')).transitionDuration,allButtonsTabbable:[...document.querySelectorAll('.section-index-link')].every(b=>b.tabIndex===0),offset:document.getElementById('about-how-it-works').getBoundingClientRect().top-document.querySelector('.topbar').getBoundingClientRect().bottom})");
+      assert(state.reduced && state.duration==='0s' && state.allButtonsTabbable && Math.abs(state.offset-20)<3,"Reduced-motion or keyboard/header behavior is incorrect");
+      await call("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
+      await evaluate("window.scrollTo({top:0,behavior:'instant'})");await delay(100);
+      await click('.section-index-link[data-target="about-source-code"]');await delay(60);
+      await call("Input.dispatchMouseEvent",{type:"mouseWheel",x:400,y:400,deltaX:0,deltaY:-450});
+      await delay(500);
+      assert(await evaluate("scrollY<document.scrollingElement.scrollHeight-innerHeight-20"),"User wheel input did not interrupt smooth navigation");
+      return state;
+    });
+    await check("section_index_repeated_routes_have_no_duplicate_click_handlers", async () => {
+      const before=apiCount();
+      for(let i=0;i<6;i++){await navigate("investigate");await navigate("about");}
+      await evaluate("window.originalScrollForIndexTest=window.scrollTo;window.indexScrollCalls=0;window.scrollTo=function(...args){window.indexScrollCalls++;return window.originalScrollForIndexTest.apply(window,args)}");
+      await click('.section-index-link[data-target="about-how-it-works"]');
+      await delay(550);
+      const calls=await evaluate("window.indexScrollCalls");
+      await evaluate("window.scrollTo=window.originalScrollForIndexTest;delete window.originalScrollForIndexTest");
+      assert(calls===1,"Duplicate click handlers after route changes: "+calls);
+      assert(apiCount()===before,"Repeated outline navigation caused API work");
+      assert(await evaluate("document.querySelectorAll('.section-index-link[aria-current=location]').length===1"),"Repeated routing lost the single active entry");
+      return {navigationScrollCalls:calls,apiCalls:apiCount()-before};
+    });
+    await check("section_index_short_page_zoom_and_dynamic_compact_layout", async () => {
+      await viewport(1440,2200,false);await navigate("investigate");await upload(fixture);
+      await waitFor("document.querySelectorAll('.section-index-link').length===3", "Replacement did not remove result-only entries");
+      await evaluate("window.scrollTo({top:0,behavior:'instant'})");
+      await waitFor("document.querySelector('.section-index-link[aria-current=location]')?.dataset.target==='steps-heading'", "A page fitting the viewport did not select its first section");
+      await viewport(640,450,false);
+      await waitFor("getComputedStyle(document.getElementById('section-index')).getPropertyValue('--index-wide').trim()==='0'", "Zoom-sized viewport did not use compact navigation");
+      assert(await evaluate("document.documentElement.scrollWidth<=innerWidth+1"),"Zoom-sized viewport overflows");
+      if (!await evaluate("document.getElementById('section-index-disclosure').open")) await click("#section-index-disclosure > summary");
+      await waitFor("document.getElementById('section-index-disclosure').open", "Compact navigation must be expanded for the scroll-preservation check");
+      await evaluate("document.getElementById('examine-heading').scrollIntoView({block:'start',behavior:'instant'})");
+      const before=await evaluate("document.getElementById('examine-heading').getBoundingClientRect().top");
+      // Isolate the outline's added row from the app's existing intentional report auto-scroll.
+      await evaluate("document.getElementById('report-heading').scrollIntoView=()=>{}");
+      await click("#go");
+      await waitFor("document.querySelectorAll('.section-index-link').length===4 && !document.getElementById('go').disabled", "Compact index did not add the completed details entry");
+      await delay(150);
+      await evaluate("delete document.getElementById('report-heading').scrollIntoView");
+      assert(await evaluate("document.querySelectorAll('.section-index-link[aria-current=location]').length===1"),"Layout refresh produced multiple active entries");
+      const after=await evaluate("document.getElementById('examine-heading').getBoundingClientRect().top");
+      assert(Math.abs(after-before)<3,"Adding the compact outline entry moved the reading position unexpectedly: "+JSON.stringify({before,after}));
+      await viewport(1440,900,false);await navigate("investigate");
     });
     await check("frontend_has_no_javascript_exceptions", async () => {
       assert(report.javascript_errors.length === 0, report.javascript_errors.join("\n"));

@@ -55,6 +55,8 @@ Next to the verdict: an AI evidence score, the **evidence map**, numbered **face
 
 The map names its source. DINOv3 covers the whole photo; when a PE head raises the alert, its contribution map covers only the outlined centre square that PE actually analysed. The map explains the classifier score; it does not establish the boundary of a real edit. A face alert is shown by its face box.
 
+**On this page:** About and Image Investigation have a section index that follows your reading position. On wide screens it sits in its own right-hand column; on smaller screens it becomes a disclosure above the content. Jumping to Investigation details opens that disclosure without restarting the investigation. Keyboard navigation and reduced-motion preferences are supported.
+
 ## How it works
 
 ```mermaid
@@ -321,7 +323,7 @@ Offline tools (never called by the app): YuNet face detector (OpenCV, MIT) for f
 
 ## Built during the hackathon
 
-Everything in this repository was written between 26 Oct and 4 Nov 2026: the data pipeline, every training and evaluation script, the calibration, the web app, the deployment and all results. **What existed before:** the pretrained Meta models, the public datasets above, and my earlier research on the same problem (no code reused). **Other tools:** PyTorch, timm, Hugging Face, FastAPI, OpenCV, FFmpeg, Kaggle, Google Colab, Google Cloud, Caddy, Claude Code.
+The original hackathon implementation was written between 26 Oct and 4 Nov 2026: the data pipeline, training and evaluation scripts, calibration, web app, deployment and measured detector results. The section-navigation UI was added on **5 Nov 2026**, after that original implementation; later changes are dated in Git history. **What existed before:** the pretrained Meta models, the public datasets above, and my earlier research on the same problem (no code reused). **Other tools:** PyTorch, timm, Hugging Face, FastAPI, OpenCV, FFmpeg, Kaggle, Google Colab, Google Cloud, Caddy, Claude Code.
 
 ## Background
 

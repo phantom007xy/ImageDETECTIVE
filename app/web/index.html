@@ -13,7 +13,7 @@
   // The saved theme before the first paint (dark for first-time visitors).
   try { var t = localStorage.getItem("idetective-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
 </script>
-<link rel="stylesheet" href="/static/style.css?v=20261104-image-fit">
+<link rel="stylesheet" href="/static/style.css?v=20261105-section-index">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -61,6 +61,21 @@
     </a>
   </header>
 
+  <div id="content-layout" class="content-layout">
+    <aside id="section-index" class="section-index" hidden>
+      <details id="section-index-disclosure">
+        <summary>On this page</summary>
+        <nav aria-label="On this page">
+          <div class="section-index-scroll">
+            <div class="section-index-inner">
+              <svg class="section-index-track" aria-hidden="true"><path></path></svg>
+              <span class="section-index-active" aria-hidden="true" hidden></span>
+              <ol class="section-index-list" role="list"></ol>
+            </div>
+          </div>
+        </nav>
+      </details>
+    </aside>
   <main id="main" class="main" tabindex="-1">
 
     <!-- Image Investigation -->
@@ -166,7 +181,7 @@
           <p id="evidence-description" class="note">Colors show model evidence, not proof of authenticity or exact edit boundaries.</p>
           <p id="outline-note" class="note" hidden></p>
           <details class="details">
-            <summary>Investigation details</summary>
+            <summary id="investigation-details-heading" data-section-index data-index-level="3">Investigation details</summary>
             <dl id="details-list" class="details-list"></dl>
           </details>
         </div>
@@ -220,7 +235,7 @@
       <p class="callout">An investigation provides evidence, not proof. "Likely authentic" does not establish who took an
         image, where it was taken or whether its caption is true.</p>
 
-      <h2>How the investigation works</h2>
+      <h2 id="about-how-it-works">How the investigation works</h2>
       <p>One upload runs every check on this app's server. The verdict comes only from ImageDETECTIVE's own detectors.
         For pictures that are not clearly authentic, Meta's investigator then points to the most suspicious object and
         writes a short explanation from the detectors' numbers; it never decides the verdict.</p>
@@ -247,13 +262,13 @@
         </table>
       </div>
 
-      <h2>How the verdict is set</h2>
+      <h2 id="about-verdict">How the verdict is set</h2>
       <p>The thresholds are set on development photos so that at most 5% of real photos get an AI verdict. When the
         checks don't point clearly either way, the answer is "Uncertain" instead of a guess. The percentage shown is the
         whole-image check's calibrated AI evidence; the other checks are shown as findings, not as probabilities.
         Calibration limits are not a guarantee on new photos.</p>
 
-      <h2>How to read the evidence colours</h2>
+      <h2 id="about-evidence">How to read the evidence colours</h2>
       <ul>
         <li><b>Red:</b> parts of the picture whose signals point to AI generation or manipulation.</li>
         <li><b>Pale green:</b> parts whose signals point to a real photo.</li>
@@ -264,7 +279,7 @@
           scored by that check. An evidence map is not a segmentation of the actual edit.</li>
       </ul>
 
-      <h2>Known limitations</h2>
+      <h2 id="about-limitations">Known limitations</h2>
       <ul>
         <li>It can't tell when or where a photo was taken: a real photo forwarded with a false story still looks real.</li>
         <li>Classic manual edits (old-style Photoshop cut-and-paste) are not covered; face swaps and small AI edits only
@@ -274,7 +289,7 @@
         <li>Built for photos: drawings, documents, chat screenshots and videos are out of scope.</li>
       </ul>
 
-      <h2>What happens to your upload</h2>
+      <h2 id="about-upload-privacy">What happens to your upload</h2>
       <ul>
         <li>The original image is checked on this app's server. Only a smaller copy is retained in memory for up to
           30 minutes for the investigator step; uploads are never saved to disk.</li>
@@ -283,7 +298,7 @@
         <li>"Try to fool it" sends only your text prompt to Meta's API.</li>
       </ul>
 
-      <h2>Source code</h2>
+      <h2 id="about-source-code">Source code</h2>
       <p>Code, measured results and dataset credits:
         <a href="https://github.com/phantom007xy/ImageDETECTIVE" target="_blank" rel="noopener noreferrer">github.com/phantom007xy/ImageDETECTIVE ↗</a>.
         Built with DINOv3, Perception Encoder, SAM 3, SAM 3.1, Muse Image and Muse Spark (Meta).</p>
@@ -297,7 +312,9 @@
       </span>
     </footer>
   </main>
+  </div>
 </div>
-<script src="/static/app.js"></script>
+<script src="/static/section-index.js?v=20261105"></script>
+<script src="/static/app.js?v=20261105-section-index"></script>
 </body>
 </html>

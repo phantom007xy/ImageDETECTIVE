@@ -6,6 +6,7 @@
   const TYPES = ["image/jpeg", "image/png", "image/webp"];
   const EXTENSIONS = /\.(jpe?g|png|webp)$/i;
   const root = document.documentElement;
+  const sectionIndex = new window.SectionIndex($("section-index"), $("content-layout"));
 
   // ---------- theme (dark for first-time visitors; the choice is remembered in this browser) ----------
   const themeButton = $("theme-toggle"), themeLabel = $("theme-label");
@@ -24,8 +25,10 @@
   const sidebar = $("sidebar"), toggle = $("sidebar-toggle"), scrim = $("scrim");
   function setSidebar(open) {
     sidebar.classList.toggle("open", open);
+    root.classList.toggle("sidebar-open", open);
     toggle.setAttribute("aria-expanded", String(open));
     scrim.hidden = !open;
+    sectionIndex.schedule(true);
   }
   toggle.addEventListener("click", () => setSidebar(!sidebar.classList.contains("open")));
   scrim.addEventListener("click", () => setSidebar(false));
@@ -46,6 +49,7 @@
     });
     document.title = TITLES[page];
     setSidebar(false);
+    sectionIndex.activate(document.querySelector(`.page[data-page="${page}"]`));
     return page;
   }
   window.addEventListener("hashchange", () => { showPage(); window.scrollTo(0, 0); $("main").focus({ preventScroll: true }); });
@@ -129,6 +133,7 @@
     reportEmpty.hidden = false;
     outlineNote.hidden = true;
     detailsList.innerHTML = "";
+    sectionIndex.refresh();
   }
   function choose(f) {
     hideError(uploadError);
@@ -229,7 +234,9 @@
     reportBody.hidden = false;
     $("report-heading").scrollIntoView({ block: "start", behavior:
       window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-    return renderDetails(r, null);
+    const rows = renderDetails(r, null);
+    sectionIndex.refresh();
+    return rows;
   }
   async function investigateMore(r, rows, mine) {
     try {

@@ -6,6 +6,7 @@
   --red: #f87171; --amber: #fbbf24; --orange: #fb923c; --green: #4ade80; --slate: #b4b4bc;
   --swatch-ai: #ef4444; --swatch-real: #86efac; --swatch-weak: #1e3a8a;
   --side-closed: 68px; --side-open: 230px;
+  --header-height: 86px;
   --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color-scheme: dark;
 }
@@ -61,13 +62,59 @@ img { max-width: 100%; }
 .scrim { position: fixed; inset: 0; z-index: 20; background: transparent; }
 
 /* ---- header and main column ---- */
-.shell { margin-left: var(--side-closed); min-height: 100vh; display: flex; flex-direction: column; }
-.topbar { height: 86px; padding: 0 48px; display: flex; align-items: center; border-bottom: 1px solid var(--border); }
+.shell { margin-left: var(--side-closed); min-height: 100vh; display: flex; flex-direction: column;
+  container: app-shell / inline-size; transition: margin-left 200ms ease; }
+.topbar { height: var(--header-height); flex: none; padding: 0 48px; display: flex; align-items: center;
+  position: sticky; top: 0; z-index: 15; background: var(--bg); border-bottom: 1px solid var(--border); }
 .brand { display: inline-flex; align-items: center; gap: 13px; text-decoration: none; color: var(--text); }
 .brand-logo { width: 42px; height: 46px; display: grid; place-items: center; flex: none; }
 .brand-logo img { width: 42px; height: 46px; object-fit: contain; }
 .wordmark { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; }
 .main { width: 100%; max-width: 820px; margin: 0 auto; padding: 56px 32px 24px; flex: 1; outline: none; }
+.content-layout { width: 100%; flex: 1; min-width: 0; }
+.content-layout.has-section-index { max-width: 1120px; margin: 0 auto; }
+.content-layout.has-section-index .main { min-width: 0; }
+[data-section-index], .page h2, .page h3 { scroll-margin-top: calc(var(--header-height) + 24px); }
+
+/* Section navigation shares the document's scroll; only an overflowing list scrolls on its own. */
+.section-index { --index-wide: 0; min-width: 0; padding: 22px 32px 0; max-width: 820px; margin: 0 auto;
+  overflow-anchor: none; }
+.section-index summary { width: fit-content; padding: 8px 0; color: var(--text); cursor: pointer;
+  font-size: 15px; font-weight: 600; }
+.section-index-scroll { max-height: min(46vh, 340px); overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.section-index-inner { position: relative; }
+.section-index-list { list-style: none; padding: 0; margin: 6px 0; }
+.section-index-link { display: flex; align-items: center; gap: 12px; padding: 9px 6px; width: 100%;
+  border: 0; background: transparent; color: var(--secondary); text-align: left; font: inherit;
+  font-size: 14px; line-height: 1.5; cursor: pointer; }
+.section-index-link[data-level="3"] { padding-left: 24px; font-size: 14px; }
+.section-index-link:hover { color: var(--text); }
+.section-index-link:focus-visible { outline-offset: -2px; }
+.section-index-link > span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.section-index-link[aria-current="location"] { color: var(--text); font-weight: 600; }
+.section-index-dot { width: 6px; height: 6px; border: 1px solid var(--muted); background: var(--bg);
+  border-radius: 50%; flex: none; position: relative; z-index: 1; }
+.section-index-track { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
+  pointer-events: none; fill: none; stroke: var(--border); stroke-width: 1; }
+.section-index-active { position: absolute; left: 0; top: 0; width: 10px; height: 10px;
+  border-radius: 50%; background: var(--text); box-shadow: 0 0 0 2px var(--bg); pointer-events: none;
+  z-index: 2; transition: transform 180ms ease; }
+@container app-shell (min-width: 1040px) {
+  .content-layout.has-section-index { display: grid; grid-template-columns: minmax(0, 1fr) 216px;
+    grid-template-areas: "content index"; gap: 24px; padding: 0 24px; align-items: start; }
+  .content-layout.has-section-index .main { grid-area: content; max-width: none; padding-left: 8px; padding-right: 8px; }
+  .section-index { --index-wide: 1; grid-area: index; align-self: stretch; max-width: none; margin: 0;
+    padding: 56px 0 24px; }
+  .section-index > details { position: sticky; top: calc(var(--header-height) + 20px); }
+  .section-index summary { display: block; pointer-events: none; cursor: default; padding: 0 0 12px; }
+  .section-index summary::-webkit-details-marker { display: none; }
+  .section-index-scroll { max-height: calc(100dvh - var(--header-height) - 84px); }
+}
+@media (min-width: 1000px) {
+  .sidebar-open .shell { margin-left: var(--side-open); }
+  .sidebar-open .scrim { display: none; }
+}
 @media (min-width: 1600px) { .main { padding-top: 66px; } }
 
 h1, h2, p { margin: 0; }
@@ -199,7 +246,7 @@ h2 { font-size: 23px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.
 
 /* ---- phones ---- */
 @media (max-width: 650px) {
-  :root { --side-closed: 60px; --side-open: 220px; }
+  :root { --side-closed: 60px; --side-open: 220px; --header-height: 70px; }
   .sidebar { padding: 12px 8px; }
   .side-item { padding: 0 11px; }
   .topbar { height: 70px; padding: 0 20px; }
@@ -207,6 +254,7 @@ h2 { font-size: 23px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.
   .brand { gap: 10px; }
   .brand-logo, .brand-logo img { width: 30px; height: 36px; }
   .main { padding: 34px 20px 24px; }
+  .section-index { padding: 18px 20px 0; }
   .tagline { font-size: 25px; }
   .intro { font-size: 16px; }
   .steps { grid-template-columns: 1fr; gap: 0; }
