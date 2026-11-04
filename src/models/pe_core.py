@@ -74,8 +74,10 @@ class PECore:
         return (pixels - self.mean) / self.std
 
     @torch.no_grad()
-    def layer_features(self, pixels):
+    def layer_features(self, pixels, heads=None):
         """pixels: [B, 3, 336, 336] normalised -> [B, 6, 1024]: mean patch token after blocks 4..20 and of the last layer."""
+        # With heads, also return each linear head's patch contributions from this SAME
+        # forward pass. Mean features and classifier logits retain their original arithmetic.
         pixels = pixels.to(self.device, self.dtype)
         # One pass: the patch tokens after blocks 4..20 and after the last block (24); the last one gets PE's final
         # norm, exactly as forward_features does.
@@ -85,4 +87,13 @@ class PECore:
         out = torch.stack([t.float().mean(1) for t in tokens], dim=1)
         if not torch.isfinite(out).all():
             raise RuntimeError("PE-Core returned NaN or inf values")
-        return out.cpu()
+        if heads is None:
+            return out.cpu()
+        maps = []
+        side = self.size // 14
+        for head in heads:
+            weights = head.weight.float().reshape(NUM_FEATURES, -1).to(self.device)
+            contributions = sum(token.float() @ weights[i] for i, token in enumerate(tokens))
+            contributions = contributions + head.bias.float().to(self.device)
+            maps.append(contributions.reshape(len(pixels), side, side).cpu())
+        return out.cpu(), maps

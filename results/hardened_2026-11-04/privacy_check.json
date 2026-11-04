@@ -1,0 +1,9 @@
+{
+  "scope": "Private input filenames/paths scanned in public reports/README; private prediction keys disjoint",
+  "public_artifacts_checked": 54,
+  "private_image_rows": 264,
+  "findings": [],
+  "private_prediction_keys_in_public_cache": 0,
+  "private_checkpoint_separate": true,
+  "passed": true
+}

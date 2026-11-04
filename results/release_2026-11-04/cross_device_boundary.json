@@ -1,0 +1,50 @@
+{
+  "status": "complete",
+  "updated_at_utc": "2026-11-04T10:50:33.008969+00:00",
+  "scope": "ONE public OpenImages calibration maximum; DINO whole-image branch only; CPU fp32 followed by CPU bf16",
+  "public_image_sha256": "1e913aa9bad9d28a8f7303cf995493409b1324db5d6690fec789790337db67e3",
+  "public_file": "c9a520bbf569c2ee.jpg",
+  "cached_whole_score": 5.520974636077881,
+  "strong_ai_logit": 5.520974636077881,
+  "joint_whole_ai_logit": 0.6646256446838379,
+  "real_logit": -2.7401700019836426,
+  "existing_gpu_record": {
+    "score": 5.520281791687012,
+    "pixel_verdict": "Likely AI-generated",
+    "margin_to_strong": -0.0006928443908691406,
+    "source": "existing full live detector record, laptop GPU bf16"
+  },
+  "cpu_threads": 4,
+  "cpu_has_amx_bf16_probe": false,
+  "measurements": [
+    {
+      "device": "cpu",
+      "dtype": "torch.float32",
+      "score": 5.315487861633301,
+      "whole_image_verdict_level": "Likely AI-generated",
+      "above_strong_ai_line": false,
+      "margin_to_strong": -0.20548677444458008,
+      "delta_from_cached_score": -0.20548677444458008,
+      "delta_from_gpu_score": -0.20479393005371094,
+      "seconds": 2.426067100000182
+    },
+    {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "score": 5.544503211975098,
+      "whole_image_verdict_level": "AI-generated",
+      "above_strong_ai_line": true,
+      "margin_to_strong": 0.023528575897216797,
+      "delta_from_cached_score": 0.023528575897216797,
+      "delta_from_gpu_score": 0.024221420288085938,
+      "seconds": 9.364033599999857
+    }
+  ],
+  "limitations": [
+    "The CPU bf16 run is on this laptop, not the hosted AMX CPU. It does not establish hosted-server arithmetic behavior.",
+    "Only one known boundary image is tested. These results do not estimate any dataset-wide error rate.",
+    "Verdict levels here use whole-image thresholds only; SAM, PE, faces and metadata are not run.",
+    "No thresholds, weights, source data, or production code are modified."
+  ],
+  "any_tested_cpu_dtype_above_strong_line": true
+}

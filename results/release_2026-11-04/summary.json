@@ -1,0 +1,4231 @@
+{
+  "generated_at_utc": "2026-11-04T11:10:07.575787+00:00",
+  "scope": "Current baseline before final commit; no improved-model claim and no new independent final-test claim.",
+  "release_ready": false,
+  "gates": {
+    "all_required_artifacts_present": true,
+    "all_app_checks_pass": false,
+    "all_19_live_cases_complete_without_errors": true,
+    "real_upload_ui_80_match": true,
+    "environment_requirements_match": true,
+    "required_calibration_and_v4_cache_checks_pass": true,
+    "live_and_cached_configuration_match": true,
+    "final_ensemble_calibration_mix_and_per_pool_caps_pass": true,
+    "desktop_mobile_browser_checks_pass": true,
+    "scoped_private_report_scan_passes": true,
+    "whole_image_robustness_complete_without_errors": true,
+    "private_calibration_live_complete_without_errors": true,
+    "private_live_union_5pct_and_each_edit_head_2pct_caps_pass": false,
+    "frozen_production_artifacts_and_python_syntax_valid": true,
+    "hosted_public_real_boundary_avoids_confident_false_alarm": false
+  },
+  "blockers": [
+    "all_app_checks_pass",
+    "private_live_union_5pct_and_each_edit_head_2pct_caps_pass",
+    "hosted_public_real_boundary_avoids_confident_false_alarm"
+  ],
+  "source_artifact_sha256": {
+    "app_checks": "d919b89560ca1aa7b6719de75f07a05d6259b9c069f660728347560d8ec600e9",
+    "cached_metrics": "58bcc8b2a6b299f25afd57f880866177c881060fa94c29ce2d6c2783798508d1",
+    "manifest_checks": "62225828db40b486e794fe04df58621d2aa0a6a76e5873f30135fc9198c46cd8",
+    "environment": "8ab2d0d412cd69b2b546b925cd40a692a2f06b303d85addca8b98268f7544b29",
+    "face_robustness": "b5fc4ef5d1f78258e8d47a7cfbf53936f0d6388002df6228e8fc298029f3e782",
+    "live_metrics": "3248f613a38297acfa494c4f59cbbc22459a04f7344d63d2da78887f6f1b789c",
+    "configuration": "881be3437ac90a445d9e660c6d1019d423461bcd55cafa897d36591298e282e0",
+    "browser_checks": "5b77c85fbf6b0ed5d5b0c41a2d38bbb1552cfeb98bf2a6d1a5664ce585aae8b9",
+    "privacy_check": "95b8fe38e0f37e2616e18a0c34210460e19eb1bca96d6f1ddcdfa2d8d9402c61",
+    "integrity_check": "d9db5742bab29145476f4817755ec4b061bca08e3136f743566be16e755df97c",
+    "precision_differences": "d5b2a3c3ecb27f84334cb5aab6da7d48577df28e881f143c65d3a0bd93ca879c",
+    "strong_threshold_check": "dae1952b6972a2760d07b7c5b4b5afc398d7b2e19f0b15b61b4782f93e054db8",
+    "private_calibration_live": "b1daa72ef0009c30615c5c43d248feaec3dc8baa5aa8f215a4e0e80e35ac6e3c",
+    "cross_device_boundary": "a300f107945f8b0337f8378d663dcac8dc8e1c2cb7c45d307bbd9111133e75f4",
+    "hosted_boundary": "8e1e9f410c618e5f61f97ccffb13251b7b66f7975546cd39f2c471d161c2b41b",
+    "robustness": "d1d15b511a5aeb9d1b90550a02c5e01e298e2f1fdedc48341061b409d0754859",
+    "whole_calibration": "d8559e8d0d5e3cd3869d1d20140f1ec5fcabb588e295abcd136ac5389eb3c819"
+  },
+  "app_checks": {
+    "tests_run": 26,
+    "failures": 5,
+    "errors": 0,
+    "failed_checks": [
+      {
+        "id": "test_budget_reserves_inflight_cost_and_deduplicates_same_request",
+        "status": "failed",
+        "message": "0.02 not less than or equal to 0.01 : Concurrent identical requests charged more than the remaining simulated daily cap",
+        "measurements": {
+          "simulated_charges": 2,
+          "simulated_spend": 0.02,
+          "cap": 0.01
+        }
+      },
+      {
+        "id": "test_comment_mention_is_not_an_actual_ai_source_declaration",
+        "status": "failed",
+        "message": "'generated' is not None : Ordinary PNG Comment text was mistaken for an AI source field",
+        "measurements": {
+          "metadata_result": {
+            "ai_label": "generated",
+            "c2pa": false
+          }
+        }
+      },
+      {
+        "id": "test_memory_only_upload_does_not_spool_to_disk",
+        "status": "failed",
+        "message": "1 != 0 : Synthetic upload reached temporary disk storage despite memory-only promise",
+        "measurements": {
+          "temporary_files_rolled_to_disk": 1
+        }
+      },
+      {
+        "id": "test_optional_api_does_not_block_another_detector_verdict",
+        "status": "failed",
+        "message": "False is not true : A blocked optional API call held up the next basic detector verdict",
+        "measurements": {
+          "verdict_completed_while_api_blocked": false
+        }
+      },
+      {
+        "id": "test_secondary_head_facts_describe_positive_detection",
+        "status": "failed",
+        "message": "'no clear signs' == 'no clear signs' : Secondary PE head triggered the verdict but explanation facts say no clear signs",
+        "measurements": {
+          "facts": {
+            "verdict": "Likely AI-generated",
+            "verdict_based_on": "the pixels",
+            "ai_probability_from_pixels": 0.1,
+            "faces_checked": 0,
+            "faces_that_look_ai_made": 0,
+            "faces_that_lean_ai": 0,
+            "faces_too_small_to_check": 0,
+            "ai_edit_check": "no clear signs"
+          }
+        }
+      }
+    ],
+    "scope": "CPU-only FastAPI behavior with synthetic images and mocked detector/paid services"
+  },
+  "live_progress": {
+    "status": "complete",
+    "artifact_complete": true,
+    "completed_cases": 19,
+    "expected_cases": 19,
+    "missing_or_incomplete_cases": [],
+    "processed_rows_including_overlapping_sets": 3951,
+    "errors": 0
+  },
+  "ui_equivalence": {
+    "requested": true,
+    "complete": true,
+    "checked": 80,
+    "passed": true,
+    "mismatch_count": 0,
+    "gate_passed": true
+  },
+  "live_sources": [
+    {
+      "case": "judge_ai",
+      "source": "judge/chatgpt",
+      "role": "regression",
+      "case_complete": true,
+      "counts": {
+        "n": 20,
+        "requested_so_far": 20,
+        "ai": 20,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 20,
+        "ai_file_labels": 20,
+        "verdict_counts": {
+          "Likely AI-generated": 12,
+          "Likely AI-edited": 7,
+          "AI-generated": 1
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "status": "no_corresponding_current_cache"
+      }
+    },
+    {
+      "case": "judge_ai",
+      "source": "judge/metaai",
+      "role": "regression",
+      "case_complete": true,
+      "counts": {
+        "n": 20,
+        "requested_so_far": 20,
+        "ai": 20,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 20,
+        "ai_file_labels": 20,
+        "verdict_counts": {
+          "Likely AI-generated": 10,
+          "AI-generated": 9,
+          "Likely AI-edited": 1
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "status": "no_corresponding_current_cache"
+      }
+    },
+    {
+      "case": "judge_ai",
+      "source": "judge/nanobanana_2_1",
+      "role": "regression",
+      "case_complete": true,
+      "counts": {
+        "n": 20,
+        "requested_so_far": 20,
+        "ai": 12,
+        "uncertain": 7,
+        "authentic": 1,
+        "errors": 0,
+        "final_ai_including_metadata": 20,
+        "ai_file_labels": 20,
+        "verdict_counts": {
+          "Likely AI-generated": 12,
+          "Likely authentic": 1,
+          "Uncertain": 7
+        },
+        "ai_percent": 60.0
+      },
+      "cached_comparison": {
+        "status": "no_corresponding_current_cache"
+      }
+    },
+    {
+      "case": "judge_ai",
+      "source": "judge/nanobanana_pro",
+      "role": "regression",
+      "case_complete": true,
+      "counts": {
+        "n": 20,
+        "requested_so_far": 20,
+        "ai": 19,
+        "uncertain": 1,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 20,
+        "ai_file_labels": 20,
+        "verdict_counts": {
+          "Likely AI-generated": 17,
+          "Uncertain": 1,
+          "Likely AI-edited": 1,
+          "AI-generated": 1
+        },
+        "ai_percent": 95.0
+      },
+      "cached_comparison": {
+        "status": "no_corresponding_current_cache"
+      }
+    },
+    {
+      "case": "fresh_muse_v2",
+      "source": "muse_test_v2/animal",
+      "role": "held-out evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 14,
+        "requested_so_far": 14,
+        "ai": 14,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 14,
+        "ai_file_labels": 14,
+        "verdict_counts": {
+          "AI-generated": 8,
+          "Likely AI-generated": 5,
+          "Likely AI-edited": 1
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "status": "no_corresponding_current_cache"
+      }
+    },
+    {
+      "case": "fresh_muse_v2",
+      "source": "muse_test_v2/object_food",
+      "role": "held-out evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 13,
+        "requested_so_far": 13,
+        "ai": 13,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 13,
+        "ai_file_labels": 13,
+        "verdict_counts": {
+          "AI-generated": 5,
+          "Likely AI-edited": 4,
+          "Likely AI-generated": 4
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "status": "no_corresponding_current_cache"
+      }
+    },
+    {
+      "case": "fresh_muse_v2",
+      "source": "muse_test_v2/people",
+      "role": "held-out evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 60,
+        "requested_so_far": 60,
+        "ai": 60,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 60,
+        "ai_file_labels": 60,
+        "verdict_counts": {
+          "AI-generated": 18,
+          "Likely AI-generated": 36,
+          "Likely AI-edited": 6
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "status": "no_corresponding_current_cache"
+      }
+    },
+    {
+      "case": "fresh_muse_v2",
+      "source": "muse_test_v2/scene",
+      "role": "held-out evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 13,
+        "requested_so_far": 13,
+        "ai": 13,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 13,
+        "ai_file_labels": 13,
+        "verdict_counts": {
+          "AI-generated": 5,
+          "Likely AI-generated": 8
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "status": "no_corresponding_current_cache"
+      }
+    },
+    {
+      "case": "private_judge",
+      "source": "private/objects",
+      "role": "reused regression",
+      "case_complete": true,
+      "counts": {
+        "n": 30,
+        "requested_so_far": 30,
+        "ai": 3,
+        "uncertain": 0,
+        "authentic": 27,
+        "errors": 0,
+        "final_ai_including_metadata": 3,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely AI-generated": 3,
+          "Likely authentic": 27
+        },
+        "ai_percent": 10.0
+      },
+      "cached_comparison": {
+        "status": "no_corresponding_current_cache"
+      }
+    },
+    {
+      "case": "private_judge",
+      "source": "private/selfies",
+      "role": "reused regression",
+      "case_complete": true,
+      "counts": {
+        "n": 30,
+        "requested_so_far": 30,
+        "ai": 0,
+        "uncertain": 0,
+        "authentic": 30,
+        "errors": 0,
+        "final_ai_including_metadata": 0,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 30
+        },
+        "ai_percent": 0.0
+      },
+      "cached_comparison": {
+        "status": "no_corresponding_current_cache"
+      }
+    },
+    {
+      "case": "polished_real",
+      "source": "commons/people",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 30,
+        "requested_so_far": 30,
+        "ai": 1,
+        "uncertain": 8,
+        "authentic": 21,
+        "errors": 0,
+        "final_ai_including_metadata": 1,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 21,
+          "Uncertain": 8,
+          "Likely AI-generated": 1
+        },
+        "ai_percent": 3.3333
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 30,
+          "ai": 1,
+          "uncertain": 8,
+          "authentic": 21
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "polished_real",
+      "source": "commons/phone",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 54,
+        "requested_so_far": 54,
+        "ai": 3,
+        "uncertain": 11,
+        "authentic": 40,
+        "errors": 0,
+        "final_ai_including_metadata": 3,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Uncertain": 11,
+          "Likely authentic": 40,
+          "Likely AI-generated": 3
+        },
+        "ai_percent": 5.5556
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 54,
+          "ai": 3,
+          "uncertain": 11,
+          "authentic": 40
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "polished_real",
+      "source": "commons/portrait",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 209,
+        "requested_so_far": 209,
+        "ai": 10,
+        "uncertain": 53,
+        "authentic": 146,
+        "errors": 0,
+        "final_ai_including_metadata": 10,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Uncertain": 53,
+          "Likely AI-generated": 9,
+          "Likely authentic": 146,
+          "Likely AI-edited": 1
+        },
+        "ai_percent": 4.7847
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 209,
+          "ai": 10,
+          "uncertain": 52,
+          "authentic": 147
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 1,
+          "authentic": -1
+        }
+      }
+    },
+    {
+      "case": "polished_real",
+      "source": "commons/quality",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 37,
+        "requested_so_far": 37,
+        "ai": 2,
+        "uncertain": 8,
+        "authentic": 27,
+        "errors": 0,
+        "final_ai_including_metadata": 2,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 27,
+          "Uncertain": 8,
+          "Likely AI-generated": 2
+        },
+        "ai_percent": 5.4054
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 37,
+          "ai": 2,
+          "uncertain": 8,
+          "authentic": 27
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "openimages_real",
+      "source": "sid_set/openimages",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 576,
+        "requested_so_far": 576,
+        "ai": 11,
+        "uncertain": 82,
+        "authentic": 483,
+        "errors": 0,
+        "final_ai_including_metadata": 11,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 483,
+          "Uncertain": 82,
+          "Likely AI-generated": 9,
+          "Likely AI-edited": 2
+        },
+        "ai_percent": 1.9097
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 576,
+          "ai": 11,
+          "uncertain": 82,
+          "authentic": 483
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "phone_real_public",
+      "source": "commons/phone",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 31,
+        "requested_so_far": 31,
+        "ai": 0,
+        "uncertain": 5,
+        "authentic": 26,
+        "errors": 0,
+        "final_ai_including_metadata": 0,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 26,
+          "Uncertain": 5
+        },
+        "ai_percent": 0.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 31,
+          "ai": 0,
+          "uncertain": 5,
+          "authentic": 26
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "phone_real_public",
+      "source": "commons/quality",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 1,
+        "requested_so_far": 1,
+        "ai": 0,
+        "uncertain": 0,
+        "authentic": 1,
+        "errors": 0,
+        "final_ai_including_metadata": 0,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 1
+        },
+        "ai_percent": 0.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 1,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 1
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "selfies_real_public",
+      "source": "commons/portrait",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 48,
+        "requested_so_far": 48,
+        "ai": 2,
+        "uncertain": 12,
+        "authentic": 34,
+        "errors": 0,
+        "final_ai_including_metadata": 2,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Uncertain": 12,
+          "Likely AI-generated": 2,
+          "Likely authentic": 34
+        },
+        "ai_percent": 4.1667
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 48,
+          "ai": 2,
+          "uncertain": 12,
+          "authentic": 34
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "selfies_real_public",
+      "source": "commons/selfie",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 14,
+        "requested_so_far": 14,
+        "ai": 0,
+        "uncertain": 1,
+        "authentic": 13,
+        "errors": 0,
+        "final_ai_including_metadata": 0,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 13,
+          "Uncertain": 1
+        },
+        "ai_percent": 0.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 14,
+          "ai": 0,
+          "uncertain": 1,
+          "authentic": 13
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "closeups_real",
+      "source": "real_face_crops/commons/people",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 8,
+        "requested_so_far": 8,
+        "ai": 1,
+        "uncertain": 3,
+        "authentic": 4,
+        "errors": 0,
+        "final_ai_including_metadata": 1,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely AI-generated": 1,
+          "Likely authentic": 4,
+          "Uncertain": 3
+        },
+        "ai_percent": 12.5
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 8,
+          "ai": 1,
+          "uncertain": 3,
+          "authentic": 4
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "closeups_real",
+      "source": "real_face_crops/commons/phone",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 1,
+        "requested_so_far": 1,
+        "ai": 0,
+        "uncertain": 1,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 0,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Uncertain": 1
+        },
+        "ai_percent": 0.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 1,
+          "ai": 0,
+          "uncertain": 1,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "closeups_real",
+      "source": "real_face_crops/commons/portrait",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 91,
+        "requested_so_far": 91,
+        "ai": 6,
+        "uncertain": 28,
+        "authentic": 57,
+        "errors": 0,
+        "final_ai_including_metadata": 6,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 57,
+          "Likely AI-generated": 6,
+          "Uncertain": 28
+        },
+        "ai_percent": 6.5934
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 91,
+          "ai": 5,
+          "uncertain": 29,
+          "authentic": 57
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 1,
+          "uncertain": -1,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "closeups_real",
+      "source": "real_face_crops/commons/quality",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 5,
+        "requested_so_far": 5,
+        "ai": 0,
+        "uncertain": 3,
+        "authentic": 2,
+        "errors": 0,
+        "final_ai_including_metadata": 0,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Uncertain": 3,
+          "Likely authentic": 2
+        },
+        "ai_percent": 0.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 5,
+          "ai": 0,
+          "uncertain": 3,
+          "authentic": 2
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "closeups_real",
+      "source": "real_face_crops/commons/selfie",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 7,
+        "requested_so_far": 7,
+        "ai": 0,
+        "uncertain": 2,
+        "authentic": 5,
+        "errors": 0,
+        "final_ai_including_metadata": 0,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 5,
+          "Uncertain": 2
+        },
+        "ai_percent": 0.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 7,
+          "ai": 0,
+          "uncertain": 2,
+          "authentic": 5
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "closeups_real",
+      "source": "real_face_crops/sid_set/openimages",
+      "role": "calibration",
+      "case_complete": true,
+      "counts": {
+        "n": 38,
+        "requested_so_far": 38,
+        "ai": 0,
+        "uncertain": 11,
+        "authentic": 27,
+        "errors": 0,
+        "final_ai_including_metadata": 0,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 27,
+          "Uncertain": 11
+        },
+        "ai_percent": 0.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 38,
+          "ai": 0,
+          "uncertain": 11,
+          "authentic": 27
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_pairs",
+      "source": "muse_pairs/muse",
+      "role": "calibration/development",
+      "case_complete": true,
+      "counts": {
+        "n": 76,
+        "requested_so_far": 76,
+        "ai": 75,
+        "uncertain": 0,
+        "authentic": 1,
+        "errors": 0,
+        "final_ai_including_metadata": 75,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely AI-generated": 44,
+          "Likely AI-edited": 25,
+          "AI-generated": 6,
+          "Likely authentic": 1
+        },
+        "ai_percent": 98.6842
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 76,
+          "ai": 75,
+          "uncertain": 0,
+          "authentic": 1
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_pairs",
+      "source": "muse_pairs/real",
+      "role": "calibration/development",
+      "case_complete": true,
+      "counts": {
+        "n": 76,
+        "requested_so_far": 76,
+        "ai": 1,
+        "uncertain": 12,
+        "authentic": 63,
+        "errors": 0,
+        "final_ai_including_metadata": 1,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 63,
+          "Uncertain": 12,
+          "Likely AI-generated": 1
+        },
+        "ai_percent": 1.3158
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 76,
+          "ai": 1,
+          "uncertain": 12,
+          "authentic": 63
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_edits_v2",
+      "source": "muse_edits/local",
+      "role": "development/reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 132,
+        "requested_so_far": 132,
+        "ai": 94,
+        "uncertain": 7,
+        "authentic": 31,
+        "errors": 0,
+        "final_ai_including_metadata": 132,
+        "ai_file_labels": 132,
+        "verdict_counts": {
+          "Likely AI-edited": 89,
+          "Likely authentic": 31,
+          "Likely AI-generated": 5,
+          "Uncertain": 7
+        },
+        "ai_percent": 71.2121
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 132,
+          "ai": 94,
+          "uncertain": 7,
+          "authentic": 31
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_edits_v2",
+      "source": "muse_edits/original",
+      "role": "development/reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 198,
+        "requested_so_far": 198,
+        "ai": 4,
+        "uncertain": 36,
+        "authentic": 158,
+        "errors": 0,
+        "final_ai_including_metadata": 4,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 158,
+          "Uncertain": 36,
+          "Likely AI-generated": 4
+        },
+        "ai_percent": 2.0202
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 198,
+          "ai": 4,
+          "uncertain": 36,
+          "authentic": 158
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_edits_v2",
+      "source": "muse_edits/whole",
+      "role": "development/reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 66,
+        "requested_so_far": 66,
+        "ai": 58,
+        "uncertain": 1,
+        "authentic": 7,
+        "errors": 0,
+        "final_ai_including_metadata": 66,
+        "ai_file_labels": 66,
+        "verdict_counts": {
+          "Likely AI-edited": 36,
+          "Likely AI-generated": 18,
+          "Likely authentic": 7,
+          "AI-generated": 4,
+          "Uncertain": 1
+        },
+        "ai_percent": 87.8788
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 66,
+          "ai": 58,
+          "uncertain": 1,
+          "authentic": 7
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_edits_v1",
+      "source": "muse_edits/local",
+      "role": "development/reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 51,
+        "requested_so_far": 51,
+        "ai": 30,
+        "uncertain": 6,
+        "authentic": 15,
+        "errors": 0,
+        "final_ai_including_metadata": 51,
+        "ai_file_labels": 51,
+        "verdict_counts": {
+          "Likely AI-edited": 26,
+          "Likely AI-generated": 4,
+          "Uncertain": 6,
+          "Likely authentic": 15
+        },
+        "ai_percent": 58.8235
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 51,
+          "ai": 30,
+          "uncertain": 6,
+          "authentic": 15
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_edits_v1",
+      "source": "muse_edits/original",
+      "role": "development/reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 76,
+        "requested_so_far": 76,
+        "ai": 2,
+        "uncertain": 18,
+        "authentic": 56,
+        "errors": 0,
+        "final_ai_including_metadata": 2,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 56,
+          "Uncertain": 18,
+          "Likely AI-generated": 2
+        },
+        "ai_percent": 2.6316
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 76,
+          "ai": 2,
+          "uncertain": 18,
+          "authentic": 56
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_edits_v1",
+      "source": "muse_edits/whole",
+      "role": "development/reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 25,
+        "requested_so_far": 25,
+        "ai": 23,
+        "uncertain": 0,
+        "authentic": 2,
+        "errors": 0,
+        "final_ai_including_metadata": 25,
+        "ai_file_labels": 25,
+        "verdict_counts": {
+          "Likely authentic": 2,
+          "Likely AI-edited": 16,
+          "AI-generated": 2,
+          "Likely AI-generated": 5
+        },
+        "ai_percent": 92.0
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 25,
+          "ai": 23,
+          "uncertain": 0,
+          "authentic": 2
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_v1",
+      "source": "muse_image/animal",
+      "role": "calibration/development",
+      "case_complete": true,
+      "counts": {
+        "n": 14,
+        "requested_so_far": 14,
+        "ai": 14,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 14,
+        "ai_file_labels": 14,
+        "verdict_counts": {
+          "Likely AI-generated": 8,
+          "AI-generated": 5,
+          "Likely AI-edited": 1
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 14,
+          "ai": 14,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_v1",
+      "source": "muse_image/object_food",
+      "role": "calibration/development",
+      "case_complete": true,
+      "counts": {
+        "n": 13,
+        "requested_so_far": 13,
+        "ai": 13,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 13,
+        "ai_file_labels": 13,
+        "verdict_counts": {
+          "Likely AI-generated": 8,
+          "AI-generated": 4,
+          "Likely AI-edited": 1
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 13,
+          "ai": 13,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_v1",
+      "source": "muse_image/people/candid",
+      "role": "calibration/development",
+      "case_complete": true,
+      "counts": {
+        "n": 12,
+        "requested_so_far": 12,
+        "ai": 12,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 12,
+        "ai_file_labels": 12,
+        "verdict_counts": {
+          "AI-generated": 4,
+          "Likely AI-edited": 4,
+          "Likely AI-generated": 4
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 12,
+          "ai": 12,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_v1",
+      "source": "muse_image/people/group",
+      "role": "calibration/development",
+      "case_complete": true,
+      "counts": {
+        "n": 12,
+        "requested_so_far": 12,
+        "ai": 12,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 12,
+        "ai_file_labels": 12,
+        "verdict_counts": {
+          "Likely AI-generated": 6,
+          "Likely AI-edited": 2,
+          "AI-generated": 4
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 12,
+          "ai": 12,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_v1",
+      "source": "muse_image/people/indoor_lowlight",
+      "role": "calibration/development",
+      "case_complete": true,
+      "counts": {
+        "n": 12,
+        "requested_so_far": 12,
+        "ai": 12,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 12,
+        "ai_file_labels": 12,
+        "verdict_counts": {
+          "Likely AI-generated": 6,
+          "AI-generated": 4,
+          "Likely AI-edited": 2
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 12,
+          "ai": 12,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_v1",
+      "source": "muse_image/people/portrait",
+      "role": "calibration/development",
+      "case_complete": true,
+      "counts": {
+        "n": 12,
+        "requested_so_far": 12,
+        "ai": 12,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 12,
+        "ai_file_labels": 12,
+        "verdict_counts": {
+          "AI-generated": 3,
+          "Likely AI-generated": 8,
+          "Likely AI-edited": 1
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 12,
+          "ai": 12,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_v1",
+      "source": "muse_image/people/selfie",
+      "role": "calibration/development",
+      "case_complete": true,
+      "counts": {
+        "n": 12,
+        "requested_so_far": 12,
+        "ai": 12,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 12,
+        "ai_file_labels": 12,
+        "verdict_counts": {
+          "AI-generated": 3,
+          "Likely AI-generated": 9
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 12,
+          "ai": 12,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "muse_v1",
+      "source": "muse_image/scene",
+      "role": "calibration/development",
+      "case_complete": true,
+      "counts": {
+        "n": 13,
+        "requested_so_far": 13,
+        "ai": 13,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 13,
+        "ai_file_labels": 13,
+        "verdict_counts": {
+          "Likely AI-edited": 2,
+          "AI-generated": 6,
+          "Likely AI-generated": 5
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 13,
+          "ai": 13,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "sdxl",
+      "source": "sd_faces/sdxl",
+      "role": "calibration/held-out generator",
+      "case_complete": true,
+      "counts": {
+        "n": 332,
+        "requested_so_far": 332,
+        "ai": 317,
+        "uncertain": 15,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 317,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely AI-generated": 236,
+          "Uncertain": 15,
+          "AI-generated": 79,
+          "Likely AI-edited": 2
+        },
+        "ai_percent": 95.4819
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 332,
+          "ai": 317,
+          "uncertain": 15,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "open_generators",
+      "source": "open_gen/k22_devcaption",
+      "role": "development",
+      "case_complete": true,
+      "counts": {
+        "n": 77,
+        "requested_so_far": 77,
+        "ai": 75,
+        "uncertain": 2,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 75,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "AI-generated": 71,
+          "Likely AI-generated": 4,
+          "Uncertain": 2
+        },
+        "ai_percent": 97.4026
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 77,
+          "ai": 75,
+          "uncertain": 2,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "open_generators",
+      "source": "open_gen/pixart",
+      "role": "development",
+      "case_complete": true,
+      "counts": {
+        "n": 396,
+        "requested_so_far": 396,
+        "ai": 388,
+        "uncertain": 7,
+        "authentic": 1,
+        "errors": 0,
+        "final_ai_including_metadata": 388,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "AI-generated": 365,
+          "Uncertain": 7,
+          "Likely AI-generated": 23,
+          "Likely authentic": 1
+        },
+        "ai_percent": 97.9798
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 396,
+          "ai": 388,
+          "uncertain": 7,
+          "authentic": 1
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "open_generators",
+      "source": "open_gen/sd35m_devcaption",
+      "role": "development",
+      "case_complete": true,
+      "counts": {
+        "n": 38,
+        "requested_so_far": 38,
+        "ai": 26,
+        "uncertain": 5,
+        "authentic": 7,
+        "errors": 0,
+        "final_ai_including_metadata": 26,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 7,
+          "AI-generated": 10,
+          "Uncertain": 5,
+          "This face looks AI-made or AI-changed": 6,
+          "Likely AI-generated": 10
+        },
+        "ai_percent": 68.4211
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 38,
+          "ai": 20,
+          "uncertain": 9,
+          "authentic": 9
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 6,
+          "uncertain": -4,
+          "authentic": -2
+        }
+      }
+    },
+    {
+      "case": "gan_tpdne",
+      "source": "gan/tpdne",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 244,
+        "requested_so_far": 244,
+        "ai": 233,
+        "uncertain": 11,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 233,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "AI-generated": 70,
+          "Likely AI-generated": 163,
+          "Uncertain": 11
+        },
+        "ai_percent": 95.4918
+      },
+      "cached_comparison": {
+        "cached_scope": "complete_cached_pipeline",
+        "cached": {
+          "n": 244,
+          "ai": 233,
+          "uncertain": 11,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "gan_sfhq",
+      "source": "sfhq/pt3",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 375,
+        "requested_so_far": 375,
+        "ai": 345,
+        "uncertain": 30,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 345,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely AI-generated": 261,
+          "AI-generated": 83,
+          "Uncertain": 30,
+          "Likely AI-edited": 1
+        },
+        "ai_percent": 92.0
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 375,
+          "ai": 345,
+          "uncertain": 30,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "gemini_dev",
+      "source": "gemini_api/3.1-flash-image",
+      "role": "development",
+      "case_complete": true,
+      "counts": {
+        "n": 30,
+        "requested_so_far": 30,
+        "ai": 27,
+        "uncertain": 0,
+        "authentic": 3,
+        "errors": 0,
+        "final_ai_including_metadata": 27,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely AI-generated": 21,
+          "AI-generated": 3,
+          "Likely authentic": 3,
+          "Likely AI-edited": 3
+        },
+        "ai_percent": 90.0
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 30,
+          "ai": 27,
+          "uncertain": 0,
+          "authentic": 3
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "google_captions_dev",
+      "source": "open_gen/gemini-2.5-flash-image_devcaption",
+      "role": "development",
+      "case_complete": true,
+      "counts": {
+        "n": 16,
+        "requested_so_far": 16,
+        "ai": 13,
+        "uncertain": 3,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 13,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely AI-generated": 7,
+          "AI-generated": 6,
+          "Uncertain": 3
+        },
+        "ai_percent": 81.25
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 16,
+          "ai": 13,
+          "uncertain": 3,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "google_captions_dev",
+      "source": "open_gen/gemini-3-pro-image_devcaption",
+      "role": "development",
+      "case_complete": true,
+      "counts": {
+        "n": 14,
+        "requested_so_far": 14,
+        "ai": 10,
+        "uncertain": 1,
+        "authentic": 3,
+        "errors": 0,
+        "final_ai_including_metadata": 10,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely AI-generated": 8,
+          "Likely AI-edited": 2,
+          "Likely authentic": 3,
+          "Uncertain": 1
+        },
+        "ai_percent": 71.4286
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 14,
+          "ai": 10,
+          "uncertain": 1,
+          "authentic": 3
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "google_captions_dev",
+      "source": "open_gen/gemini-3.1-flash-image_devcaption",
+      "role": "development",
+      "case_complete": true,
+      "counts": {
+        "n": 37,
+        "requested_so_far": 37,
+        "ai": 25,
+        "uncertain": 10,
+        "authentic": 2,
+        "errors": 0,
+        "final_ai_including_metadata": 25,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely AI-generated": 24,
+          "AI-generated": 1,
+          "Uncertain": 10,
+          "Likely authentic": 2
+        },
+        "ai_percent": 67.5676
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 37,
+          "ai": 25,
+          "uncertain": 10,
+          "authentic": 2
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/bing_dalle3",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 14,
+        "requested_so_far": 14,
+        "ai": 13,
+        "uncertain": 1,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 13,
+        "ai_file_labels": 5,
+        "verdict_counts": {
+          "AI-generated": 13,
+          "Uncertain": 1
+        },
+        "ai_percent": 92.8571
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 14,
+          "ai": 13,
+          "uncertain": 1,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/chatgpt",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 19,
+        "requested_so_far": 19,
+        "ai": 18,
+        "uncertain": 1,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 18,
+        "ai_file_labels": 8,
+        "verdict_counts": {
+          "Likely AI-edited": 4,
+          "AI-generated": 11,
+          "Likely AI-generated": 3,
+          "Uncertain": 1
+        },
+        "ai_percent": 94.7368
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 19,
+          "ai": 18,
+          "uncertain": 1,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/dalle",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 32,
+        "requested_so_far": 32,
+        "ai": 25,
+        "uncertain": 3,
+        "authentic": 4,
+        "errors": 0,
+        "final_ai_including_metadata": 26,
+        "ai_file_labels": 4,
+        "verdict_counts": {
+          "Likely AI-edited": 1,
+          "AI-generated": 16,
+          "Likely authentic": 4,
+          "Uncertain": 3,
+          "Likely AI-generated": 8
+        },
+        "ai_percent": 78.125
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 32,
+          "ai": 25,
+          "uncertain": 3,
+          "authentic": 4
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/firefly",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 2,
+        "requested_so_far": 2,
+        "ai": 1,
+        "uncertain": 1,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 2,
+        "ai_file_labels": 2,
+        "verdict_counts": {
+          "AI-generated": 1,
+          "Uncertain": 1
+        },
+        "ai_percent": 50.0
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 2,
+          "ai": 1,
+          "uncertain": 1,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/flux",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 7,
+        "requested_so_far": 7,
+        "ai": 6,
+        "uncertain": 0,
+        "authentic": 1,
+        "errors": 0,
+        "final_ai_including_metadata": 6,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "AI-generated": 6,
+          "Likely authentic": 1
+        },
+        "ai_percent": 85.7143
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 7,
+          "ai": 6,
+          "uncertain": 0,
+          "authentic": 1
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/flux/ai_restored",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 1,
+        "requested_so_far": 1,
+        "ai": 0,
+        "uncertain": 0,
+        "authentic": 1,
+        "errors": 0,
+        "final_ai_including_metadata": 0,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely authentic": 1
+        },
+        "ai_percent": 0.0
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 1,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 1
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/gemini",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 19,
+        "requested_so_far": 19,
+        "ai": 16,
+        "uncertain": 1,
+        "authentic": 2,
+        "errors": 0,
+        "final_ai_including_metadata": 19,
+        "ai_file_labels": 7,
+        "verdict_counts": {
+          "Likely AI-generated": 7,
+          "AI-generated": 8,
+          "Uncertain": 1,
+          "Likely AI-edited": 1,
+          "Likely authentic": 2
+        },
+        "ai_percent": 84.2105
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 19,
+          "ai": 16,
+          "uncertain": 1,
+          "authentic": 2
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/gemini/ai_restored",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 30,
+        "requested_so_far": 30,
+        "ai": 8,
+        "uncertain": 2,
+        "authentic": 20,
+        "errors": 0,
+        "final_ai_including_metadata": 18,
+        "ai_file_labels": 13,
+        "verdict_counts": {
+          "Likely AI-generated": 7,
+          "Likely authentic": 20,
+          "Uncertain": 2,
+          "Likely AI-edited": 1
+        },
+        "ai_percent": 26.6667
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 30,
+          "ai": 8,
+          "uncertain": 2,
+          "authentic": 20
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/grok",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 11,
+        "requested_so_far": 11,
+        "ai": 11,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 11,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Likely AI-generated": 2,
+          "AI-generated": 9
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 11,
+          "ai": 11,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/ideogram",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 2,
+        "requested_so_far": 2,
+        "ai": 1,
+        "uncertain": 1,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 1,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "Uncertain": 1,
+          "AI-generated": 1
+        },
+        "ai_percent": 50.0
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 2,
+          "ai": 1,
+          "uncertain": 1,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/imagen",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 2,
+        "requested_so_far": 2,
+        "ai": 2,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 2,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "AI-generated": 2
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 2,
+          "ai": 2,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/mai_image",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 1,
+        "requested_so_far": 1,
+        "ai": 1,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 1,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "AI-generated": 1
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 1,
+          "ai": 1,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/meta_ai",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 3,
+        "requested_so_far": 3,
+        "ai": 3,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 3,
+        "ai_file_labels": 1,
+        "verdict_counts": {
+          "AI-generated": 3
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 3,
+          "ai": 3,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/midjourney",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 18,
+        "requested_so_far": 18,
+        "ai": 14,
+        "uncertain": 3,
+        "authentic": 1,
+        "errors": 0,
+        "final_ai_including_metadata": 14,
+        "ai_file_labels": 2,
+        "verdict_counts": {
+          "AI-generated": 10,
+          "Likely AI-generated": 4,
+          "Uncertain": 3,
+          "Likely authentic": 1
+        },
+        "ai_percent": 77.7778
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 18,
+          "ai": 14,
+          "uncertain": 3,
+          "authentic": 1
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/nano_banana",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 4,
+        "requested_so_far": 4,
+        "ai": 4,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 4,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "AI-generated": 4
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 4,
+          "ai": 4,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/reve",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 1,
+        "requested_so_far": 1,
+        "ai": 1,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 1,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "AI-generated": 1
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 1,
+          "ai": 1,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/stable_diffusion",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 33,
+        "requested_so_far": 33,
+        "ai": 33,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 33,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "AI-generated": 28,
+          "Likely AI-generated": 5
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 33,
+          "ai": 33,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    },
+    {
+      "case": "commons_ai_photos",
+      "source": "commons_ai/stylegan",
+      "role": "reused evaluation",
+      "case_complete": true,
+      "counts": {
+        "n": 3,
+        "requested_so_far": 3,
+        "ai": 3,
+        "uncertain": 0,
+        "authentic": 0,
+        "errors": 0,
+        "final_ai_including_metadata": 3,
+        "ai_file_labels": 0,
+        "verdict_counts": {
+          "AI-generated": 1,
+          "Likely AI-generated": 2
+        },
+        "ai_percent": 100.0
+      },
+      "cached_comparison": {
+        "cached_scope": "partial_missing_face_cache",
+        "cached": {
+          "n": 3,
+          "ai": 3,
+          "uncertain": 0,
+          "authentic": 0
+        },
+        "status": "compared_equal_denominators",
+        "live_minus_cached": {
+          "n": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 0
+        }
+      }
+    }
+  ],
+  "completed_case_totals_not_pooled_across_cases": {
+    "judge_ai": {
+      "n": 80,
+      "ai": 71,
+      "uncertain": 8,
+      "authentic": 1,
+      "errors": 0,
+      "final_ai_including_metadata": 80
+    },
+    "fresh_muse_v2": {
+      "n": 100,
+      "ai": 100,
+      "uncertain": 0,
+      "authentic": 0,
+      "errors": 0,
+      "final_ai_including_metadata": 100
+    },
+    "private_judge": {
+      "n": 60,
+      "ai": 3,
+      "uncertain": 0,
+      "authentic": 57,
+      "errors": 0,
+      "final_ai_including_metadata": 3
+    },
+    "polished_real": {
+      "n": 330,
+      "ai": 16,
+      "uncertain": 80,
+      "authentic": 234,
+      "errors": 0,
+      "final_ai_including_metadata": 16
+    },
+    "openimages_real": {
+      "n": 576,
+      "ai": 11,
+      "uncertain": 82,
+      "authentic": 483,
+      "errors": 0,
+      "final_ai_including_metadata": 11
+    },
+    "phone_real_public": {
+      "n": 32,
+      "ai": 0,
+      "uncertain": 5,
+      "authentic": 27,
+      "errors": 0,
+      "final_ai_including_metadata": 0
+    },
+    "selfies_real_public": {
+      "n": 62,
+      "ai": 2,
+      "uncertain": 13,
+      "authentic": 47,
+      "errors": 0,
+      "final_ai_including_metadata": 2
+    },
+    "closeups_real": {
+      "n": 150,
+      "ai": 7,
+      "uncertain": 48,
+      "authentic": 95,
+      "errors": 0,
+      "final_ai_including_metadata": 7
+    },
+    "muse_pairs": {
+      "n": 152,
+      "ai": 76,
+      "uncertain": 12,
+      "authentic": 64,
+      "errors": 0,
+      "final_ai_including_metadata": 76
+    },
+    "muse_edits_v2": {
+      "n": 396,
+      "ai": 156,
+      "uncertain": 44,
+      "authentic": 196,
+      "errors": 0,
+      "final_ai_including_metadata": 202
+    },
+    "muse_edits_v1": {
+      "n": 152,
+      "ai": 55,
+      "uncertain": 24,
+      "authentic": 73,
+      "errors": 0,
+      "final_ai_including_metadata": 78
+    },
+    "muse_v1": {
+      "n": 100,
+      "ai": 100,
+      "uncertain": 0,
+      "authentic": 0,
+      "errors": 0,
+      "final_ai_including_metadata": 100
+    },
+    "sdxl": {
+      "n": 332,
+      "ai": 317,
+      "uncertain": 15,
+      "authentic": 0,
+      "errors": 0,
+      "final_ai_including_metadata": 317
+    },
+    "open_generators": {
+      "n": 511,
+      "ai": 489,
+      "uncertain": 14,
+      "authentic": 8,
+      "errors": 0,
+      "final_ai_including_metadata": 489
+    },
+    "gan_tpdne": {
+      "n": 244,
+      "ai": 233,
+      "uncertain": 11,
+      "authentic": 0,
+      "errors": 0,
+      "final_ai_including_metadata": 233
+    },
+    "gan_sfhq": {
+      "n": 375,
+      "ai": 345,
+      "uncertain": 30,
+      "authentic": 0,
+      "errors": 0,
+      "final_ai_including_metadata": 345
+    },
+    "gemini_dev": {
+      "n": 30,
+      "ai": 27,
+      "uncertain": 0,
+      "authentic": 3,
+      "errors": 0,
+      "final_ai_including_metadata": 27
+    },
+    "google_captions_dev": {
+      "n": 67,
+      "ai": 48,
+      "uncertain": 14,
+      "authentic": 5,
+      "errors": 0,
+      "final_ai_including_metadata": 48
+    },
+    "commons_ai_photos": {
+      "n": 202,
+      "ai": 160,
+      "uncertain": 13,
+      "authentic": 29,
+      "errors": 0,
+      "final_ai_including_metadata": 175
+    }
+  },
+  "partial_cached_coverage": true,
+  "partial_or_missing_cached_sets": [
+    {
+      "name": "bitmind_nb_dev",
+      "status": "partial_missing_face_cache"
+    },
+    {
+      "name": "commons_ai_v1_photo",
+      "status": "partial_missing_face_cache"
+    },
+    {
+      "name": "muse_edits_test_v2",
+      "status": "partial_missing_face_cache"
+    },
+    {
+      "name": "muse_edits_v1_all",
+      "status": "missing_required_cache",
+      "missing_components": [
+        "edit_features"
+      ]
+    },
+    {
+      "name": "muse_edits_v1",
+      "status": "partial_missing_face_cache"
+    },
+    {
+      "name": "open_gen_dev",
+      "status": "partial_missing_face_cache"
+    },
+    {
+      "name": "real_face_crops_dev",
+      "status": "partial_missing_face_cache"
+    },
+    {
+      "name": "real_face_crops_dev_v4",
+      "status": "partial_missing_face_cache"
+    },
+    {
+      "name": "sfhq_pt3_test",
+      "status": "partial_missing_face_cache"
+    },
+    {
+      "name": "google/gemini_dev_v1",
+      "status": "partial_missing_face_cache"
+    },
+    {
+      "name": "google/open_gen_dev",
+      "status": "partial_missing_face_cache"
+    },
+    {
+      "name": "private: training selfies (reused)",
+      "status": "partial_missing_face_cache"
+    },
+    {
+      "name": "private: training person edits (reused)",
+      "status": "partial_missing_face_cache"
+    }
+  ],
+  "extra_cache_gap": "muse_edits_v1_all_app.npz lacks pe_ec3/muse_edits_v1_all_eval.npz; canonical v1 pair exists and this extra cache is not required by saved calibration.",
+  "cache_success_meaning": "Exit zero verifies required calibration/provenance checks; it does not establish complete coverage of every optional cache or live inference.",
+  "readme_claims_to_review": [
+    {
+      "claim": "SDXL pixel detection",
+      "readme_value": "92%",
+      "current_cached": {
+        "n": 332,
+        "ai": 317,
+        "ai_percent": 95.4819
+      },
+      "current_live": {
+        "n": 332,
+        "ai": 317,
+        "ai_percent": 95.4819
+      },
+      "status": "live_confirmed_difference_from_README"
+    },
+    {
+      "claim": "OpenImages unseen real false alarms",
+      "readme_value": "1.7%",
+      "current_cached": {
+        "n": 576,
+        "ai": 11,
+        "ai_percent": 1.9097
+      },
+      "current_live": {
+        "n": 576,
+        "ai": 11,
+        "ai_percent": 1.9097
+      },
+      "status": "live_confirmed_difference_from_README"
+    },
+    {
+      "claim": "SD 3.5 full-app pixel detection",
+      "readme_value": "about half",
+      "current_cached": {
+        "n": 38,
+        "ai": 20,
+        "ai_percent": 52.6316
+      },
+      "current_live": {
+        "n": 38,
+        "ai": 26,
+        "ai_percent": 68.4211
+      },
+      "status": "live_confirmed_difference_from_README"
+    },
+    {
+      "claim": "Local Muse edits, small (whole-image + both PE heads; no faces/metadata)",
+      "readme_value": "about 60%",
+      "current_cached": {},
+      "current_live": {
+        "n": 132,
+        "ai": 72,
+        "ai_percent": 54.5455
+      },
+      "status": "current_robustness_replaces_historical_figure"
+    },
+    {
+      "claim": "Local Muse edits, crop (whole-image + both PE heads; no faces/metadata)",
+      "readme_value": "about 60%",
+      "current_cached": {},
+      "current_live": {
+        "n": 132,
+        "ai": 70,
+        "ai_percent": 53.0303
+      },
+      "status": "current_robustness_replaces_historical_figure"
+    }
+  ],
+  "face_robustness": {
+    "scope": "Current v4 face-swap branch, public whole photos, any checked face above app line",
+    "measurement": "Earlier in the same local review session on 2026-11-04; application code and weights unchanged",
+    "command": "python -m src.eval.face_swap_robustness --model v4:weights/face_pe_v4/pe_step14000.pt:weights/face_pe_v4/head_facepe.pt:0.22257614135742188 --sets 'REAL polished dev' 'REAL OpenImages unseen' 'SWAPS OpenForensics test' --n 30 --versions original whatsapp small phone",
+    "threshold": 0.22257614135742188,
+    "unit": "photo with at least one flagged face; not per-face recall or whole-ensemble verdict",
+    "versions": {
+      "original": "Original photo",
+      "whatsapp": "Long side at most 1600 px; JPEG quality 75",
+      "small": "Long side at most 800 px; JPEG quality 60",
+      "phone": "Deterministic simulated beauty, tone or portrait processing using the existing script"
+    },
+    "groups": [
+      {
+        "name": "REAL polished dev",
+        "n": 30,
+        "flagged": {
+          "original": 0,
+          "whatsapp": 0,
+          "small": 0,
+          "phone": 0
+        }
+      },
+      {
+        "name": "REAL OpenImages unseen",
+        "n": 30,
+        "flagged": {
+          "original": 0,
+          "whatsapp": 0,
+          "small": 0,
+          "phone": 0
+        }
+      },
+      {
+        "name": "SWAPS OpenForensics test",
+        "n": 30,
+        "flagged": {
+          "original": 30,
+          "whatsapp": 29,
+          "small": 23,
+          "phone": 14
+        }
+      }
+    ],
+    "limitations": [
+      "Small selected evaluation; no population-level false-alarm guarantee",
+      "Phone processing is simulated, not images collected from physical phone cameras",
+      "Uses test data for evaluation only; evaluated photos must stay out of training"
+    ]
+  },
+  "calibration_promise_checks": {
+    "available": true,
+    "scope": "Final cached ensemble on exactly the saved whole-calibration real_pools and fake_sets; calibration-mix check only, not independent performance.",
+    "real_photo_union_checks": [
+      {
+        "pool": "polished dev",
+        "n": 330,
+        "ai": 16,
+        "uncertain": 79,
+        "authentic": 235,
+        "allowed_ai": 16,
+        "passed": true
+      },
+      {
+        "pool": "OpenImages val",
+        "n": 76,
+        "ai": 1,
+        "uncertain": 12,
+        "authentic": 63,
+        "allowed_ai": 3,
+        "passed": true
+      },
+      {
+        "pool": "OpenImages unseen",
+        "n": 576,
+        "ai": 11,
+        "uncertain": 82,
+        "authentic": 483,
+        "allowed_ai": 28,
+        "passed": true
+      },
+      {
+        "pool": "Commons v3 dev",
+        "n": 32,
+        "ai": 0,
+        "uncertain": 5,
+        "authentic": 27,
+        "allowed_ai": 1,
+        "passed": true
+      },
+      {
+        "pool": "close-ups",
+        "n": 150,
+        "ai": 6,
+        "uncertain": 49,
+        "authentic": 95,
+        "allowed_ai": 7,
+        "passed": true
+      },
+      {
+        "pool": "selfies+portraits",
+        "n": 62,
+        "ai": 2,
+        "uncertain": 13,
+        "authentic": 47,
+        "allowed_ai": 3,
+        "passed": true
+      },
+      {
+        "pool": "phone",
+        "n": 104,
+        "ai": 0,
+        "uncertain": 10,
+        "authentic": 94,
+        "allowed_ai": 5,
+        "passed": true
+      },
+      {
+        "pool": "phone objects",
+        "n": 100,
+        "ai": 3,
+        "uncertain": 5,
+        "authentic": 92,
+        "allowed_ai": 5,
+        "passed": true
+      }
+    ],
+    "fake_mix_components": [
+      {
+        "set": "Muse test v1",
+        "n": 100,
+        "uncertain": 0,
+        "valid": true
+      },
+      {
+        "set": "Muse pairs val",
+        "n": 76,
+        "uncertain": 0,
+        "valid": true
+      },
+      {
+        "set": "SDXL (unseen)",
+        "n": 332,
+        "uncertain": 15,
+        "valid": true
+      }
+    ],
+    "real_face_line_checks": [
+      {
+        "pool": "polished dev",
+        "check": "ai_made",
+        "n_faces": 285,
+        "strict": 1,
+        "allowed_strict": 1,
+        "passed": true
+      },
+      {
+        "pool": "polished dev",
+        "check": "swap",
+        "n_faces": 285,
+        "strict": 0,
+        "allowed_strict": 1,
+        "passed": true
+      },
+      {
+        "pool": "OpenImages val",
+        "check": "ai_made",
+        "n_faces": 81,
+        "strict": 0,
+        "allowed_strict": 0,
+        "passed": true
+      },
+      {
+        "pool": "OpenImages val",
+        "check": "swap",
+        "n_faces": 81,
+        "strict": 0,
+        "allowed_strict": 0,
+        "passed": true
+      },
+      {
+        "pool": "OpenImages unseen",
+        "check": "ai_made",
+        "n_faces": 557,
+        "strict": 0,
+        "allowed_strict": 2,
+        "passed": true
+      },
+      {
+        "pool": "OpenImages unseen",
+        "check": "swap",
+        "n_faces": 557,
+        "strict": 0,
+        "allowed_strict": 2,
+        "passed": true
+      },
+      {
+        "pool": "Commons v3 dev",
+        "check": "ai_made",
+        "n_faces": 15,
+        "strict": 0,
+        "allowed_strict": 0,
+        "passed": true
+      },
+      {
+        "pool": "Commons v3 dev",
+        "check": "swap",
+        "n_faces": 15,
+        "strict": 0,
+        "allowed_strict": 0,
+        "passed": true
+      },
+      {
+        "pool": "close-ups",
+        "check": "ai_made",
+        "n_faces": 174,
+        "strict": 0,
+        "allowed_strict": 0,
+        "passed": true
+      },
+      {
+        "pool": "close-ups",
+        "check": "swap",
+        "n_faces": 174,
+        "strict": 0,
+        "allowed_strict": 0,
+        "passed": true
+      },
+      {
+        "pool": "selfies+portraits",
+        "check": "ai_made",
+        "n_faces": 78,
+        "strict": 0,
+        "allowed_strict": 0,
+        "passed": true
+      },
+      {
+        "pool": "selfies+portraits",
+        "check": "swap",
+        "n_faces": 78,
+        "strict": 0,
+        "allowed_strict": 0,
+        "passed": true
+      },
+      {
+        "pool": "phone",
+        "check": "ai_made",
+        "n_faces": 148,
+        "strict": 0,
+        "allowed_strict": 0,
+        "passed": true
+      },
+      {
+        "pool": "phone",
+        "check": "swap",
+        "n_faces": 148,
+        "strict": 0,
+        "allowed_strict": 0,
+        "passed": true
+      },
+      {
+        "pool": "phone objects",
+        "check": "ai_made",
+        "n_faces": 20,
+        "strict": 0,
+        "allowed_strict": 0,
+        "passed": true
+      },
+      {
+        "pool": "phone objects",
+        "check": "swap",
+        "n_faces": 20,
+        "strict": 0,
+        "allowed_strict": 0,
+        "passed": true
+      },
+      {
+        "pool": "DFDC p3 real",
+        "check": "swap",
+        "n_faces": 1452,
+        "strict": 7,
+        "allowed_strict": 7,
+        "passed": true
+      },
+      {
+        "pool": "SID val real",
+        "check": "swap",
+        "n_faces": 292,
+        "strict": 1,
+        "allowed_strict": 1,
+        "passed": true
+      }
+    ],
+    "class_balanced_uncertainty": {
+      "real_n": 1430,
+      "real_uncertain": 255,
+      "fake_n": 508,
+      "fake_uncertain": 15,
+      "percent": 10.392462,
+      "cap_percent": 15.0,
+      "formula": "0.5 * real_uncertain/real_n + 0.5 * fake_uncertain/fake_n",
+      "passed": true
+    },
+    "face_check_limit": "The 0.5% checks apply to each calibrated face head on its specified pools. Separate head caps do not mathematically guarantee a 0.5% union of both heads; off-domain test pools are not guaranteed.",
+    "passed": true
+  },
+  "precision_boundary_checks": {
+    "interpretation": "Small threshold crossings within the mean-vector float16 rounding bound are consistent with cache quantization; no evidence of stale weights from these cases.",
+    "differences": [
+      {
+        "set": "real_face_crops_dev_all",
+        "cached_verdict": "Uncertain",
+        "live_verdict": "Likely AI-generated",
+        "cached_whole": 0.6646256446838379,
+        "live_whole": 0.6666359901428223,
+        "whole_delta": 0.002010345458984375,
+        "cached_whole_ai_margin": 0.0,
+        "live_whole_ai_margin": 0.002010345458984375,
+        "cached_whole_real_margin": 3.4047956466674805,
+        "live_whole_real_margin": 3.406805992126465,
+        "within_mean_fp16_rounding_bound": true
+      },
+      {
+        "set": "commons_dev",
+        "cached_verdict": "Likely authentic",
+        "live_verdict": "Uncertain",
+        "cached_whole": -2.7401700019836426,
+        "live_whole": -2.738267183303833,
+        "whole_delta": 0.0019028186798095703,
+        "cached_whole_ai_margin": -3.4047956466674805,
+        "live_whole_ai_margin": -3.402892827987671,
+        "cached_whole_real_margin": 0.0,
+        "live_whole_real_margin": 0.0019028186798095703,
+        "within_mean_fp16_rounding_bound": true
+      }
+    ]
+  },
+  "strong_threshold_check": {
+    "scope": "Aggregate-only strong-AI threshold check; no private photo paths or identifiers exported",
+    "pools": [
+      {
+        "pool": "polished dev",
+        "n": 330,
+        "max_whole_logit": 4.539841175079346,
+        "strong_ai_logit": 5.520974636077881,
+        "max_margin_to_strong": -0.9811334609985352,
+        "rows_at_pool_max": 1,
+        "rows_equal_to_strong_line": 0,
+        "max_row_fp16_rounding_logit_bound": 0.04511521756649017
+      },
+      {
+        "pool": "OpenImages val",
+        "n": 76,
+        "max_whole_logit": 1.6033434867858887,
+        "strong_ai_logit": 5.520974636077881,
+        "max_margin_to_strong": -3.917631149291992,
+        "rows_at_pool_max": 1,
+        "rows_equal_to_strong_line": 0,
+        "max_row_fp16_rounding_logit_bound": 0.046337906271219254
+      },
+      {
+        "pool": "OpenImages unseen",
+        "n": 576,
+        "max_whole_logit": 5.520974636077881,
+        "strong_ai_logit": 5.520974636077881,
+        "max_margin_to_strong": 0.0,
+        "rows_at_pool_max": 1,
+        "rows_equal_to_strong_line": 1,
+        "max_row_fp16_rounding_logit_bound": 0.04759260639548302
+      },
+      {
+        "pool": "Commons v3 dev",
+        "n": 32,
+        "max_whole_logit": -0.19986343383789062,
+        "strong_ai_logit": 5.520974636077881,
+        "max_margin_to_strong": -5.7208380699157715,
+        "rows_at_pool_max": 1,
+        "rows_equal_to_strong_line": 0,
+        "max_row_fp16_rounding_logit_bound": 0.04394892603158951
+      },
+      {
+        "pool": "close-ups",
+        "n": 150,
+        "max_whole_logit": 3.2892212867736816,
+        "strong_ai_logit": 5.520974636077881,
+        "max_margin_to_strong": -2.231753349304199,
+        "rows_at_pool_max": 1,
+        "rows_equal_to_strong_line": 0,
+        "max_row_fp16_rounding_logit_bound": 0.04164553061127663
+      },
+      {
+        "pool": "selfies+portraits",
+        "n": 62,
+        "max_whole_logit": 2.013467788696289,
+        "strong_ai_logit": 5.520974636077881,
+        "max_margin_to_strong": -3.507506847381592,
+        "rows_at_pool_max": 1,
+        "rows_equal_to_strong_line": 0,
+        "max_row_fp16_rounding_logit_bound": 0.04218744486570358
+      },
+      {
+        "pool": "phone",
+        "n": 104,
+        "max_whole_logit": 0.13145899772644043,
+        "strong_ai_logit": 5.520974636077881,
+        "max_margin_to_strong": -5.3895158767700195,
+        "rows_at_pool_max": 1,
+        "rows_equal_to_strong_line": 0,
+        "max_row_fp16_rounding_logit_bound": 0.051398180425167084
+      },
+      {
+        "pool": "phone objects",
+        "n": 100,
+        "max_whole_logit": 3.9342384338378906,
+        "strong_ai_logit": 5.520974636077881,
+        "max_margin_to_strong": -1.5867362022399902,
+        "rows_at_pool_max": 1,
+        "rows_equal_to_strong_line": 0,
+        "max_row_fp16_rounding_logit_bound": 0.043786294758319855
+      }
+    ],
+    "private_csv_counts": {
+      "phone": {
+        "expected": 104,
+        "available": 104
+      },
+      "objects": {
+        "expected": 100,
+        "available": 100
+      }
+    },
+    "live_max_row_check": {
+      "pool": "OpenImages unseen",
+      "rows_at_strong_line": 1,
+      "cached_whole": 5.520974636077881,
+      "strong_ai_logit": 5.520974636077881,
+      "live_prediction_available": true,
+      "live_whole": 5.520281791687012,
+      "live_margin_to_strong": -0.0006928443908691406,
+      "live_pixel_verdict": "Likely AI-generated",
+      "live_above_strong_line": false
+    }
+  },
+  "cross_device_boundary": {
+    "status": "complete",
+    "updated_at_utc": "2026-11-04T10:50:33.008969+00:00",
+    "scope": "ONE public OpenImages calibration maximum; DINO whole-image branch only; CPU fp32 followed by CPU bf16",
+    "public_image_sha256": "1e913aa9bad9d28a8f7303cf995493409b1324db5d6690fec789790337db67e3",
+    "public_file": "c9a520bbf569c2ee.jpg",
+    "cached_whole_score": 5.520974636077881,
+    "strong_ai_logit": 5.520974636077881,
+    "joint_whole_ai_logit": 0.6646256446838379,
+    "real_logit": -2.7401700019836426,
+    "existing_gpu_record": {
+      "score": 5.520281791687012,
+      "pixel_verdict": "Likely AI-generated",
+      "margin_to_strong": -0.0006928443908691406,
+      "source": "existing full live detector record, laptop GPU bf16"
+    },
+    "cpu_threads": 4,
+    "cpu_has_amx_bf16_probe": false,
+    "measurements": [
+      {
+        "device": "cpu",
+        "dtype": "torch.float32",
+        "score": 5.315487861633301,
+        "whole_image_verdict_level": "Likely AI-generated",
+        "above_strong_ai_line": false,
+        "margin_to_strong": -0.20548677444458008,
+        "delta_from_cached_score": -0.20548677444458008,
+        "delta_from_gpu_score": -0.20479393005371094,
+        "seconds": 2.426067100000182
+      },
+      {
+        "device": "cpu",
+        "dtype": "torch.bfloat16",
+        "score": 5.544503211975098,
+        "whole_image_verdict_level": "AI-generated",
+        "above_strong_ai_line": true,
+        "margin_to_strong": 0.023528575897216797,
+        "delta_from_cached_score": 0.023528575897216797,
+        "delta_from_gpu_score": 0.024221420288085938,
+        "seconds": 9.364033599999857
+      }
+    ],
+    "limitations": [
+      "The CPU bf16 run is on this laptop, not the hosted AMX CPU. It does not establish hosted-server arithmetic behavior.",
+      "Only one known boundary image is tested. These results do not estimate any dataset-wide error rate.",
+      "Verdict levels here use whole-image thresholds only; SAM, PE, faces and metadata are not run.",
+      "No thresholds, weights, source data, or production code are modified."
+    ],
+    "any_tested_cpu_dtype_above_strong_line": true
+  },
+  "hosted_boundary": {
+    "scope": "One known-real PUBLIC OpenImages calibration image through the existing hosted basic-detection endpoint; no investigator or paid API requested",
+    "public_image_sha256": "1e913aa9bad9d28a8f7303cf995493409b1324db5d6690fec789790337db67e3",
+    "expected_label": "real",
+    "host": "https://136-114-230-97.sslip.io",
+    "measured_at_utc": "2026-11-04T10:54:34.314262+00:00",
+    "private_images_uploaded": false,
+    "paid_endpoints_called": false,
+    "status": "complete",
+    "homepage_status": 200,
+    "http_status": 200,
+    "round_trip_seconds": 8.580391999999847,
+    "verdict": "AI-generated",
+    "probability_ai": 0.994587700600702,
+    "reason": "The whole image looks AI-made (99% AI evidence); no real test photo scored this high.",
+    "metadata": {
+      "read": true,
+      "ai_label": null,
+      "text": ""
+    },
+    "seconds": 6.0,
+    "faces_checked": 0,
+    "faces_flagged": 0,
+    "edit": {
+      "flagged": false,
+      "flagged2": false
+    },
+    "confident_false_alarm": true
+  },
+  "integrity_check": {
+    "scope": "Read-only comparison with the frozen baseline artifacts and production source, plus syntax checks; no model execution",
+    "configuration_sha256": "b999c90dfc48154c7740cc94f75299220e675fb79bfaa95742f51751fc9670ea",
+    "production_artifacts_checked": 50,
+    "changed_production_artifacts": [],
+    "python_files_parsed": 106,
+    "python_syntax_errors": [],
+    "javascript_syntax_checks": [
+      {
+        "file": "app/web/app.js",
+        "exit_code": 0,
+        "error": ""
+      },
+      {
+        "file": "src/eval/release_browser_check.js",
+        "exit_code": 0,
+        "error": ""
+      }
+    ],
+    "passed": true
+  },
+  "browser_checks": {
+    "scope": "Real Chrome interactions; actual frontend/ASGI; synthetic uploads; fake CPU detector",
+    "tests_run": 12,
+    "passed": 12,
+    "gate_passed": true,
+    "failed_checks": []
+  },
+  "privacy_check": {
+    "scope": "Public JSON/Markdown reports scanned for names and original paths of all private judge/calibration input images; photo pixels not read",
+    "public_artifacts_checked": 23,
+    "private_image_rows": 264,
+    "private_prediction_keys_in_public_cache": 0,
+    "private_checkpoint_separate": true,
+    "passed": true,
+    "finding_count": 0,
+    "gate_passed": true
+  },
+  "whole_image_robustness": {
+    "status": "complete",
+    "passed": true,
+    "scope": "whole-image DINOv3 + Muse PE head + second PE head; faces=False; no metadata; no APIs",
+    "complete": true,
+    "errors": 0,
+    "groups": [
+      {
+        "name": "polished_real",
+        "versions": {
+          "original": {
+            "n": 150,
+            "ai": 4,
+            "uncertain": 35,
+            "authentic": 111,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "jpeg70": {
+            "n": 150,
+            "ai": 3,
+            "uncertain": 34,
+            "authentic": 113,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp": {
+            "n": 150,
+            "ai": 3,
+            "uncertain": 34,
+            "authentic": 113,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp2": {
+            "n": 150,
+            "ai": 3,
+            "uncertain": 35,
+            "authentic": 112,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "small": {
+            "n": 150,
+            "ai": 4,
+            "uncertain": 31,
+            "authentic": 115,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "screenshot": {
+            "n": 150,
+            "ai": 4,
+            "uncertain": 35,
+            "authentic": 111,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "crop": {
+            "n": 150,
+            "ai": 7,
+            "uncertain": 40,
+            "authentic": 103,
+            "errors": 0,
+            "counts_valid": true
+          }
+        }
+      },
+      {
+        "name": "openimages_real",
+        "versions": {
+          "original": {
+            "n": 150,
+            "ai": 1,
+            "uncertain": 23,
+            "authentic": 126,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "jpeg70": {
+            "n": 150,
+            "ai": 0,
+            "uncertain": 18,
+            "authentic": 132,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp": {
+            "n": 150,
+            "ai": 0,
+            "uncertain": 18,
+            "authentic": 132,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp2": {
+            "n": 150,
+            "ai": 0,
+            "uncertain": 18,
+            "authentic": 132,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "small": {
+            "n": 150,
+            "ai": 0,
+            "uncertain": 14,
+            "authentic": 136,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "screenshot": {
+            "n": 150,
+            "ai": 1,
+            "uncertain": 23,
+            "authentic": 126,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "crop": {
+            "n": 150,
+            "ai": 1,
+            "uncertain": 14,
+            "authentic": 135,
+            "errors": 0,
+            "counts_valid": true
+          }
+        }
+      },
+      {
+        "name": "muse_v2_originals",
+        "versions": {
+          "original": {
+            "n": 99,
+            "ai": 2,
+            "uncertain": 18,
+            "authentic": 79,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "jpeg70": {
+            "n": 99,
+            "ai": 1,
+            "uncertain": 14,
+            "authentic": 84,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp": {
+            "n": 99,
+            "ai": 1,
+            "uncertain": 16,
+            "authentic": 82,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp2": {
+            "n": 99,
+            "ai": 1,
+            "uncertain": 17,
+            "authentic": 81,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "small": {
+            "n": 99,
+            "ai": 0,
+            "uncertain": 15,
+            "authentic": 84,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "screenshot": {
+            "n": 99,
+            "ai": 1,
+            "uncertain": 20,
+            "authentic": 78,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "crop": {
+            "n": 99,
+            "ai": 1,
+            "uncertain": 19,
+            "authentic": 79,
+            "errors": 0,
+            "counts_valid": true
+          }
+        }
+      },
+      {
+        "name": "muse_v2_local",
+        "versions": {
+          "original": {
+            "n": 132,
+            "ai": 94,
+            "uncertain": 7,
+            "authentic": 31,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "jpeg70": {
+            "n": 132,
+            "ai": 82,
+            "uncertain": 10,
+            "authentic": 40,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp": {
+            "n": 132,
+            "ai": 84,
+            "uncertain": 11,
+            "authentic": 37,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp2": {
+            "n": 132,
+            "ai": 82,
+            "uncertain": 11,
+            "authentic": 39,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "small": {
+            "n": 132,
+            "ai": 72,
+            "uncertain": 12,
+            "authentic": 48,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "screenshot": {
+            "n": 132,
+            "ai": 93,
+            "uncertain": 8,
+            "authentic": 31,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "crop": {
+            "n": 132,
+            "ai": 70,
+            "uncertain": 12,
+            "authentic": 50,
+            "errors": 0,
+            "counts_valid": true
+          }
+        }
+      },
+      {
+        "name": "muse_v2_whole",
+        "versions": {
+          "original": {
+            "n": 66,
+            "ai": 58,
+            "uncertain": 1,
+            "authentic": 7,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "jpeg70": {
+            "n": 66,
+            "ai": 59,
+            "uncertain": 1,
+            "authentic": 6,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp": {
+            "n": 66,
+            "ai": 58,
+            "uncertain": 2,
+            "authentic": 6,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp2": {
+            "n": 66,
+            "ai": 58,
+            "uncertain": 2,
+            "authentic": 6,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "small": {
+            "n": 66,
+            "ai": 57,
+            "uncertain": 3,
+            "authentic": 6,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "screenshot": {
+            "n": 66,
+            "ai": 58,
+            "uncertain": 2,
+            "authentic": 6,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "crop": {
+            "n": 66,
+            "ai": 58,
+            "uncertain": 1,
+            "authentic": 7,
+            "errors": 0,
+            "counts_valid": true
+          }
+        }
+      },
+      {
+        "name": "muse_v1",
+        "versions": {
+          "original": {
+            "n": 100,
+            "ai": 100,
+            "uncertain": 0,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "jpeg70": {
+            "n": 100,
+            "ai": 100,
+            "uncertain": 0,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp": {
+            "n": 100,
+            "ai": 100,
+            "uncertain": 0,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp2": {
+            "n": 100,
+            "ai": 100,
+            "uncertain": 0,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "small": {
+            "n": 100,
+            "ai": 100,
+            "uncertain": 0,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "screenshot": {
+            "n": 100,
+            "ai": 100,
+            "uncertain": 0,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "crop": {
+            "n": 100,
+            "ai": 100,
+            "uncertain": 0,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          }
+        }
+      },
+      {
+        "name": "sdxl",
+        "versions": {
+          "original": {
+            "n": 150,
+            "ai": 142,
+            "uncertain": 8,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "jpeg70": {
+            "n": 150,
+            "ai": 132,
+            "uncertain": 18,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp": {
+            "n": 150,
+            "ai": 135,
+            "uncertain": 15,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp2": {
+            "n": 150,
+            "ai": 135,
+            "uncertain": 15,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "small": {
+            "n": 150,
+            "ai": 120,
+            "uncertain": 30,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "screenshot": {
+            "n": 150,
+            "ai": 140,
+            "uncertain": 10,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "crop": {
+            "n": 150,
+            "ai": 129,
+            "uncertain": 21,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          }
+        }
+      },
+      {
+        "name": "pixart",
+        "versions": {
+          "original": {
+            "n": 150,
+            "ai": 148,
+            "uncertain": 2,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "jpeg70": {
+            "n": 150,
+            "ai": 143,
+            "uncertain": 7,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp": {
+            "n": 150,
+            "ai": 146,
+            "uncertain": 4,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp2": {
+            "n": 150,
+            "ai": 146,
+            "uncertain": 4,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "small": {
+            "n": 150,
+            "ai": 141,
+            "uncertain": 9,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "screenshot": {
+            "n": 150,
+            "ai": 148,
+            "uncertain": 2,
+            "authentic": 0,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "crop": {
+            "n": 150,
+            "ai": 147,
+            "uncertain": 2,
+            "authentic": 1,
+            "errors": 0,
+            "counts_valid": true
+          }
+        }
+      },
+      {
+        "name": "sd35",
+        "versions": {
+          "original": {
+            "n": 38,
+            "ai": 20,
+            "uncertain": 9,
+            "authentic": 9,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "jpeg70": {
+            "n": 38,
+            "ai": 16,
+            "uncertain": 12,
+            "authentic": 10,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp": {
+            "n": 38,
+            "ai": 15,
+            "uncertain": 13,
+            "authentic": 10,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "whatsapp2": {
+            "n": 38,
+            "ai": 16,
+            "uncertain": 13,
+            "authentic": 9,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "small": {
+            "n": 38,
+            "ai": 12,
+            "uncertain": 14,
+            "authentic": 12,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "screenshot": {
+            "n": 38,
+            "ai": 19,
+            "uncertain": 10,
+            "authentic": 9,
+            "errors": 0,
+            "counts_valid": true
+          },
+          "crop": {
+            "n": 38,
+            "ai": 17,
+            "uncertain": 11,
+            "authentic": 10,
+            "errors": 0,
+            "counts_valid": true
+          }
+        }
+      }
+    ],
+    "group_count": 9,
+    "required_versions": [
+      "crop",
+      "jpeg70",
+      "original",
+      "screenshot",
+      "small",
+      "whatsapp",
+      "whatsapp2"
+    ]
+  },
+  "private_calibration_live": {
+    "status": "complete",
+    "gate_passed": true,
+    "complete": true,
+    "errors": 0,
+    "groups": {
+      "private/calibration_phone": {
+        "expected": 104,
+        "processed": 104,
+        "n": 104,
+        "errors": 0,
+        "error_types": {},
+        "pixel_verdict_counts": {
+          "AI-generated": 0,
+          "Likely AI-generated": 0,
+          "Likely AI-edited": 0,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 10,
+          "Likely authentic": 94
+        },
+        "final_verdict_counts": {
+          "AI-generated": 0,
+          "Likely AI-generated": 0,
+          "Likely AI-edited": 0,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 10,
+          "Likely authentic": 94
+        },
+        "pixel_ai": 0,
+        "final_ai": 0,
+        "strict_ai_generated_real": 0,
+        "final_strict_ai_generated_real": 0,
+        "component_flag_counts": {
+          "whole": 0,
+          "edit1": 0,
+          "edit2": 0,
+          "any_face": 0
+        },
+        "faces_checked": 148,
+        "faces_red": 0,
+        "complete": true
+      },
+      "private/calibration_objects": {
+        "expected": 100,
+        "processed": 100,
+        "n": 100,
+        "errors": 0,
+        "error_types": {},
+        "pixel_verdict_counts": {
+          "AI-generated": 0,
+          "Likely AI-generated": 2,
+          "Likely AI-edited": 2,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 5,
+          "Likely authentic": 91
+        },
+        "final_verdict_counts": {
+          "AI-generated": 0,
+          "Likely AI-generated": 2,
+          "Likely AI-edited": 2,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 5,
+          "Likely authentic": 91
+        },
+        "pixel_ai": 4,
+        "final_ai": 4,
+        "strict_ai_generated_real": 0,
+        "final_strict_ai_generated_real": 0,
+        "component_flag_counts": {
+          "whole": 1,
+          "edit1": 3,
+          "edit2": 2,
+          "any_face": 0
+        },
+        "faces_checked": 20,
+        "faces_red": 0,
+        "complete": true
+      }
+    },
+    "scope": "Current frozen detector on the original private calibration pools; neutral aggregate totals only.",
+    "backbone_weight_hashes_recomputed": false,
+    "calibration_budgets": {
+      "max_false_alarm_rate": 0.05,
+      "max_edit_flag_rate_per_head": 0.02,
+      "whole_ai_logit": 0.6646256446838379,
+      "edit1_logit": 5.410022735595703,
+      "edit2_logit": 5.4017181396484375,
+      "strong_ai_logit": 5.520974636077881,
+      "face_ai_logit": 4.044705390930176,
+      "swap_ai_logit": 0.22257614135742188
+    },
+    "live_component_budget_checks": [
+      {
+        "pool": "private/calibration_phone",
+        "component": "final_pixel_union",
+        "n": 104,
+        "flagged": 0,
+        "allowed": 5,
+        "cap_percent": 5.0,
+        "passed": true
+      },
+      {
+        "pool": "private/calibration_phone",
+        "component": "edit1",
+        "n": 104,
+        "flagged": 0,
+        "allowed": 2,
+        "cap_percent": 2.0,
+        "passed": true
+      },
+      {
+        "pool": "private/calibration_phone",
+        "component": "edit2",
+        "n": 104,
+        "flagged": 0,
+        "allowed": 2,
+        "cap_percent": 2.0,
+        "passed": true
+      },
+      {
+        "pool": "private/calibration_objects",
+        "component": "final_pixel_union",
+        "n": 100,
+        "flagged": 4,
+        "allowed": 5,
+        "cap_percent": 5.0,
+        "passed": true
+      },
+      {
+        "pool": "private/calibration_objects",
+        "component": "edit1",
+        "n": 100,
+        "flagged": 3,
+        "allowed": 2,
+        "cap_percent": 2.0,
+        "passed": false
+      },
+      {
+        "pool": "private/calibration_objects",
+        "component": "edit2",
+        "n": 100,
+        "flagged": 2,
+        "allowed": 2,
+        "cap_percent": 2.0,
+        "passed": true
+      }
+    ]
+  },
+  "manifest_audit": {
+    "conclusion": "Provenance incomplete: overlap counts are findings within documented/available sources, not a clean bill for the exact deployed weights.",
+    "hash_check": {
+      "candidates_hashed": 6064,
+      "matching_training_file_count": 0,
+      "complete_for_accessible_public_files": true,
+      "limitations": "Does not test decoded-pixel equality, recompression, perceptual duplicates, or inaccessible files.",
+      "unavailable_training_files_or_nonfile_ids": 11229,
+      "unavailable_evaluation_files_or_nonfile_ids": 7294
+    },
+    "comparison_rows_with_exact_identity_overlap": 0,
+    "comparison_rows_with_source_family_overlap": 10,
+    "missing_final_face_training_manifest_names": [
+      "of_train_train",
+      "of_test_challenge_train",
+      "rtfs_train",
+      "real_fairface",
+      "real_openimages",
+      "real_faceid550_train",
+      "real_indian"
+    ],
+    "limitations": [
+      "Weight files do not serialize the exact training manifest list, feature-file hashes, run command, or data revision; profiles are reconstructed from checked-in result notes.",
+      "Current versus backup Google features include data generated after the active EC3g head; neither candidate directory is assumed to be its exact training set.",
+      "Source-family sharing can be intentional: PixArt generator holdout uses training-pair captions. Shared caption content is not an identical training image, but is not an independent-content test.",
+      "Google edit/restore manifests omit original source paths; those derivatives cannot be traced fully to their source photos from manifests alone.",
+      "Ambiguous numbered Commons crops cannot always be traced to v1/v2 originals because the crop filenames omit the original download round.",
+      "Only locally present face-v4 manifests are checked. Missing Colab-only train/RTFS manifests prevent reproducing the complete face identity/near-duplicate exclusion audit.",
+      "Private feature artifacts are counted without serializing paths or IDs. No private cross-artifact or train/eval source-identity leakage assertion is made.",
+      "Many reported dev pools set calibration thresholds or informed model selection; absence of training overlap does not make them independent final tests.",
+      "Exact hashes cover accessible public image files only. No perceptual or identity similarity model is run."
+    ]
+  },
+  "environment": {
+    "python": "3.12.7 (tags/v3.12.7:0b05ead, Oct  1 2024, 03:06:41) [MSC v.1941 64 bit (AMD64)]",
+    "gpu": "NVIDIA GeForce RTX 5050 Laptop GPU, 617.14, 8151 MiB",
+    "pip_check": {
+      "exit_code": 0,
+      "output": "No broken requirements found.",
+      "source": "executed earlier in this same release-check session"
+    },
+    "requirements_match": true,
+    "core_versions": {
+      "torch": "2.11.0+cu128",
+      "torchvision": "0.26.0+cu128",
+      "fastapi": "0.162.0",
+      "starlette": "1.10.0",
+      "httpx": "0.28.1",
+      "numpy": "2.5.2",
+      "Pillow": "12.3.0",
+      "transformers": "5.21.0",
+      "timm": "1.0.30"
+    }
+  },
+  "validation_limits": [
+    "No aggregate accuracy is computed across overlapping sets.",
+    "Live-versus-cached differences may include float16 boundary effects; partial caches also omit runtime face checks.",
+    "Private groups contain neutral totals only, never private per-image names, IDs, paths, or hashes.",
+    "Meta paid APIs were mocked or disabled. Only one public real-photo basic-detection request was tested on the hosted demo; hosted-wide accuracy, concurrency, and hardware provenance were not validated.",
+    "Manifest coverage is partial; accessible-file exact-byte results do not prove universal absence of leakage.",
+    "Face robustness uses 30 photos per group and simulated phone processing, not a population guarantee."
+  ]
+}

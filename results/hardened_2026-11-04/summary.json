@@ -1,0 +1,54 @@
+{
+  "updated_at_utc": "2026-11-04T12:53:39.423309+00:00",
+  "local_release_ready": true,
+  "hosted_deployment_verified": false,
+  "configuration_sha256": "3bd80a815a518a8ece21e75002249c172406c289f8c4ed4db6bb84182b89d412",
+  "gates": {
+    "frozen_artifacts_and_syntax": true,
+    "private_inputs_not_published": true,
+    "pinned_dependencies": true,
+    "cpu_behavior": true,
+    "chrome_interactions": true,
+    "complete_full_detector": true,
+    "http_equivalence": true,
+    "fragmented_metadata_http": true,
+    "runtime_real_calibration": true,
+    "private_live_calibration": true,
+    "transformation_checks": true,
+    "cache_provenance": true,
+    "saved_calibration_mix_and_face_caps": true,
+    "pixel_certainty_boundary_removed": true,
+    "real_socket_public_examples_and_api_fallback": true
+  },
+  "dataset_entries_not_unique_images": 3951,
+  "full_detector_count_changes": [],
+  "pixel_measurement_reuse": {
+    "pixel_measurement_configuration_sha256": "8ed972e99dfe1472102663a68e58cbe8770beb2f9345d93c18dd2c9a987b3089",
+    "current_configuration_sha256": "3bd80a815a518a8ece21e75002249c172406c289f8c4ed4db6bb84182b89d412",
+    "changed_production_artifacts": [
+      "src/services/metadata.py"
+    ],
+    "pixel_scoring_artifacts_byte_identical": true,
+    "metadata_entries_reparsed": 3951,
+    "unique_file_records_reparsed": 3813,
+    "file_declarations_changed": 2,
+    "scope": "Reuse the completed GPU pixel/face/edit scores; reparse original file metadata locally. No new model measurements claimed.",
+    "fresh_http_equivalence_required": true,
+    "private_per_photo_records_exported": false
+  },
+  "baseline_audit": "results/release_2026-11-04/summary.md",
+  "remaining": [
+    "Deploy the reviewed code AND recalibrated private edit JSON together; do not expose weights.",
+    "Verify hosted /healthz, public samples, CPU boundary case and API fallback after deployment.",
+    "GitHub Actions has not run remotely for these unpushed changes.",
+    "Record and link the submission video; README still has a placeholder."
+  ],
+  "limits": [
+    "Calibration and reused regression pools are not independent tests; entries overlap.",
+    "The CPU boundary check tests one photo and the whole-image branch only.",
+    "Paid Meta services were mocked/offline; actual remote success and billing were not retested.",
+    "No new model training; hard cases such as Nano Banana 2.1, crops and video swaps remain.",
+    "Training provenance is partial: original Colab face manifests and some derivative-source records are missing; see the baseline manifest audit.",
+    "Earlier face robustness and training-manifest audit remain baseline artifacts; not rerun here."
+  ]
+}

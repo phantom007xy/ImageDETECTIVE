@@ -194,6 +194,17 @@ h2 { font-size: 23px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.
 .footer a { color: var(--secondary); text-decoration: none; }
 .footer a:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
 
+.examples { margin: 0 0 20px; }
+.examples-title { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+.examples-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.example { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 8px; border: 1px solid var(--border);
+  border-radius: 9px; background: var(--panel); text-align: left; color: var(--text); font: inherit; font-size: 13px; cursor: pointer; }
+.example:hover { background: var(--raised); }
+.example:disabled { opacity: .5; cursor: wait; }
+.example img { width: 64px; height: 48px; border-radius: 5px; object-fit: cover; flex-shrink: 0; }
+.evidence-source { margin-top: 16px; color: var(--text); font-size: 13px; font-weight: 500; }
+@media (max-width: 450px) { .example { flex-direction: column; align-items: flex-start; gap: 6px; } .example img { width: 100%; height: 60px; } }
+
 /* ---- phones ---- */
 @media (max-width: 650px) {
   :root { --side-closed: 60px; --side-open: 220px; }

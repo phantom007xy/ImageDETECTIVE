@@ -35,11 +35,12 @@ COST = 0.0025  # $2.50 per 1,000 images (Meta's pricing page)
 SEND_LONG_SIDE = 1024
 
 
-def hottest_point(patch_logits, size):
+def hottest_point(patch_logits, size, bounds=None):
     """Centre of the patch with the strongest AI evidence, in pixels of an image of `size` (w, h)."""
     rows, cols = patch_logits.shape
     row, col = np.unravel_index(int(np.argmax(patch_logits)), patch_logits.shape)
-    return int((col + 0.5) / cols * size[0]), int((row + 0.5) / rows * size[1])
+    x0, y0, x1, y1 = bounds or (0, 0, 1, 1)
+    return int((x0 + (col + 0.5) / cols * (x1 - x0)) * size[0]), int((y0 + (row + 0.5) / rows * (y1 - y0)) * size[1])
 
 
 def output_text(response):
@@ -67,11 +68,11 @@ def parse_mask(text, size):
     return {"mask": full, "box": (b.left, b.top, b.right, b.bottom), "confidence": record.confidence}
 
 
-def outline(image, patch_logits):
+def outline(image, patch_logits, bounds=None):
     """image: the upright PIL RGB photo. Returns the outline at the hottest point (in `image` pixels), or None."""
     small = image.copy()
     small.thumbnail((SEND_LONG_SIDE, SEND_LONG_SIDE))
-    point = hottest_point(patch_logits, small.size)
+    point = hottest_point(patch_logits, small.size, bounds)
     buffer = io.BytesIO()
     small.save(buffer, format="JPEG", quality=90)
     data = buffer.getvalue()

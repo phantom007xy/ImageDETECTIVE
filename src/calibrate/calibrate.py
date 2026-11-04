@@ -11,8 +11,8 @@ The temperature T makes the probability sigmoid(logit / T) honest: it is chosen 
 probabilities fit the dev mix best (lowest log loss). It does not move the thresholds, which live
 on the logit.
 
-The clear level "AI-generated" (without "likely") is used only above the highest score of any real
-dev photo. There is no clear "real" level on purpose: a generator the head has never seen can score
+The highest score of a real dev photo is kept as a reference, not a proof threshold:
+pixel-only positives always retain "Likely". There is no clear "real" level: a generator the head has never seen can score
 very low (30 Oct: 1 in 10 SD 3.5 fakes did), and that can't be measured in advance.
 
 Faces (optional, --real-faces): the same head scores every face crop (the app crop). A face only
@@ -101,22 +101,20 @@ def main():
     real_logit = authentic_threshold(logits, weights, ai_logit, args.max_uncertain)
     temperature = fit_temperature(logits, is_ai, weights)
     prob = lambda z: 1 / (1 + math.exp(-z / temperature))  # noqa: E731
-    # The clear level "AI-generated": above every real dev photo (none of them reaches it).
+    # Historical high-score reference only; it no longer enables an unqualified pixel verdict.
     strong_ai_logit = float(max(s.max() for s in reals.values()))
 
     print(f"head {args.head.name}: temperature {temperature:.2f}")
-    print(f"  AI-generated (clear) if logit >  {strong_ai_logit:+.2f}  (calibrated AI probability >  "
-          f"{prob(strong_ai_logit):.3f}; no real dev photo is above it)")
+    print(f"  Largest real calibration score: {strong_ai_logit:+.2f} (reference only; pixels never prove AI generation)")
     print(f"  Likely AI-generated  if logit >  {ai_logit:+.2f}  (calibrated AI probability >  {prob(ai_logit):.3f})")
     print(f"  Likely authentic     if logit <= {real_logit:+.2f}  (calibrated AI probability <= {prob(real_logit):.3f})")
     print(f"  Uncertain in between: {weights[(logits > real_logit) & (logits < ai_logit)].sum():.1%} of the mix "
           f"(cap {args.max_uncertain:.0%})\n")
-    print(f"  {'set':<18}{'n':>6} | {'AI (clear)':>10} {'Likely AI':>10} {'Uncertain':>10} {'Authentic':>10}")
+    print(f"  {'set':<18}{'n':>6} | {'Likely AI':>10} {'Uncertain':>10} {'Authentic':>10}")
     for title, groups in (("REAL", reals), ("AI", fakes)):
         for name, s in groups.items():
             ai, auth = (s > ai_logit).mean(), (s <= real_logit).mean()  # AI = strictly above, as in fair_compare
-            clear = (s > strong_ai_logit).mean()
-            print(f"  {title + ' ' + name:<18}{len(s):>6} | {clear:>10.1%} {ai - clear:>10.1%} {1 - ai - auth:>10.1%} "
+            print(f"  {title + ' ' + name:<18}{len(s):>6} | {ai:>10.1%} {1 - ai - auth:>10.1%} "
                   f"{auth:>10.1%}")
 
     face_ai_logit = face_leans_logit = face_platt = None

@@ -1,0 +1,23 @@
+{
+  "scope": "Current v4 face-swap branch, public whole photos, any checked face above app line",
+  "measurement": "Earlier in the same local review session on 2026-11-04; application code and weights unchanged",
+  "command": "python -m src.eval.face_swap_robustness --model v4:weights/face_pe_v4/pe_step14000.pt:weights/face_pe_v4/head_facepe.pt:0.22257614135742188 --sets 'REAL polished dev' 'REAL OpenImages unseen' 'SWAPS OpenForensics test' --n 30 --versions original whatsapp small phone",
+  "threshold": 0.22257614135742188,
+  "unit": "photo with at least one flagged face; not per-face recall or whole-ensemble verdict",
+  "versions": {
+    "original": "Original photo",
+    "whatsapp": "Long side at most 1600 px; JPEG quality 75",
+    "small": "Long side at most 800 px; JPEG quality 60",
+    "phone": "Deterministic simulated beauty, tone or portrait processing using the existing script"
+  },
+  "groups": [
+    {"name": "REAL polished dev", "n": 30, "flagged": {"original": 0, "whatsapp": 0, "small": 0, "phone": 0}},
+    {"name": "REAL OpenImages unseen", "n": 30, "flagged": {"original": 0, "whatsapp": 0, "small": 0, "phone": 0}},
+    {"name": "SWAPS OpenForensics test", "n": 30, "flagged": {"original": 30, "whatsapp": 29, "small": 23, "phone": 14}}
+  ],
+  "limitations": [
+    "Small selected evaluation; no population-level false-alarm guarantee",
+    "Phone processing is simulated, not images collected from physical phone cameras",
+    "Uses test data for evaluation only; evaluated photos must stay out of training"
+  ]
+}

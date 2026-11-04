@@ -1,0 +1,8 @@
+{
+  "scope": "Private object-pool aggregate cached/live flag comparison; no images or individual scores/identifiers exported",
+  "n": 100,
+  "cached_edit1_flags": 2,
+  "cached_scores_exactly_at_edit1_line": 1,
+  "live_edit1_flags": 3,
+  "interpretation": "An exact cached boundary exists and live counts cross the per-head allowance. Recalibration must use the runtime scoring precision; no threshold was changed in this check."
+}

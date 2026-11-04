@@ -1,0 +1,4652 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-11-04T10:17:20.687102+00:00",
+  "method": "CPU-only scoring of existing feature caches with the runtime's fixed joint calibration and Detector.verdict; no recalibration, backbone loading, image reads, network, APIs, or GPU.",
+  "models": {
+    "whole_head": "weights/google_v1/head_G3tt.pt",
+    "edit_head": "weights/edit_check_v3/head_EC3pf.pt",
+    "second_head": "weights/edit_check_v3/head_EC3g.pt",
+    "swap_head": "weights/face_pe_v4/head_facepe.pt",
+    "swap_pe": "weights/face_pe_v4/pe_step14000.pt"
+  },
+  "head_sha256": {
+    "whole": "174faaefa6e8e02f5d5cc9d0cd39f351e1521812c56a0e00bc3fbcdffdbef2ab",
+    "edit": "667177a1e24e923a43ec61ddc75de1e7284162b844c0cf7992da4ec6a62fc411",
+    "second": "1df48748007988c4c10c4c84f014b2612a3cf4c35d481b9fd26a8585c54171a7",
+    "swap": "cfdd553a0f8a221c14233f718d6557510bcd53f146cc79a37860f1489d2356dd"
+  },
+  "effective_thresholds": {
+    "ai_logit": 0.6646256446838379,
+    "real_logit": -2.7401700019836426,
+    "strong_ai_logit": 5.520974636077881,
+    "face_ai_logit": 4.044705390930176,
+    "face_leans_logit": -1.1909427642822266,
+    "swap_ai_logit": 0.22257614135742188,
+    "swap_leans_logit": -2.4891319274902344,
+    "temperature": 1.0710187451791922,
+    "edit_logit": 5.410022735595703,
+    "edit2_logit": 5.4017181396484375
+  },
+  "face_cache_provenance": [
+    {
+      "source_set": "pool_commons_dev",
+      "face_set": "commons_dev_eval",
+      "status": "exact_match",
+      "source_rows": 285,
+      "destination_rows": 285,
+      "matched_rows": 285
+    },
+    {
+      "source_set": "pool_muse_pairs_val",
+      "face_set": "muse_pairs_val_eval",
+      "status": "exact_match",
+      "source_rows": 179,
+      "destination_rows": 179,
+      "matched_rows": 179
+    },
+    {
+      "source_set": "pool_sid_reals_0_9_unseen",
+      "face_set": "sid_reals_0_9_unseen_eval",
+      "status": "exact_match",
+      "source_rows": 557,
+      "destination_rows": 557,
+      "matched_rows": 557
+    },
+    {
+      "source_set": "pool_commons_v3_dev",
+      "face_set": "commons_v3_dev_eval",
+      "status": "exact_match",
+      "source_rows": 15,
+      "destination_rows": 15,
+      "matched_rows": 15
+    },
+    {
+      "source_set": "pool_real_face_crops_dev_all",
+      "face_set": "real_face_crops_dev_all_eval",
+      "status": "exact_match",
+      "source_rows": 174,
+      "destination_rows": 174,
+      "matched_rows": 174
+    },
+    {
+      "source_set": "pool_commons_v4_dev",
+      "face_set": "commons_v4_dev_eval",
+      "status": "exact_match",
+      "source_rows": 78,
+      "destination_rows": 78,
+      "matched_rows": 78
+    },
+    {
+      "source_set": "pool_sid_val",
+      "face_set": "validation-00000-of-00034_eval",
+      "status": "exact_match",
+      "source_rows": 292,
+      "destination_rows": 544,
+      "matched_rows": 292
+    },
+    {
+      "source_set": "dfdc_p3_dev",
+      "face_set": "dfdc_part3_eval",
+      "status": "exact_match",
+      "source_rows": 2907,
+      "destination_rows": 2907,
+      "matched_rows": 2907
+    },
+    {
+      "source_set": "of_test_dev",
+      "face_set": "openforensics_test_dev_eval",
+      "status": "exact_match",
+      "source_rows": 3801,
+      "destination_rows": 3801,
+      "matched_rows": 3801
+    },
+    {
+      "source_set": "wilddeepfake",
+      "face_set": "wilddeepfake_eval",
+      "status": "exact_match",
+      "source_rows": 6448,
+      "destination_rows": 6448,
+      "matched_rows": 6448
+    },
+    {
+      "source_set": "pool_muse_image_test_v1",
+      "face_set": "muse_image_test_v1_eval",
+      "status": "exact_match",
+      "source_rows": 184,
+      "destination_rows": 184,
+      "matched_rows": 184
+    },
+    {
+      "source_set": "pool_sd_faces",
+      "face_set": "sd_faces_eval",
+      "status": "exact_match",
+      "source_rows": 1006,
+      "destination_rows": 1006,
+      "matched_rows": 1006
+    },
+    {
+      "source_set": "pool_tpdne_test",
+      "face_set": "tpdne_test_eval",
+      "status": "exact_match",
+      "source_rows": 267,
+      "destination_rows": 267,
+      "matched_rows": 267
+    }
+  ],
+  "image_sets": [
+    {
+      "name": "bitmind_nb_dev",
+      "private": false,
+      "status": "partial_missing_face_cache",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second"
+      ],
+      "face_cache_status": "missing",
+      "totals": {
+        "n": 610,
+        "unique_image_ids": 610,
+        "repeated_id_rows": 0,
+        "ai": 604,
+        "uncertain": 5,
+        "authentic": 1,
+        "ai_percent": 99.0164,
+        "verdict_counts": {
+          "AI-generated": 554,
+          "Likely AI-generated": 50,
+          "Likely AI-edited": 0,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 5,
+          "Likely authentic": 1
+        },
+        "component_flag_counts": {
+          "whole": 601,
+          "edit": 88,
+          "second": 440,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": null,
+      "by_label": {
+        "ai": {
+          "n": 610,
+          "unique_image_ids": 610,
+          "repeated_id_rows": 0,
+          "ai": 604,
+          "uncertain": 5,
+          "authentic": 1,
+          "ai_percent": 99.0164,
+          "verdict_counts": {
+            "AI-generated": 554,
+            "Likely AI-generated": 50,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 5,
+            "Likely authentic": 1
+          },
+          "component_flag_counts": {
+            "whole": 601,
+            "edit": 88,
+            "second": 440,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "bitmind/nano_banana | ai": {
+          "n": 610,
+          "unique_image_ids": 610,
+          "repeated_id_rows": 0,
+          "ai": 604,
+          "uncertain": 5,
+          "authentic": 1,
+          "ai_percent": 99.0164,
+          "verdict_counts": {
+            "AI-generated": 554,
+            "Likely AI-generated": 50,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 5,
+            "Likely authentic": 1
+          },
+          "component_flag_counts": {
+            "whole": 601,
+            "edit": 88,
+            "second": 440,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "commons_ai_v1_photo",
+      "private": false,
+      "status": "partial_missing_face_cache",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second"
+      ],
+      "face_cache_status": "missing",
+      "totals": {
+        "n": 202,
+        "unique_image_ids": 202,
+        "repeated_id_rows": 0,
+        "ai": 160,
+        "uncertain": 13,
+        "authentic": 29,
+        "ai_percent": 79.2079,
+        "verdict_counts": {
+          "AI-generated": 115,
+          "Likely AI-generated": 38,
+          "Likely AI-edited": 7,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 13,
+          "Likely authentic": 29
+        },
+        "component_flag_counts": {
+          "whole": 147,
+          "edit": 35,
+          "second": 80,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": null,
+      "by_label": {
+        "ai": {
+          "n": 202,
+          "unique_image_ids": 202,
+          "repeated_id_rows": 0,
+          "ai": 160,
+          "uncertain": 13,
+          "authentic": 29,
+          "ai_percent": 79.2079,
+          "verdict_counts": {
+            "AI-generated": 115,
+            "Likely AI-generated": 38,
+            "Likely AI-edited": 7,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 13,
+            "Likely authentic": 29
+          },
+          "component_flag_counts": {
+            "whole": 147,
+            "edit": 35,
+            "second": 80,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "commons_ai/bing_dalle3 | ai": {
+          "n": 14,
+          "unique_image_ids": 14,
+          "repeated_id_rows": 0,
+          "ai": 13,
+          "uncertain": 1,
+          "authentic": 0,
+          "ai_percent": 92.8571,
+          "verdict_counts": {
+            "AI-generated": 13,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 1,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 13,
+            "edit": 2,
+            "second": 6,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/chatgpt | ai": {
+          "n": 19,
+          "unique_image_ids": 19,
+          "repeated_id_rows": 0,
+          "ai": 18,
+          "uncertain": 1,
+          "authentic": 0,
+          "ai_percent": 94.7368,
+          "verdict_counts": {
+            "AI-generated": 11,
+            "Likely AI-generated": 3,
+            "Likely AI-edited": 4,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 1,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 14,
+            "edit": 9,
+            "second": 12,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/dalle | ai": {
+          "n": 32,
+          "unique_image_ids": 32,
+          "repeated_id_rows": 0,
+          "ai": 25,
+          "uncertain": 3,
+          "authentic": 4,
+          "ai_percent": 78.125,
+          "verdict_counts": {
+            "AI-generated": 16,
+            "Likely AI-generated": 8,
+            "Likely AI-edited": 1,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 3,
+            "Likely authentic": 4
+          },
+          "component_flag_counts": {
+            "whole": 23,
+            "edit": 3,
+            "second": 7,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/firefly | ai": {
+          "n": 2,
+          "unique_image_ids": 2,
+          "repeated_id_rows": 0,
+          "ai": 1,
+          "uncertain": 1,
+          "authentic": 0,
+          "ai_percent": 50.0,
+          "verdict_counts": {
+            "AI-generated": 1,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 1,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 1,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/flux | ai": {
+          "n": 7,
+          "unique_image_ids": 7,
+          "repeated_id_rows": 0,
+          "ai": 6,
+          "uncertain": 0,
+          "authentic": 1,
+          "ai_percent": 85.7143,
+          "verdict_counts": {
+            "AI-generated": 6,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 1
+          },
+          "component_flag_counts": {
+            "whole": 6,
+            "edit": 2,
+            "second": 5,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/flux/ai_restored | ai": {
+          "n": 1,
+          "unique_image_ids": 1,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 1,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 1
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/gemini | ai": {
+          "n": 19,
+          "unique_image_ids": 19,
+          "repeated_id_rows": 0,
+          "ai": 16,
+          "uncertain": 1,
+          "authentic": 2,
+          "ai_percent": 84.2105,
+          "verdict_counts": {
+            "AI-generated": 8,
+            "Likely AI-generated": 7,
+            "Likely AI-edited": 1,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 1,
+            "Likely authentic": 2
+          },
+          "component_flag_counts": {
+            "whole": 13,
+            "edit": 5,
+            "second": 11,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/gemini/ai_restored | ai": {
+          "n": 30,
+          "unique_image_ids": 30,
+          "repeated_id_rows": 0,
+          "ai": 8,
+          "uncertain": 2,
+          "authentic": 20,
+          "ai_percent": 26.6667,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 7,
+            "Likely AI-edited": 1,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 2,
+            "Likely authentic": 20
+          },
+          "component_flag_counts": {
+            "whole": 5,
+            "edit": 1,
+            "second": 4,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/grok | ai": {
+          "n": 11,
+          "unique_image_ids": 11,
+          "repeated_id_rows": 0,
+          "ai": 11,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 9,
+            "Likely AI-generated": 2,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 11,
+            "edit": 2,
+            "second": 5,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/ideogram | ai": {
+          "n": 2,
+          "unique_image_ids": 2,
+          "repeated_id_rows": 0,
+          "ai": 1,
+          "uncertain": 1,
+          "authentic": 0,
+          "ai_percent": 50.0,
+          "verdict_counts": {
+            "AI-generated": 1,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 1,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 1,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/imagen | ai": {
+          "n": 2,
+          "unique_image_ids": 2,
+          "repeated_id_rows": 0,
+          "ai": 2,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 2,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 2,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/mai_image | ai": {
+          "n": 1,
+          "unique_image_ids": 1,
+          "repeated_id_rows": 0,
+          "ai": 1,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 1,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 1,
+            "edit": 1,
+            "second": 1,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/meta_ai | ai": {
+          "n": 3,
+          "unique_image_ids": 3,
+          "repeated_id_rows": 0,
+          "ai": 3,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 3,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 3,
+            "edit": 1,
+            "second": 2,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/midjourney | ai": {
+          "n": 18,
+          "unique_image_ids": 18,
+          "repeated_id_rows": 0,
+          "ai": 14,
+          "uncertain": 3,
+          "authentic": 1,
+          "ai_percent": 77.7778,
+          "verdict_counts": {
+            "AI-generated": 10,
+            "Likely AI-generated": 4,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 3,
+            "Likely authentic": 1
+          },
+          "component_flag_counts": {
+            "whole": 14,
+            "edit": 0,
+            "second": 1,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/nano_banana | ai": {
+          "n": 4,
+          "unique_image_ids": 4,
+          "repeated_id_rows": 0,
+          "ai": 4,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 4,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 4,
+            "edit": 1,
+            "second": 4,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/reve | ai": {
+          "n": 1,
+          "unique_image_ids": 1,
+          "repeated_id_rows": 0,
+          "ai": 1,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 1,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 1,
+            "edit": 0,
+            "second": 1,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/stable_diffusion | ai": {
+          "n": 33,
+          "unique_image_ids": 33,
+          "repeated_id_rows": 0,
+          "ai": 33,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 28,
+            "Likely AI-generated": 5,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 32,
+            "edit": 8,
+            "second": 20,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons_ai/stylegan | ai": {
+          "n": 3,
+          "unique_image_ids": 3,
+          "repeated_id_rows": 0,
+          "ai": 3,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 1,
+            "Likely AI-generated": 2,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 3,
+            "edit": 0,
+            "second": 1,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "commons_dev",
+      "private": false,
+      "status": "complete_cached_pipeline",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second",
+        "face_ai",
+        "face_swap"
+      ],
+      "face_cache_status": "available",
+      "totals": {
+        "n": 330,
+        "unique_image_ids": 330,
+        "repeated_id_rows": 0,
+        "ai": 16,
+        "uncertain": 79,
+        "authentic": 235,
+        "ai_percent": 4.8485,
+        "verdict_counts": {
+          "AI-generated": 0,
+          "Likely AI-generated": 15,
+          "Likely AI-edited": 1,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 79,
+          "Likely authentic": 235
+        },
+        "component_flag_counts": {
+          "whole": 14,
+          "edit": 1,
+          "second": 3,
+          "face_ai": 1,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": {
+        "AI-generated": 0,
+        "Likely AI-generated": 15,
+        "Likely AI-edited": 1,
+        "This face looks AI-made or AI-changed": 0,
+        "Uncertain": 79,
+        "Likely authentic": 235
+      },
+      "by_label": {
+        "real": {
+          "n": 330,
+          "unique_image_ids": 330,
+          "repeated_id_rows": 0,
+          "ai": 16,
+          "uncertain": 79,
+          "authentic": 235,
+          "ai_percent": 4.8485,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 15,
+            "Likely AI-edited": 1,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 79,
+            "Likely authentic": 235
+          },
+          "component_flag_counts": {
+            "whole": 14,
+            "edit": 1,
+            "second": 3,
+            "face_ai": 1,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "commons/people | real": {
+          "n": 30,
+          "unique_image_ids": 30,
+          "repeated_id_rows": 0,
+          "ai": 1,
+          "uncertain": 8,
+          "authentic": 21,
+          "ai_percent": 3.3333,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 1,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 8,
+            "Likely authentic": 21
+          },
+          "component_flag_counts": {
+            "whole": 1,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons/phone | real": {
+          "n": 54,
+          "unique_image_ids": 54,
+          "repeated_id_rows": 0,
+          "ai": 3,
+          "uncertain": 11,
+          "authentic": 40,
+          "ai_percent": 5.5556,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 3,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 11,
+            "Likely authentic": 40
+          },
+          "component_flag_counts": {
+            "whole": 3,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons/portrait | real": {
+          "n": 209,
+          "unique_image_ids": 209,
+          "repeated_id_rows": 0,
+          "ai": 10,
+          "uncertain": 52,
+          "authentic": 147,
+          "ai_percent": 4.7847,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 9,
+            "Likely AI-edited": 1,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 52,
+            "Likely authentic": 147
+          },
+          "component_flag_counts": {
+            "whole": 8,
+            "edit": 1,
+            "second": 2,
+            "face_ai": 1,
+            "face_swap": 0
+          }
+        },
+        "commons/quality | real": {
+          "n": 37,
+          "unique_image_ids": 37,
+          "repeated_id_rows": 0,
+          "ai": 2,
+          "uncertain": 8,
+          "authentic": 27,
+          "ai_percent": 5.4054,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 2,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 8,
+            "Likely authentic": 27
+          },
+          "component_flag_counts": {
+            "whole": 2,
+            "edit": 0,
+            "second": 1,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "commons_v3_dev",
+      "private": false,
+      "status": "complete_cached_pipeline",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second",
+        "face_ai",
+        "face_swap"
+      ],
+      "face_cache_status": "available",
+      "totals": {
+        "n": 32,
+        "unique_image_ids": 32,
+        "repeated_id_rows": 0,
+        "ai": 0,
+        "uncertain": 5,
+        "authentic": 27,
+        "ai_percent": 0.0,
+        "verdict_counts": {
+          "AI-generated": 0,
+          "Likely AI-generated": 0,
+          "Likely AI-edited": 0,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 5,
+          "Likely authentic": 27
+        },
+        "component_flag_counts": {
+          "whole": 0,
+          "edit": 0,
+          "second": 0,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": {
+        "AI-generated": 0,
+        "Likely AI-generated": 0,
+        "Likely AI-edited": 0,
+        "This face looks AI-made or AI-changed": 0,
+        "Uncertain": 5,
+        "Likely authentic": 27
+      },
+      "by_label": {
+        "real": {
+          "n": 32,
+          "unique_image_ids": 32,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 5,
+          "authentic": 27,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 5,
+            "Likely authentic": 27
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "commons/phone | real": {
+          "n": 31,
+          "unique_image_ids": 31,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 5,
+          "authentic": 26,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 5,
+            "Likely authentic": 26
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons/quality | real": {
+          "n": 1,
+          "unique_image_ids": 1,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 1,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 1
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "commons_v4_dev",
+      "private": false,
+      "status": "complete_cached_pipeline",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second",
+        "face_ai",
+        "face_swap"
+      ],
+      "face_cache_status": "available",
+      "totals": {
+        "n": 62,
+        "unique_image_ids": 62,
+        "repeated_id_rows": 0,
+        "ai": 2,
+        "uncertain": 13,
+        "authentic": 47,
+        "ai_percent": 3.2258,
+        "verdict_counts": {
+          "AI-generated": 0,
+          "Likely AI-generated": 2,
+          "Likely AI-edited": 0,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 13,
+          "Likely authentic": 47
+        },
+        "component_flag_counts": {
+          "whole": 2,
+          "edit": 0,
+          "second": 0,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": {
+        "AI-generated": 0,
+        "Likely AI-generated": 2,
+        "Likely AI-edited": 0,
+        "This face looks AI-made or AI-changed": 0,
+        "Uncertain": 13,
+        "Likely authentic": 47
+      },
+      "by_label": {
+        "real": {
+          "n": 62,
+          "unique_image_ids": 62,
+          "repeated_id_rows": 0,
+          "ai": 2,
+          "uncertain": 13,
+          "authentic": 47,
+          "ai_percent": 3.2258,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 2,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 13,
+            "Likely authentic": 47
+          },
+          "component_flag_counts": {
+            "whole": 2,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "commons/portrait | real": {
+          "n": 48,
+          "unique_image_ids": 48,
+          "repeated_id_rows": 0,
+          "ai": 2,
+          "uncertain": 12,
+          "authentic": 34,
+          "ai_percent": 4.1667,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 2,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 12,
+            "Likely authentic": 34
+          },
+          "component_flag_counts": {
+            "whole": 2,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "commons/selfie | real": {
+          "n": 14,
+          "unique_image_ids": 14,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 1,
+          "authentic": 13,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 1,
+            "Likely authentic": 13
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "muse_edits_test_v2",
+      "private": false,
+      "status": "partial_missing_face_cache",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second"
+      ],
+      "face_cache_status": "missing",
+      "totals": {
+        "n": 396,
+        "unique_image_ids": 396,
+        "repeated_id_rows": 0,
+        "ai": 156,
+        "uncertain": 44,
+        "authentic": 196,
+        "ai_percent": 39.3939,
+        "verdict_counts": {
+          "AI-generated": 4,
+          "Likely AI-generated": 27,
+          "Likely AI-edited": 125,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 44,
+          "Likely authentic": 196
+        },
+        "component_flag_counts": {
+          "whole": 28,
+          "edit": 148,
+          "second": 129,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": null,
+      "by_label": {
+        "real": {
+          "n": 198,
+          "unique_image_ids": 198,
+          "repeated_id_rows": 0,
+          "ai": 4,
+          "uncertain": 36,
+          "authentic": 158,
+          "ai_percent": 2.0202,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 4,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 36,
+            "Likely authentic": 158
+          },
+          "component_flag_counts": {
+            "whole": 4,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "ai": {
+          "n": 198,
+          "unique_image_ids": 198,
+          "repeated_id_rows": 0,
+          "ai": 152,
+          "uncertain": 8,
+          "authentic": 38,
+          "ai_percent": 76.7677,
+          "verdict_counts": {
+            "AI-generated": 4,
+            "Likely AI-generated": 23,
+            "Likely AI-edited": 125,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 8,
+            "Likely authentic": 38
+          },
+          "component_flag_counts": {
+            "whole": 24,
+            "edit": 148,
+            "second": 129,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "muse_edits/local | ai": {
+          "n": 132,
+          "unique_image_ids": 132,
+          "repeated_id_rows": 0,
+          "ai": 94,
+          "uncertain": 7,
+          "authentic": 31,
+          "ai_percent": 71.2121,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 5,
+            "Likely AI-edited": 89,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 7,
+            "Likely authentic": 31
+          },
+          "component_flag_counts": {
+            "whole": 2,
+            "edit": 90,
+            "second": 72,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "muse_edits/original | real": {
+          "n": 198,
+          "unique_image_ids": 198,
+          "repeated_id_rows": 0,
+          "ai": 4,
+          "uncertain": 36,
+          "authentic": 158,
+          "ai_percent": 2.0202,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 4,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 36,
+            "Likely authentic": 158
+          },
+          "component_flag_counts": {
+            "whole": 4,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "muse_edits/whole | ai": {
+          "n": 66,
+          "unique_image_ids": 66,
+          "repeated_id_rows": 0,
+          "ai": 58,
+          "uncertain": 1,
+          "authentic": 7,
+          "ai_percent": 87.8788,
+          "verdict_counts": {
+            "AI-generated": 4,
+            "Likely AI-generated": 18,
+            "Likely AI-edited": 36,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 1,
+            "Likely authentic": 7
+          },
+          "component_flag_counts": {
+            "whole": 22,
+            "edit": 58,
+            "second": 57,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "muse_edits_v1_all",
+      "private": false,
+      "status": "missing_required_cache",
+      "missing_components": [
+        "edit_features"
+      ]
+    },
+    {
+      "name": "muse_edits_v1",
+      "private": false,
+      "status": "partial_missing_face_cache",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second"
+      ],
+      "face_cache_status": "missing",
+      "totals": {
+        "n": 152,
+        "unique_image_ids": 152,
+        "repeated_id_rows": 0,
+        "ai": 55,
+        "uncertain": 24,
+        "authentic": 73,
+        "ai_percent": 36.1842,
+        "verdict_counts": {
+          "AI-generated": 2,
+          "Likely AI-generated": 11,
+          "Likely AI-edited": 42,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 24,
+          "Likely authentic": 73
+        },
+        "component_flag_counts": {
+          "whole": 11,
+          "edit": 51,
+          "second": 51,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": null,
+      "by_label": {
+        "real": {
+          "n": 76,
+          "unique_image_ids": 76,
+          "repeated_id_rows": 0,
+          "ai": 2,
+          "uncertain": 18,
+          "authentic": 56,
+          "ai_percent": 2.6316,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 2,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 18,
+            "Likely authentic": 56
+          },
+          "component_flag_counts": {
+            "whole": 2,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "ai": {
+          "n": 76,
+          "unique_image_ids": 76,
+          "repeated_id_rows": 0,
+          "ai": 53,
+          "uncertain": 6,
+          "authentic": 17,
+          "ai_percent": 69.7368,
+          "verdict_counts": {
+            "AI-generated": 2,
+            "Likely AI-generated": 9,
+            "Likely AI-edited": 42,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 6,
+            "Likely authentic": 17
+          },
+          "component_flag_counts": {
+            "whole": 9,
+            "edit": 51,
+            "second": 51,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "muse_edits/local | ai": {
+          "n": 51,
+          "unique_image_ids": 51,
+          "repeated_id_rows": 0,
+          "ai": 30,
+          "uncertain": 6,
+          "authentic": 15,
+          "ai_percent": 58.8235,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 4,
+            "Likely AI-edited": 26,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 6,
+            "Likely authentic": 15
+          },
+          "component_flag_counts": {
+            "whole": 2,
+            "edit": 28,
+            "second": 28,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "muse_edits/original | real": {
+          "n": 76,
+          "unique_image_ids": 76,
+          "repeated_id_rows": 0,
+          "ai": 2,
+          "uncertain": 18,
+          "authentic": 56,
+          "ai_percent": 2.6316,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 2,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 18,
+            "Likely authentic": 56
+          },
+          "component_flag_counts": {
+            "whole": 2,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "muse_edits/whole | ai": {
+          "n": 25,
+          "unique_image_ids": 25,
+          "repeated_id_rows": 0,
+          "ai": 23,
+          "uncertain": 0,
+          "authentic": 2,
+          "ai_percent": 92.0,
+          "verdict_counts": {
+            "AI-generated": 2,
+            "Likely AI-generated": 5,
+            "Likely AI-edited": 16,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 2
+          },
+          "component_flag_counts": {
+            "whole": 7,
+            "edit": 23,
+            "second": 23,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 1,
+        "second": 2
+      }
+    },
+    {
+      "name": "muse_image_test_v1",
+      "private": false,
+      "status": "complete_cached_pipeline",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second",
+        "face_ai",
+        "face_swap"
+      ],
+      "face_cache_status": "available",
+      "totals": {
+        "n": 100,
+        "unique_image_ids": 100,
+        "repeated_id_rows": 0,
+        "ai": 100,
+        "uncertain": 0,
+        "authentic": 0,
+        "ai_percent": 100.0,
+        "verdict_counts": {
+          "AI-generated": 33,
+          "Likely AI-generated": 54,
+          "Likely AI-edited": 13,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 0,
+          "Likely authentic": 0
+        },
+        "component_flag_counts": {
+          "whole": 87,
+          "edit": 100,
+          "second": 100,
+          "face_ai": 24,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": {
+        "AI-generated": 33,
+        "Likely AI-generated": 54,
+        "Likely AI-edited": 13,
+        "This face looks AI-made or AI-changed": 0,
+        "Uncertain": 0,
+        "Likely authentic": 0
+      },
+      "by_label": {
+        "ai": {
+          "n": 100,
+          "unique_image_ids": 100,
+          "repeated_id_rows": 0,
+          "ai": 100,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 33,
+            "Likely AI-generated": 54,
+            "Likely AI-edited": 13,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 87,
+            "edit": 100,
+            "second": 100,
+            "face_ai": 24,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "muse_image/animal | ai": {
+          "n": 14,
+          "unique_image_ids": 14,
+          "repeated_id_rows": 0,
+          "ai": 14,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 5,
+            "Likely AI-generated": 8,
+            "Likely AI-edited": 1,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 13,
+            "edit": 14,
+            "second": 14,
+            "face_ai": 4,
+            "face_swap": 0
+          }
+        },
+        "muse_image/object_food | ai": {
+          "n": 13,
+          "unique_image_ids": 13,
+          "repeated_id_rows": 0,
+          "ai": 13,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 4,
+            "Likely AI-generated": 8,
+            "Likely AI-edited": 1,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 12,
+            "edit": 13,
+            "second": 13,
+            "face_ai": 1,
+            "face_swap": 0
+          }
+        },
+        "muse_image/people/candid | ai": {
+          "n": 12,
+          "unique_image_ids": 12,
+          "repeated_id_rows": 0,
+          "ai": 12,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 4,
+            "Likely AI-generated": 4,
+            "Likely AI-edited": 4,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 8,
+            "edit": 12,
+            "second": 12,
+            "face_ai": 4,
+            "face_swap": 0
+          }
+        },
+        "muse_image/people/group | ai": {
+          "n": 12,
+          "unique_image_ids": 12,
+          "repeated_id_rows": 0,
+          "ai": 12,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 4,
+            "Likely AI-generated": 6,
+            "Likely AI-edited": 2,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 10,
+            "edit": 12,
+            "second": 12,
+            "face_ai": 7,
+            "face_swap": 0
+          }
+        },
+        "muse_image/people/indoor_lowlight | ai": {
+          "n": 12,
+          "unique_image_ids": 12,
+          "repeated_id_rows": 0,
+          "ai": 12,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 4,
+            "Likely AI-generated": 6,
+            "Likely AI-edited": 2,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 10,
+            "edit": 12,
+            "second": 12,
+            "face_ai": 1,
+            "face_swap": 0
+          }
+        },
+        "muse_image/people/portrait | ai": {
+          "n": 12,
+          "unique_image_ids": 12,
+          "repeated_id_rows": 0,
+          "ai": 12,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 3,
+            "Likely AI-generated": 8,
+            "Likely AI-edited": 1,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 11,
+            "edit": 12,
+            "second": 12,
+            "face_ai": 3,
+            "face_swap": 0
+          }
+        },
+        "muse_image/people/selfie | ai": {
+          "n": 12,
+          "unique_image_ids": 12,
+          "repeated_id_rows": 0,
+          "ai": 12,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 3,
+            "Likely AI-generated": 9,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 12,
+            "edit": 12,
+            "second": 12,
+            "face_ai": 4,
+            "face_swap": 0
+          }
+        },
+        "muse_image/scene | ai": {
+          "n": 13,
+          "unique_image_ids": 13,
+          "repeated_id_rows": 0,
+          "ai": 13,
+          "uncertain": 0,
+          "authentic": 0,
+          "ai_percent": 100.0,
+          "verdict_counts": {
+            "AI-generated": 6,
+            "Likely AI-generated": 5,
+            "Likely AI-edited": 2,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 11,
+            "edit": 13,
+            "second": 13,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "muse_pairs_val",
+      "private": false,
+      "status": "complete_cached_pipeline",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second",
+        "face_ai",
+        "face_swap"
+      ],
+      "face_cache_status": "available",
+      "totals": {
+        "n": 152,
+        "unique_image_ids": 152,
+        "repeated_id_rows": 0,
+        "ai": 76,
+        "uncertain": 12,
+        "authentic": 64,
+        "ai_percent": 50.0,
+        "verdict_counts": {
+          "AI-generated": 6,
+          "Likely AI-generated": 45,
+          "Likely AI-edited": 25,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 12,
+          "Likely authentic": 64
+        },
+        "component_flag_counts": {
+          "whole": 49,
+          "edit": 68,
+          "second": 72,
+          "face_ai": 9,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": {
+        "AI-generated": 6,
+        "Likely AI-generated": 45,
+        "Likely AI-edited": 25,
+        "This face looks AI-made or AI-changed": 0,
+        "Uncertain": 12,
+        "Likely authentic": 64
+      },
+      "by_label": {
+        "real": {
+          "n": 76,
+          "unique_image_ids": 76,
+          "repeated_id_rows": 0,
+          "ai": 1,
+          "uncertain": 12,
+          "authentic": 63,
+          "ai_percent": 1.3158,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 1,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 12,
+            "Likely authentic": 63
+          },
+          "component_flag_counts": {
+            "whole": 1,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "ai": {
+          "n": 76,
+          "unique_image_ids": 76,
+          "repeated_id_rows": 0,
+          "ai": 75,
+          "uncertain": 0,
+          "authentic": 1,
+          "ai_percent": 98.6842,
+          "verdict_counts": {
+            "AI-generated": 6,
+            "Likely AI-generated": 44,
+            "Likely AI-edited": 25,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 1
+          },
+          "component_flag_counts": {
+            "whole": 48,
+            "edit": 68,
+            "second": 72,
+            "face_ai": 9,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "muse_pairs/muse | ai": {
+          "n": 76,
+          "unique_image_ids": 76,
+          "repeated_id_rows": 0,
+          "ai": 75,
+          "uncertain": 0,
+          "authentic": 1,
+          "ai_percent": 98.6842,
+          "verdict_counts": {
+            "AI-generated": 6,
+            "Likely AI-generated": 44,
+            "Likely AI-edited": 25,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 1
+          },
+          "component_flag_counts": {
+            "whole": 48,
+            "edit": 68,
+            "second": 72,
+            "face_ai": 9,
+            "face_swap": 0
+          }
+        },
+        "muse_pairs/real | real": {
+          "n": 76,
+          "unique_image_ids": 76,
+          "repeated_id_rows": 0,
+          "ai": 1,
+          "uncertain": 12,
+          "authentic": 63,
+          "ai_percent": 1.3158,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 1,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 12,
+            "Likely authentic": 63
+          },
+          "component_flag_counts": {
+            "whole": 1,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "open_gen_dev",
+      "private": false,
+      "status": "partial_missing_face_cache",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second"
+      ],
+      "face_cache_status": "missing",
+      "totals": {
+        "n": 511,
+        "unique_image_ids": 511,
+        "repeated_id_rows": 0,
+        "ai": 483,
+        "uncertain": 18,
+        "authentic": 10,
+        "ai_percent": 94.5205,
+        "verdict_counts": {
+          "AI-generated": 446,
+          "Likely AI-generated": 37,
+          "Likely AI-edited": 0,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 18,
+          "Likely authentic": 10
+        },
+        "component_flag_counts": {
+          "whole": 483,
+          "edit": 0,
+          "second": 28,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": null,
+      "by_label": {
+        "ai": {
+          "n": 511,
+          "unique_image_ids": 511,
+          "repeated_id_rows": 0,
+          "ai": 483,
+          "uncertain": 18,
+          "authentic": 10,
+          "ai_percent": 94.5205,
+          "verdict_counts": {
+            "AI-generated": 446,
+            "Likely AI-generated": 37,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 18,
+            "Likely authentic": 10
+          },
+          "component_flag_counts": {
+            "whole": 483,
+            "edit": 0,
+            "second": 28,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "open_gen/k22_devcaption | ai": {
+          "n": 77,
+          "unique_image_ids": 77,
+          "repeated_id_rows": 0,
+          "ai": 75,
+          "uncertain": 2,
+          "authentic": 0,
+          "ai_percent": 97.4026,
+          "verdict_counts": {
+            "AI-generated": 71,
+            "Likely AI-generated": 4,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 2,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 75,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "open_gen/pixart | ai": {
+          "n": 396,
+          "unique_image_ids": 396,
+          "repeated_id_rows": 0,
+          "ai": 388,
+          "uncertain": 7,
+          "authentic": 1,
+          "ai_percent": 97.9798,
+          "verdict_counts": {
+            "AI-generated": 365,
+            "Likely AI-generated": 23,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 7,
+            "Likely authentic": 1
+          },
+          "component_flag_counts": {
+            "whole": 388,
+            "edit": 0,
+            "second": 28,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "open_gen/sd35m_devcaption | ai": {
+          "n": 38,
+          "unique_image_ids": 38,
+          "repeated_id_rows": 0,
+          "ai": 20,
+          "uncertain": 9,
+          "authentic": 9,
+          "ai_percent": 52.6316,
+          "verdict_counts": {
+            "AI-generated": 10,
+            "Likely AI-generated": 10,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 9,
+            "Likely authentic": 9
+          },
+          "component_flag_counts": {
+            "whole": 20,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "real_face_crops_dev_all",
+      "private": false,
+      "status": "complete_cached_pipeline",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second",
+        "face_ai",
+        "face_swap"
+      ],
+      "face_cache_status": "available",
+      "totals": {
+        "n": 150,
+        "unique_image_ids": 149,
+        "repeated_id_rows": 1,
+        "ai": 6,
+        "uncertain": 49,
+        "authentic": 95,
+        "ai_percent": 4.0,
+        "verdict_counts": {
+          "AI-generated": 0,
+          "Likely AI-generated": 6,
+          "Likely AI-edited": 0,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 49,
+          "Likely authentic": 95
+        },
+        "component_flag_counts": {
+          "whole": 6,
+          "edit": 0,
+          "second": 0,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": {
+        "AI-generated": 0,
+        "Likely AI-generated": 6,
+        "Likely AI-edited": 0,
+        "This face looks AI-made or AI-changed": 0,
+        "Uncertain": 49,
+        "Likely authentic": 95
+      },
+      "by_label": {
+        "real": {
+          "n": 150,
+          "unique_image_ids": 149,
+          "repeated_id_rows": 1,
+          "ai": 6,
+          "uncertain": 49,
+          "authentic": 95,
+          "ai_percent": 4.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 6,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 49,
+            "Likely authentic": 95
+          },
+          "component_flag_counts": {
+            "whole": 6,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "real_face_crops/commons/people | real": {
+          "n": 8,
+          "unique_image_ids": 8,
+          "repeated_id_rows": 0,
+          "ai": 1,
+          "uncertain": 3,
+          "authentic": 4,
+          "ai_percent": 12.5,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 1,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 3,
+            "Likely authentic": 4
+          },
+          "component_flag_counts": {
+            "whole": 1,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "real_face_crops/commons/phone | real": {
+          "n": 1,
+          "unique_image_ids": 1,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 1,
+          "authentic": 0,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 1,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "real_face_crops/commons/portrait | real": {
+          "n": 91,
+          "unique_image_ids": 90,
+          "repeated_id_rows": 1,
+          "ai": 5,
+          "uncertain": 29,
+          "authentic": 57,
+          "ai_percent": 5.4945,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 5,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 29,
+            "Likely authentic": 57
+          },
+          "component_flag_counts": {
+            "whole": 5,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "real_face_crops/commons/quality | real": {
+          "n": 5,
+          "unique_image_ids": 5,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 3,
+          "authentic": 2,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 3,
+            "Likely authentic": 2
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "real_face_crops/commons/selfie | real": {
+          "n": 7,
+          "unique_image_ids": 7,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 2,
+          "authentic": 5,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 2,
+            "Likely authentic": 5
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "real_face_crops/sid_set/openimages | real": {
+          "n": 38,
+          "unique_image_ids": 38,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 11,
+          "authentic": 27,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 11,
+            "Likely authentic": 27
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 1,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "real_face_crops_dev",
+      "private": false,
+      "status": "partial_missing_face_cache",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second"
+      ],
+      "face_cache_status": "missing_current_model_features",
+      "totals": {
+        "n": 129,
+        "unique_image_ids": 128,
+        "repeated_id_rows": 1,
+        "ai": 6,
+        "uncertain": 44,
+        "authentic": 79,
+        "ai_percent": 4.6512,
+        "verdict_counts": {
+          "AI-generated": 0,
+          "Likely AI-generated": 6,
+          "Likely AI-edited": 0,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 44,
+          "Likely authentic": 79
+        },
+        "component_flag_counts": {
+          "whole": 6,
+          "edit": 0,
+          "second": 0,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": null,
+      "by_label": {
+        "real": {
+          "n": 129,
+          "unique_image_ids": 128,
+          "repeated_id_rows": 1,
+          "ai": 6,
+          "uncertain": 44,
+          "authentic": 79,
+          "ai_percent": 4.6512,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 6,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 44,
+            "Likely authentic": 79
+          },
+          "component_flag_counts": {
+            "whole": 6,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "real_face_crops/commons/people | real": {
+          "n": 8,
+          "unique_image_ids": 8,
+          "repeated_id_rows": 0,
+          "ai": 1,
+          "uncertain": 3,
+          "authentic": 4,
+          "ai_percent": 12.5,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 1,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 3,
+            "Likely authentic": 4
+          },
+          "component_flag_counts": {
+            "whole": 1,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "real_face_crops/commons/phone | real": {
+          "n": 1,
+          "unique_image_ids": 1,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 1,
+          "authentic": 0,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 1,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "real_face_crops/commons/portrait | real": {
+          "n": 77,
+          "unique_image_ids": 76,
+          "repeated_id_rows": 1,
+          "ai": 5,
+          "uncertain": 26,
+          "authentic": 46,
+          "ai_percent": 6.4935,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 5,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 26,
+            "Likely authentic": 46
+          },
+          "component_flag_counts": {
+            "whole": 5,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "real_face_crops/commons/quality | real": {
+          "n": 5,
+          "unique_image_ids": 5,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 3,
+          "authentic": 2,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 3,
+            "Likely authentic": 2
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "real_face_crops/sid_set/openimages | real": {
+          "n": 38,
+          "unique_image_ids": 38,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 11,
+          "authentic": 27,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 11,
+            "Likely authentic": 27
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "real_face_crops_dev_v4",
+      "private": false,
+      "status": "partial_missing_face_cache",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second"
+      ],
+      "face_cache_status": "missing_current_model_features",
+      "totals": {
+        "n": 21,
+        "unique_image_ids": 21,
+        "repeated_id_rows": 0,
+        "ai": 0,
+        "uncertain": 5,
+        "authentic": 16,
+        "ai_percent": 0.0,
+        "verdict_counts": {
+          "AI-generated": 0,
+          "Likely AI-generated": 0,
+          "Likely AI-edited": 0,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 5,
+          "Likely authentic": 16
+        },
+        "component_flag_counts": {
+          "whole": 0,
+          "edit": 0,
+          "second": 0,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": null,
+      "by_label": {
+        "real": {
+          "n": 21,
+          "unique_image_ids": 21,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 5,
+          "authentic": 16,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 5,
+            "Likely authentic": 16
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "real_face_crops/commons/portrait | real": {
+          "n": 14,
+          "unique_image_ids": 14,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 3,
+          "authentic": 11,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 3,
+            "Likely authentic": 11
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "real_face_crops/commons/selfie | real": {
+          "n": 7,
+          "unique_image_ids": 7,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 2,
+          "authentic": 5,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 2,
+            "Likely authentic": 5
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 1,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "sd_faces",
+      "private": false,
+      "status": "complete_cached_pipeline",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second",
+        "face_ai",
+        "face_swap"
+      ],
+      "face_cache_status": "available",
+      "totals": {
+        "n": 996,
+        "unique_image_ids": 996,
+        "repeated_id_rows": 0,
+        "ai": 974,
+        "uncertain": 22,
+        "authentic": 0,
+        "ai_percent": 97.7912,
+        "verdict_counts": {
+          "AI-generated": 593,
+          "Likely AI-generated": 378,
+          "Likely AI-edited": 2,
+          "This face looks AI-made or AI-changed": 1,
+          "Uncertain": 22,
+          "Likely authentic": 0
+        },
+        "component_flag_counts": {
+          "whole": 961,
+          "edit": 26,
+          "second": 262,
+          "face_ai": 303,
+          "face_swap": 45
+        }
+      },
+      "full_verdict_counts": {
+        "AI-generated": 593,
+        "Likely AI-generated": 378,
+        "Likely AI-edited": 2,
+        "This face looks AI-made or AI-changed": 1,
+        "Uncertain": 22,
+        "Likely authentic": 0
+      },
+      "by_label": {
+        "ai": {
+          "n": 996,
+          "unique_image_ids": 996,
+          "repeated_id_rows": 0,
+          "ai": 974,
+          "uncertain": 22,
+          "authentic": 0,
+          "ai_percent": 97.7912,
+          "verdict_counts": {
+            "AI-generated": 593,
+            "Likely AI-generated": 378,
+            "Likely AI-edited": 2,
+            "This face looks AI-made or AI-changed": 1,
+            "Uncertain": 22,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 961,
+            "edit": 26,
+            "second": 262,
+            "face_ai": 303,
+            "face_swap": 45
+          }
+        }
+      },
+      "by_source": {
+        "sd_faces/sd1.5 | ai": {
+          "n": 332,
+          "unique_image_ids": 332,
+          "repeated_id_rows": 0,
+          "ai": 328,
+          "uncertain": 4,
+          "authentic": 0,
+          "ai_percent": 98.7952,
+          "verdict_counts": {
+            "AI-generated": 249,
+            "Likely AI-generated": 78,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 1,
+            "Uncertain": 4,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 327,
+            "edit": 0,
+            "second": 35,
+            "face_ai": 129,
+            "face_swap": 32
+          }
+        },
+        "sd_faces/sd2.1 | ai": {
+          "n": 332,
+          "unique_image_ids": 332,
+          "repeated_id_rows": 0,
+          "ai": 329,
+          "uncertain": 3,
+          "authentic": 0,
+          "ai_percent": 99.0964,
+          "verdict_counts": {
+            "AI-generated": 266,
+            "Likely AI-generated": 63,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 3,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 329,
+            "edit": 0,
+            "second": 25,
+            "face_ai": 105,
+            "face_swap": 2
+          }
+        },
+        "sd_faces/sdxl | ai": {
+          "n": 332,
+          "unique_image_ids": 332,
+          "repeated_id_rows": 0,
+          "ai": 317,
+          "uncertain": 15,
+          "authentic": 0,
+          "ai_percent": 95.4819,
+          "verdict_counts": {
+            "AI-generated": 78,
+            "Likely AI-generated": 237,
+            "Likely AI-edited": 2,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 15,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 305,
+            "edit": 26,
+            "second": 202,
+            "face_ai": 69,
+            "face_swap": 11
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 1
+      }
+    },
+    {
+      "name": "sfhq_pt3_test",
+      "private": false,
+      "status": "partial_missing_face_cache",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second"
+      ],
+      "face_cache_status": "missing",
+      "totals": {
+        "n": 375,
+        "unique_image_ids": 375,
+        "repeated_id_rows": 0,
+        "ai": 345,
+        "uncertain": 30,
+        "authentic": 0,
+        "ai_percent": 92.0,
+        "verdict_counts": {
+          "AI-generated": 83,
+          "Likely AI-generated": 261,
+          "Likely AI-edited": 1,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 30,
+          "Likely authentic": 0
+        },
+        "component_flag_counts": {
+          "whole": 344,
+          "edit": 6,
+          "second": 18,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": null,
+      "by_label": {
+        "ai": {
+          "n": 375,
+          "unique_image_ids": 375,
+          "repeated_id_rows": 0,
+          "ai": 345,
+          "uncertain": 30,
+          "authentic": 0,
+          "ai_percent": 92.0,
+          "verdict_counts": {
+            "AI-generated": 83,
+            "Likely AI-generated": 261,
+            "Likely AI-edited": 1,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 30,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 344,
+            "edit": 6,
+            "second": 18,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "sfhq/pt3 | ai": {
+          "n": 375,
+          "unique_image_ids": 375,
+          "repeated_id_rows": 0,
+          "ai": 345,
+          "uncertain": 30,
+          "authentic": 0,
+          "ai_percent": 92.0,
+          "verdict_counts": {
+            "AI-generated": 83,
+            "Likely AI-generated": 261,
+            "Likely AI-edited": 1,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 30,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 344,
+            "edit": 6,
+            "second": 18,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "sid_reals_0_9_unseen",
+      "private": false,
+      "status": "complete_cached_pipeline",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second",
+        "face_ai",
+        "face_swap"
+      ],
+      "face_cache_status": "available",
+      "totals": {
+        "n": 576,
+        "unique_image_ids": 576,
+        "repeated_id_rows": 0,
+        "ai": 11,
+        "uncertain": 82,
+        "authentic": 483,
+        "ai_percent": 1.9097,
+        "verdict_counts": {
+          "AI-generated": 0,
+          "Likely AI-generated": 9,
+          "Likely AI-edited": 2,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 82,
+          "Likely authentic": 483
+        },
+        "component_flag_counts": {
+          "whole": 9,
+          "edit": 2,
+          "second": 2,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": {
+        "AI-generated": 0,
+        "Likely AI-generated": 9,
+        "Likely AI-edited": 2,
+        "This face looks AI-made or AI-changed": 0,
+        "Uncertain": 82,
+        "Likely authentic": 483
+      },
+      "by_label": {
+        "real": {
+          "n": 576,
+          "unique_image_ids": 576,
+          "repeated_id_rows": 0,
+          "ai": 11,
+          "uncertain": 82,
+          "authentic": 483,
+          "ai_percent": 1.9097,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 9,
+            "Likely AI-edited": 2,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 82,
+            "Likely authentic": 483
+          },
+          "component_flag_counts": {
+            "whole": 9,
+            "edit": 2,
+            "second": 2,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "sid_set/openimages | real": {
+          "n": 576,
+          "unique_image_ids": 576,
+          "repeated_id_rows": 0,
+          "ai": 11,
+          "uncertain": 82,
+          "authentic": 483,
+          "ai_percent": 1.9097,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 9,
+            "Likely AI-edited": 2,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 82,
+            "Likely authentic": 483
+          },
+          "component_flag_counts": {
+            "whole": 9,
+            "edit": 2,
+            "second": 2,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "tpdne_test",
+      "private": false,
+      "status": "complete_cached_pipeline",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second",
+        "face_ai",
+        "face_swap"
+      ],
+      "face_cache_status": "available",
+      "totals": {
+        "n": 244,
+        "unique_image_ids": 244,
+        "repeated_id_rows": 0,
+        "ai": 233,
+        "uncertain": 11,
+        "authentic": 0,
+        "ai_percent": 95.4918,
+        "verdict_counts": {
+          "AI-generated": 70,
+          "Likely AI-generated": 163,
+          "Likely AI-edited": 0,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 11,
+          "Likely authentic": 0
+        },
+        "component_flag_counts": {
+          "whole": 233,
+          "edit": 7,
+          "second": 25,
+          "face_ai": 36,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": {
+        "AI-generated": 70,
+        "Likely AI-generated": 163,
+        "Likely AI-edited": 0,
+        "This face looks AI-made or AI-changed": 0,
+        "Uncertain": 11,
+        "Likely authentic": 0
+      },
+      "by_label": {
+        "ai": {
+          "n": 244,
+          "unique_image_ids": 244,
+          "repeated_id_rows": 0,
+          "ai": 233,
+          "uncertain": 11,
+          "authentic": 0,
+          "ai_percent": 95.4918,
+          "verdict_counts": {
+            "AI-generated": 70,
+            "Likely AI-generated": 163,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 11,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 233,
+            "edit": 7,
+            "second": 25,
+            "face_ai": 36,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "gan/tpdne | ai": {
+          "n": 244,
+          "unique_image_ids": 244,
+          "repeated_id_rows": 0,
+          "ai": 233,
+          "uncertain": 11,
+          "authentic": 0,
+          "ai_percent": 95.4918,
+          "verdict_counts": {
+            "AI-generated": 70,
+            "Likely AI-generated": 163,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 11,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 233,
+            "edit": 7,
+            "second": 25,
+            "face_ai": 36,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "google/gemini_dev_v1",
+      "private": false,
+      "status": "partial_missing_face_cache",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second"
+      ],
+      "face_cache_status": "missing",
+      "totals": {
+        "n": 30,
+        "unique_image_ids": 30,
+        "repeated_id_rows": 0,
+        "ai": 27,
+        "uncertain": 0,
+        "authentic": 3,
+        "ai_percent": 90.0,
+        "verdict_counts": {
+          "AI-generated": 3,
+          "Likely AI-generated": 21,
+          "Likely AI-edited": 3,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 0,
+          "Likely authentic": 3
+        },
+        "component_flag_counts": {
+          "whole": 17,
+          "edit": 7,
+          "second": 27,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": null,
+      "by_label": {
+        "ai": {
+          "n": 30,
+          "unique_image_ids": 30,
+          "repeated_id_rows": 0,
+          "ai": 27,
+          "uncertain": 0,
+          "authentic": 3,
+          "ai_percent": 90.0,
+          "verdict_counts": {
+            "AI-generated": 3,
+            "Likely AI-generated": 21,
+            "Likely AI-edited": 3,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 3
+          },
+          "component_flag_counts": {
+            "whole": 17,
+            "edit": 7,
+            "second": 27,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "gemini_api/3.1-flash-image | ai": {
+          "n": 30,
+          "unique_image_ids": 30,
+          "repeated_id_rows": 0,
+          "ai": 27,
+          "uncertain": 0,
+          "authentic": 3,
+          "ai_percent": 90.0,
+          "verdict_counts": {
+            "AI-generated": 3,
+            "Likely AI-generated": 21,
+            "Likely AI-edited": 3,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 3
+          },
+          "component_flag_counts": {
+            "whole": 17,
+            "edit": 7,
+            "second": 27,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "google/open_gen_dev",
+      "private": false,
+      "status": "partial_missing_face_cache",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second"
+      ],
+      "face_cache_status": "missing",
+      "totals": {
+        "n": 67,
+        "unique_image_ids": 67,
+        "repeated_id_rows": 0,
+        "ai": 48,
+        "uncertain": 14,
+        "authentic": 5,
+        "ai_percent": 71.6418,
+        "verdict_counts": {
+          "AI-generated": 7,
+          "Likely AI-generated": 39,
+          "Likely AI-edited": 2,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 14,
+          "Likely authentic": 5
+        },
+        "component_flag_counts": {
+          "whole": 30,
+          "edit": 3,
+          "second": 28,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": null,
+      "by_label": {
+        "ai": {
+          "n": 67,
+          "unique_image_ids": 67,
+          "repeated_id_rows": 0,
+          "ai": 48,
+          "uncertain": 14,
+          "authentic": 5,
+          "ai_percent": 71.6418,
+          "verdict_counts": {
+            "AI-generated": 7,
+            "Likely AI-generated": 39,
+            "Likely AI-edited": 2,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 14,
+            "Likely authentic": 5
+          },
+          "component_flag_counts": {
+            "whole": 30,
+            "edit": 3,
+            "second": 28,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "open_gen/gemini-2.5-flash-image_devcaption | ai": {
+          "n": 16,
+          "unique_image_ids": 16,
+          "repeated_id_rows": 0,
+          "ai": 13,
+          "uncertain": 3,
+          "authentic": 0,
+          "ai_percent": 81.25,
+          "verdict_counts": {
+            "AI-generated": 6,
+            "Likely AI-generated": 7,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 3,
+            "Likely authentic": 0
+          },
+          "component_flag_counts": {
+            "whole": 13,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "open_gen/gemini-3-pro-image_devcaption | ai": {
+          "n": 14,
+          "unique_image_ids": 14,
+          "repeated_id_rows": 0,
+          "ai": 10,
+          "uncertain": 1,
+          "authentic": 3,
+          "ai_percent": 71.4286,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 8,
+            "Likely AI-edited": 2,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 1,
+            "Likely authentic": 3
+          },
+          "component_flag_counts": {
+            "whole": 4,
+            "edit": 2,
+            "second": 9,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "open_gen/gemini-3.1-flash-image_devcaption | ai": {
+          "n": 37,
+          "unique_image_ids": 37,
+          "repeated_id_rows": 0,
+          "ai": 25,
+          "uncertain": 10,
+          "authentic": 2,
+          "ai_percent": 67.5676,
+          "verdict_counts": {
+            "AI-generated": 1,
+            "Likely AI-generated": 24,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 10,
+            "Likely authentic": 2
+          },
+          "component_flag_counts": {
+            "whole": 13,
+            "edit": 1,
+            "second": 19,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      }
+    },
+    {
+      "name": "private: phone",
+      "private": true,
+      "status": "complete_cached_pipeline",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second",
+        "face_ai",
+        "face_swap"
+      ],
+      "face_cache_status": "available",
+      "totals": {
+        "n": 104,
+        "unique_image_ids": 104,
+        "repeated_id_rows": 0,
+        "ai": 0,
+        "uncertain": 10,
+        "authentic": 94,
+        "ai_percent": 0.0,
+        "verdict_counts": {
+          "AI-generated": 0,
+          "Likely AI-generated": 0,
+          "Likely AI-edited": 0,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 10,
+          "Likely authentic": 94
+        },
+        "component_flag_counts": {
+          "whole": 0,
+          "edit": 0,
+          "second": 0,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": {
+        "AI-generated": 0,
+        "Likely AI-generated": 0,
+        "Likely AI-edited": 0,
+        "This face looks AI-made or AI-changed": 0,
+        "Uncertain": 10,
+        "Likely authentic": 94
+      },
+      "by_label": {
+        "real": {
+          "n": 104,
+          "unique_image_ids": 104,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 10,
+          "authentic": 94,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 10,
+            "Likely authentic": 94
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "private_aggregate | real": {
+          "n": 104,
+          "unique_image_ids": 104,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 10,
+          "authentic": 94,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 10,
+            "Likely authentic": 94
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      },
+      "note": "Only neutral group totals; no private identities, paths, source tags, or per-image scores."
+    },
+    {
+      "name": "private: phone objects",
+      "private": true,
+      "status": "complete_cached_pipeline",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second",
+        "face_ai",
+        "face_swap"
+      ],
+      "face_cache_status": "available",
+      "totals": {
+        "n": 100,
+        "unique_image_ids": 100,
+        "repeated_id_rows": 0,
+        "ai": 3,
+        "uncertain": 5,
+        "authentic": 92,
+        "ai_percent": 3.0,
+        "verdict_counts": {
+          "AI-generated": 0,
+          "Likely AI-generated": 2,
+          "Likely AI-edited": 1,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 5,
+          "Likely authentic": 92
+        },
+        "component_flag_counts": {
+          "whole": 1,
+          "edit": 2,
+          "second": 2,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": {
+        "AI-generated": 0,
+        "Likely AI-generated": 2,
+        "Likely AI-edited": 1,
+        "This face looks AI-made or AI-changed": 0,
+        "Uncertain": 5,
+        "Likely authentic": 92
+      },
+      "by_label": {
+        "real": {
+          "n": 100,
+          "unique_image_ids": 100,
+          "repeated_id_rows": 0,
+          "ai": 3,
+          "uncertain": 5,
+          "authentic": 92,
+          "ai_percent": 3.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 2,
+            "Likely AI-edited": 1,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 5,
+            "Likely authentic": 92
+          },
+          "component_flag_counts": {
+            "whole": 1,
+            "edit": 2,
+            "second": 2,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "private_aggregate | real": {
+          "n": 100,
+          "unique_image_ids": 100,
+          "repeated_id_rows": 0,
+          "ai": 3,
+          "uncertain": 5,
+          "authentic": 92,
+          "ai_percent": 3.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 2,
+            "Likely AI-edited": 1,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 5,
+            "Likely authentic": 92
+          },
+          "component_flag_counts": {
+            "whole": 1,
+            "edit": 2,
+            "second": 2,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 1,
+        "second": 0
+      },
+      "note": "Only neutral group totals; no private identities, paths, source tags, or per-image scores."
+    },
+    {
+      "name": "private: training selfies (reused)",
+      "private": true,
+      "status": "partial_missing_face_cache",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second"
+      ],
+      "face_cache_status": "missing_current_model_features",
+      "totals": {
+        "n": 30,
+        "unique_image_ids": 30,
+        "repeated_id_rows": 0,
+        "ai": 0,
+        "uncertain": 0,
+        "authentic": 30,
+        "ai_percent": 0.0,
+        "verdict_counts": {
+          "AI-generated": 0,
+          "Likely AI-generated": 0,
+          "Likely AI-edited": 0,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 0,
+          "Likely authentic": 30
+        },
+        "component_flag_counts": {
+          "whole": 0,
+          "edit": 0,
+          "second": 0,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": null,
+      "by_label": {
+        "real": {
+          "n": 30,
+          "unique_image_ids": 30,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 30,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 30
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "private_aggregate | real": {
+          "n": 30,
+          "unique_image_ids": 30,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 30,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 30
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      },
+      "note": "Only neutral group totals; no private identities, paths, source tags, or per-image scores."
+    },
+    {
+      "name": "private: training person edits (reused)",
+      "private": true,
+      "status": "partial_missing_face_cache",
+      "scope": "pixels_only_no_metadata",
+      "available_components": [
+        "whole",
+        "edit",
+        "second"
+      ],
+      "face_cache_status": "missing",
+      "totals": {
+        "n": 120,
+        "unique_image_ids": 120,
+        "repeated_id_rows": 0,
+        "ai": 56,
+        "uncertain": 0,
+        "authentic": 64,
+        "ai_percent": 46.6667,
+        "verdict_counts": {
+          "AI-generated": 2,
+          "Likely AI-generated": 12,
+          "Likely AI-edited": 42,
+          "This face looks AI-made or AI-changed": 0,
+          "Uncertain": 0,
+          "Likely authentic": 64
+        },
+        "component_flag_counts": {
+          "whole": 13,
+          "edit": 55,
+          "second": 52,
+          "face_ai": 0,
+          "face_swap": 0
+        }
+      },
+      "full_verdict_counts": null,
+      "by_label": {
+        "real": {
+          "n": 60,
+          "unique_image_ids": 60,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 60,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 60
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "ai": {
+          "n": 60,
+          "unique_image_ids": 60,
+          "repeated_id_rows": 0,
+          "ai": 56,
+          "uncertain": 0,
+          "authentic": 4,
+          "ai_percent": 93.3333,
+          "verdict_counts": {
+            "AI-generated": 2,
+            "Likely AI-generated": 12,
+            "Likely AI-edited": 42,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 4
+          },
+          "component_flag_counts": {
+            "whole": 13,
+            "edit": 55,
+            "second": 52,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "by_source": {
+        "private_aggregate | real": {
+          "n": 60,
+          "unique_image_ids": 60,
+          "repeated_id_rows": 0,
+          "ai": 0,
+          "uncertain": 0,
+          "authentic": 60,
+          "ai_percent": 0.0,
+          "verdict_counts": {
+            "AI-generated": 0,
+            "Likely AI-generated": 0,
+            "Likely AI-edited": 0,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 60
+          },
+          "component_flag_counts": {
+            "whole": 0,
+            "edit": 0,
+            "second": 0,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        },
+        "private_aggregate | ai": {
+          "n": 60,
+          "unique_image_ids": 60,
+          "repeated_id_rows": 0,
+          "ai": 56,
+          "uncertain": 0,
+          "authentic": 4,
+          "ai_percent": 93.3333,
+          "verdict_counts": {
+            "AI-generated": 2,
+            "Likely AI-generated": 12,
+            "Likely AI-edited": 42,
+            "This face looks AI-made or AI-changed": 0,
+            "Uncertain": 0,
+            "Likely authentic": 4
+          },
+          "component_flag_counts": {
+            "whole": 13,
+            "edit": 55,
+            "second": 52,
+            "face_ai": 0,
+            "face_swap": 0
+          }
+        }
+      },
+      "near_threshold_rows_within_0_001": {
+        "whole": 0,
+        "edit": 0,
+        "second": 0
+      },
+      "note": "Only neutral group totals; no private identities, paths, source tags, or per-image scores."
+    }
+  ],
+  "face_sets": [
+    {
+      "name": "private: phone",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 148,
+            "strict": 0,
+            "leans_or_strict": 4,
+            "leans_only": 4,
+            "unique_image_ids": 95
+          }
+        },
+        "swap": {
+          "real": {
+            "n_faces": 148,
+            "strict": 0,
+            "leans_or_strict": 2,
+            "leans_only": 2,
+            "unique_image_ids": 95
+          }
+        }
+      }
+    },
+    {
+      "name": "private: phone objects",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 20,
+            "strict": 0,
+            "leans_or_strict": 1,
+            "leans_only": 1,
+            "unique_image_ids": 14
+          }
+        },
+        "swap": {
+          "real": {
+            "n_faces": 20,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 14
+          }
+        }
+      }
+    },
+    {
+      "name": "private: training selfies (reused)",
+      "status": "partial_missing_swap_features",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 34,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 30
+          }
+        },
+        "swap": {
+          "status": "missing_current_model_features"
+        }
+      }
+    },
+    {
+      "name": "chameleon_random_eval",
+      "status": "partial_missing_swap_features",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 398,
+            "strict": 3,
+            "leans_or_strict": 35,
+            "leans_only": 32,
+            "unique_image_ids": 310
+          },
+          "ai_or_swap": {
+            "n_faces": 607,
+            "strict": 173,
+            "leans_or_strict": 341,
+            "leans_only": 168,
+            "unique_image_ids": 575
+          }
+        },
+        "swap": {
+          "status": "missing_current_model_features"
+        }
+      }
+    },
+    {
+      "name": "chameleon_size_matched_eval",
+      "status": "partial_missing_swap_features",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 381,
+            "strict": 9,
+            "leans_or_strict": 47,
+            "leans_only": 38,
+            "unique_image_ids": 308
+          },
+          "ai_or_swap": {
+            "n_faces": 277,
+            "strict": 112,
+            "leans_or_strict": 172,
+            "leans_only": 60,
+            "unique_image_ids": 237
+          }
+        },
+        "swap": {
+          "status": "missing_current_model_features"
+        }
+      }
+    },
+    {
+      "name": "commons_dev_eval",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 285,
+            "strict": 1,
+            "leans_or_strict": 14,
+            "leans_only": 13,
+            "unique_image_ids": 248
+          }
+        },
+        "swap": {
+          "real": {
+            "n_faces": 285,
+            "strict": 0,
+            "leans_or_strict": 1,
+            "leans_only": 1,
+            "unique_image_ids": 248
+          }
+        }
+      }
+    },
+    {
+      "name": "commons_v3_dev_eval",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 15,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 11
+          }
+        },
+        "swap": {
+          "real": {
+            "n_faces": 15,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 11
+          }
+        }
+      }
+    },
+    {
+      "name": "commons_v4_dev_eval",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 78,
+            "strict": 0,
+            "leans_or_strict": 3,
+            "leans_only": 3,
+            "unique_image_ids": 55
+          }
+        },
+        "swap": {
+          "real": {
+            "n_faces": 78,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 55
+          }
+        }
+      }
+    },
+    {
+      "name": "dfdc_part3_eval",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 1452,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 1452
+          },
+          "ai_or_swap": {
+            "n_faces": 1455,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 1455
+          }
+        },
+        "swap": {
+          "real": {
+            "n_faces": 1452,
+            "strict": 7,
+            "leans_or_strict": 72,
+            "leans_only": 65,
+            "unique_image_ids": 1452
+          },
+          "ai_or_swap": {
+            "n_faces": 1455,
+            "strict": 560,
+            "leans_or_strict": 995,
+            "leans_only": 435,
+            "unique_image_ids": 1455
+          }
+        }
+      }
+    },
+    {
+      "name": "muse_image_test_v1_eval",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "ai_or_swap": {
+            "n_faces": 184,
+            "strict": 31,
+            "leans_or_strict": 105,
+            "leans_only": 74,
+            "unique_image_ids": 75
+          }
+        },
+        "swap": {
+          "ai_or_swap": {
+            "n_faces": 184,
+            "strict": 0,
+            "leans_or_strict": 2,
+            "leans_only": 2,
+            "unique_image_ids": 75
+          }
+        }
+      }
+    },
+    {
+      "name": "muse_pairs_val_eval",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 81,
+            "strict": 0,
+            "leans_or_strict": 3,
+            "leans_only": 3,
+            "unique_image_ids": 41
+          },
+          "ai_or_swap": {
+            "n_faces": 98,
+            "strict": 14,
+            "leans_or_strict": 47,
+            "leans_only": 33,
+            "unique_image_ids": 49
+          }
+        },
+        "swap": {
+          "real": {
+            "n_faces": 81,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 41
+          },
+          "ai_or_swap": {
+            "n_faces": 98,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 49
+          }
+        }
+      }
+    },
+    {
+      "name": "openforensics_test_dev_eval",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 1531,
+            "strict": 1,
+            "leans_or_strict": 69,
+            "leans_only": 68,
+            "unique_image_ids": 1531
+          },
+          "ai_or_swap": {
+            "n_faces": 2270,
+            "strict": 3,
+            "leans_or_strict": 149,
+            "leans_only": 146,
+            "unique_image_ids": 2270
+          }
+        },
+        "swap": {
+          "real": {
+            "n_faces": 1531,
+            "strict": 4,
+            "leans_or_strict": 12,
+            "leans_only": 8,
+            "unique_image_ids": 1531
+          },
+          "ai_or_swap": {
+            "n_faces": 2270,
+            "strict": 2199,
+            "leans_or_strict": 2251,
+            "leans_only": 52,
+            "unique_image_ids": 2270
+          }
+        }
+      }
+    },
+    {
+      "name": "real_face_crops_dev_all_eval",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 174,
+            "strict": 0,
+            "leans_or_strict": 8,
+            "leans_only": 8,
+            "unique_image_ids": 147
+          }
+        },
+        "swap": {
+          "real": {
+            "n_faces": 174,
+            "strict": 0,
+            "leans_or_strict": 1,
+            "leans_only": 1,
+            "unique_image_ids": 147
+          }
+        }
+      }
+    },
+    {
+      "name": "real_face_crops_dev_eval",
+      "status": "partial_missing_swap_features",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 149,
+            "strict": 0,
+            "leans_or_strict": 8,
+            "leans_only": 8,
+            "unique_image_ids": 126
+          }
+        },
+        "swap": {
+          "status": "missing_current_model_features"
+        }
+      }
+    },
+    {
+      "name": "real_face_crops_dev_v4_eval",
+      "status": "partial_missing_swap_features",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 25,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 21
+          }
+        },
+        "swap": {
+          "status": "missing_current_model_features"
+        }
+      }
+    },
+    {
+      "name": "sd_faces_eval",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "ai_or_swap": {
+            "n_faces": 1006,
+            "strict": 305,
+            "leans_or_strict": 747,
+            "leans_only": 442,
+            "unique_image_ids": 996
+          }
+        },
+        "swap": {
+          "ai_or_swap": {
+            "n_faces": 1006,
+            "strict": 45,
+            "leans_or_strict": 146,
+            "leans_only": 101,
+            "unique_image_ids": 996
+          }
+        }
+      }
+    },
+    {
+      "name": "sid_reals_0_9_unseen_eval",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 557,
+            "strict": 0,
+            "leans_or_strict": 8,
+            "leans_only": 8,
+            "unique_image_ids": 290
+          }
+        },
+        "swap": {
+          "real": {
+            "n_faces": 557,
+            "strict": 0,
+            "leans_or_strict": 1,
+            "leans_only": 1,
+            "unique_image_ids": 290
+          }
+        }
+      }
+    },
+    {
+      "name": "tpdne_test_eval",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "ai_or_swap": {
+            "n_faces": 267,
+            "strict": 36,
+            "leans_or_strict": 185,
+            "leans_only": 149,
+            "unique_image_ids": 244
+          }
+        },
+        "swap": {
+          "ai_or_swap": {
+            "n_faces": 267,
+            "strict": 0,
+            "leans_or_strict": 1,
+            "leans_only": 1,
+            "unique_image_ids": 244
+          }
+        }
+      }
+    },
+    {
+      "name": "validation-00000-of-00034_eval",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 292,
+            "strict": 1,
+            "leans_or_strict": 3,
+            "leans_only": 2,
+            "unique_image_ids": 148
+          },
+          "ai_or_swap": {
+            "n_faces": 252,
+            "strict": 172,
+            "leans_or_strict": 204,
+            "leans_only": 32,
+            "unique_image_ids": 141
+          }
+        },
+        "swap": {
+          "real": {
+            "n_faces": 292,
+            "strict": 1,
+            "leans_or_strict": 1,
+            "leans_only": 0,
+            "unique_image_ids": 148
+          },
+          "ai_or_swap": {
+            "n_faces": 252,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 141
+          }
+        }
+      }
+    },
+    {
+      "name": "wilddeepfake_eval",
+      "status": "complete",
+      "components": {
+        "ai_made": {
+          "real": {
+            "n_faces": 3168,
+            "strict": 4,
+            "leans_or_strict": 191,
+            "leans_only": 187,
+            "unique_image_ids": 3168
+          },
+          "ai_or_swap": {
+            "n_faces": 3280,
+            "strict": 17,
+            "leans_or_strict": 191,
+            "leans_only": 174,
+            "unique_image_ids": 3280
+          }
+        },
+        "swap": {
+          "real": {
+            "n_faces": 3168,
+            "strict": 19,
+            "leans_or_strict": 83,
+            "leans_only": 64,
+            "unique_image_ids": 3168
+          },
+          "ai_or_swap": {
+            "n_faces": 3280,
+            "strict": 450,
+            "leans_or_strict": 1062,
+            "leans_only": 612,
+            "unique_image_ids": 3280
+          }
+        }
+      }
+    }
+  ],
+  "v4_source_face_sets": [
+    {
+      "name": "v4 crops: dfdc_p3_dev",
+      "status": "current_source_crop_features",
+      "components": {
+        "swap": {
+          "real": {
+            "n_faces": 1452,
+            "strict": 7,
+            "leans_or_strict": 72,
+            "leans_only": 65,
+            "unique_image_ids": 1452,
+            "unique_groups": 219
+          },
+          "ai_or_swap": {
+            "n_faces": 1455,
+            "strict": 560,
+            "leans_or_strict": 995,
+            "leans_only": 435,
+            "unique_image_ids": 1455,
+            "unique_groups": 187
+          }
+        }
+      }
+    },
+    {
+      "name": "v4 crops: of_test_dev",
+      "status": "current_source_crop_features",
+      "components": {
+        "swap": {
+          "real": {
+            "n_faces": 1531,
+            "strict": 4,
+            "leans_or_strict": 12,
+            "leans_only": 8,
+            "unique_image_ids": 1531,
+            "unique_groups": 970
+          },
+          "ai_or_swap": {
+            "n_faces": 2270,
+            "strict": 2199,
+            "leans_or_strict": 2251,
+            "leans_only": 52,
+            "unique_image_ids": 2270,
+            "unique_groups": 1478
+          }
+        }
+      }
+    },
+    {
+      "name": "v4 crops: of_val_dev",
+      "status": "current_source_crop_features",
+      "components": {
+        "swap": {
+          "real": {
+            "n_faces": 656,
+            "strict": 2,
+            "leans_or_strict": 10,
+            "leans_only": 8,
+            "unique_image_ids": 656,
+            "unique_groups": 598
+          },
+          "ai_or_swap": {
+            "n_faces": 1459,
+            "strict": 1410,
+            "leans_or_strict": 1442,
+            "leans_only": 32,
+            "unique_image_ids": 1459,
+            "unique_groups": 1024
+          }
+        }
+      }
+    },
+    {
+      "name": "v4 crops: pool_commons_dev",
+      "status": "current_source_crop_features",
+      "components": {
+        "swap": {
+          "real": {
+            "n_faces": 285,
+            "strict": 0,
+            "leans_or_strict": 1,
+            "leans_only": 1,
+            "unique_image_ids": 285,
+            "unique_groups": 248
+          }
+        }
+      }
+    },
+    {
+      "name": "v4 crops: pool_commons_v3_dev",
+      "status": "current_source_crop_features",
+      "components": {
+        "swap": {
+          "real": {
+            "n_faces": 15,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 15,
+            "unique_groups": 11
+          }
+        }
+      }
+    },
+    {
+      "name": "v4 crops: pool_commons_v4_dev",
+      "status": "current_source_crop_features",
+      "components": {
+        "swap": {
+          "real": {
+            "n_faces": 78,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 78,
+            "unique_groups": 55
+          }
+        }
+      }
+    },
+    {
+      "name": "v4 crops: pool_muse_image_test_v1",
+      "status": "current_source_crop_features",
+      "components": {
+        "swap": {
+          "ai_or_swap": {
+            "n_faces": 184,
+            "strict": 0,
+            "leans_or_strict": 2,
+            "leans_only": 2,
+            "unique_image_ids": 184,
+            "unique_groups": 75
+          }
+        }
+      }
+    },
+    {
+      "name": "v4 crops: pool_muse_pairs_val",
+      "status": "current_source_crop_features",
+      "components": {
+        "swap": {
+          "real": {
+            "n_faces": 81,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 81,
+            "unique_groups": 41
+          },
+          "ai_or_swap": {
+            "n_faces": 98,
+            "strict": 0,
+            "leans_or_strict": 0,
+            "leans_only": 0,
+            "unique_image_ids": 98,
+            "unique_groups": 49
+          }
+        }
+      }
+    },
+    {
+      "name": "v4 crops: pool_real_face_crops_dev_all",
+      "status": "current_source_crop_features",
+      "components": {
+        "swap": {
+          "real": {
+            "n_faces": 174,
+            "strict": 0,
+            "leans_or_strict": 1,
+            "leans_only": 1,
+            "unique_image_ids": 174,
+            "unique_groups": 147
+          }
+        }
+      }
+    },
+    {
+      "name": "v4 crops: pool_sd_faces",
+      "status": "current_source_crop_features",
+      "components": {
+        "swap": {
+          "ai_or_swap": {
+            "n_faces": 1006,
+            "strict": 45,
+            "leans_or_strict": 146,
+            "leans_only": 101,
+            "unique_image_ids": 1006,
+            "unique_groups": 996
+          }
+        }
+      }
+    },
+    {
+      "name": "v4 crops: pool_sid_reals_0_9_unseen",
+      "status": "current_source_crop_features",
+      "components": {
+        "swap": {
+          "real": {
+            "n_faces": 557,
+            "strict": 0,
+            "leans_or_strict": 1,
+            "leans_only": 1,
+            "unique_image_ids": 557,
+            "unique_groups": 290
+          }
+        }
+      }
+    },
+    {
+      "name": "v4 crops: pool_sid_val",
+      "status": "current_source_crop_features",
+      "components": {
+        "swap": {
+          "real": {
+            "n_faces": 292,
+            "strict": 1,
+            "leans_or_strict": 1,
+            "leans_only": 0,
+            "unique_image_ids": 292,
+            "unique_groups": 148
+          }
+        }
+      }
+    },
+    {
+      "name": "v4 crops: pool_tpdne_test",
+      "status": "current_source_crop_features",
+      "components": {
+        "swap": {
+          "ai_or_swap": {
+            "n_faces": 267,
+            "strict": 0,
+            "leans_or_strict": 1,
+            "leans_only": 1,
+            "unique_image_ids": 267,
+            "unique_groups": 244
+          }
+        }
+      }
+    },
+    {
+      "name": "v4 crops: wilddeepfake",
+      "status": "current_source_crop_features",
+      "components": {
+        "swap": {
+          "real": {
+            "n_faces": 3168,
+            "strict": 19,
+            "leans_or_strict": 83,
+            "leans_only": 64,
+            "unique_image_ids": 3168,
+            "unique_groups": 396
+          },
+          "ai_or_swap": {
+            "n_faces": 3280,
+            "strict": 450,
+            "leans_or_strict": 1062,
+            "leans_only": 612,
+            "unique_image_ids": 3280,
+            "unique_groups": 410
+          }
+        }
+      }
+    }
+  ],
+  "calibration_coverage": [
+    {
+      "pool": "polished dev",
+      "expected_real_rows": 330,
+      "observed_real_rows": 330,
+      "status": "verified"
+    },
+    {
+      "pool": "OpenImages val",
+      "expected_real_rows": 76,
+      "observed_real_rows": 76,
+      "status": "verified"
+    },
+    {
+      "pool": "originals v1",
+      "expected_real_rows": 76,
+      "observed_real_rows": 76,
+      "status": "verified"
+    },
+    {
+      "pool": "originals v2",
+      "expected_real_rows": 198,
+      "observed_real_rows": 198,
+      "status": "verified"
+    },
+    {
+      "pool": "OpenImages unseen",
+      "expected_real_rows": 576,
+      "observed_real_rows": 576,
+      "status": "verified"
+    },
+    {
+      "pool": "Commons v3 dev",
+      "expected_real_rows": 32,
+      "observed_real_rows": 32,
+      "status": "verified"
+    },
+    {
+      "pool": "close-ups",
+      "expected_real_rows": 150,
+      "observed_real_rows": 150,
+      "status": "verified"
+    },
+    {
+      "pool": "selfies+portraits",
+      "expected_real_rows": 62,
+      "observed_real_rows": 62,
+      "status": "verified"
+    },
+    {
+      "pool": "phone",
+      "expected_real_rows": 104,
+      "observed_real_rows": 104,
+      "status": "verified"
+    },
+    {
+      "pool": "phone objects",
+      "expected_real_rows": 100,
+      "observed_real_rows": 100,
+      "status": "verified"
+    }
+  ],
+  "evaluation_coverage": [
+    {
+      "name": "judge_test_ai_v1",
+      "role": "release regression; observed during earlier development",
+      "status": "no_current_full_pipeline_caches; run live inference"
+    },
+    {
+      "name": "muse_image_test_v2",
+      "role": "fresh Muse evaluation; use live inference if caches absent",
+      "status": "no_current_full_pipeline_caches; run live inference"
+    },
+    {
+      "name": "chameleon_random",
+      "role": "external evaluation; previously inspected during development",
+      "status": "no_current_full_pipeline_caches; run live inference"
+    },
+    {
+      "name": "chameleon_size_matched",
+      "role": "external size-matched evaluation; previously inspected",
+      "status": "no_current_full_pipeline_caches; run live inference"
+    },
+    {
+      "name": "rtfs_test",
+      "role": "unseen identities; original Colab results are not a reconstruction at the final app line",
+      "status": "no_current_full_pipeline_caches; run live inference"
+    },
+    {
+      "name": "person-edit cross-validation",
+      "status": "training-reused person cache is not an independent test",
+      "role": "Earlier folds used the same person's sessions; fresh edited selfies are still needed."
+    },
+    {
+      "name": "forwarding and phone processing",
+      "status": "not represented by original-view caches",
+      "role": "Use live release robustness artifacts; cached clean metrics cannot establish transformation robustness."
+    }
+  ],
+  "limitations": [
+    "Feature caches are float16; live inference can differ at strict threshold boundaries.",
+    "Missing face caches produce explicit partial metrics, never a full-verdict claim.",
+    "Private source categories and per-photo identifiers are suppressed.",
+    "Unique-ID counts are not perceptual deduplication; separately named copies of one original count as distinct IDs.",
+    "Current v4 copied face features are checked byte-for-value against the designated source caches; those caches do not store backbone checkpoint hashes."
+  ],
+  "required_calibration_caches_valid": true,
+  "coverage_counts_not_an_accuracy_denominator": {
+    "rows": 5489,
+    "unique_image_ids": 5338,
+    "repeated_id_rows": 151
+  },
+  "validation": {
+    "count_partitions_consistent": true,
+    "verdict_implementation": "src.inference.Detector.verdict",
+    "runtime_calibration_loaded_without_recalibration": true,
+    "torch_threads": 4,
+    "cuda_visible_devices": "-1"
+  }
+}

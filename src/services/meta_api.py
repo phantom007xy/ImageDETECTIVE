@@ -2,7 +2,9 @@
 
 Every paid call goes through `paid_call`: it refuses when today's spending would pass the cap,
 returns a cached result for the same request (so the same image is never paid for twice), and
-records what was spent. If anything fails, the caller gets None and the app shows everything
+reserves the estimated maximum before starting, then refunds unused budget on success.
+Failed stages keep their reservation because a remote call may already be billed.
+If anything fails, the caller gets None and the app shows everything
 else: the verdict never waits on, or depends on, an API call (plan Section 0).
 
 Settings (environment variables): MODEL_API_KEY (or a line in .env), API_DAILY_CAP_USD (default 3).
@@ -10,6 +12,7 @@ Spending is kept per UTC day in .app_state/api_usage.json (ignored by git).
 """
 
 import json
+import math
 import os
 import threading
 import time
@@ -23,6 +26,8 @@ STATE = Path(".app_state/api_usage.json")
 _lock = threading.Lock()
 _cache = {}
 _client = None
+MAX_CACHE_BYTES = 64 * 1024 * 1024
+MAX_CACHE_ITEMS = 128
 
 
 def api_key():
@@ -57,36 +62,77 @@ def _record(cost):
         usage = {}
     usage[today] = usage.get(today, 0.0) + cost
     STATE.parent.mkdir(exist_ok=True)
-    STATE.write_text(json.dumps(usage, indent=1))
+    temporary = STATE.with_suffix(".json.tmp")
+    temporary.write_text(json.dumps(usage, indent=1))
+    temporary.replace(STATE)
 
 
 def client():
     global _client
     if _client is None:
-        _client = httpx.Client(base_url=BASE_URL, timeout=120)
+        _client = httpx.Client(base_url=BASE_URL, timeout=httpx.Timeout(60, connect=10, pool=5))
     return _client
 
 
+def _size(value):
+    if isinstance(value, (bytes, str)):
+        return len(value)
+    if isinstance(value, dict):
+        return sum(_size(v) for v in value.values())
+    if isinstance(value, (tuple, list)):
+        return sum(_size(v) for v in value)
+    return int(getattr(value, "nbytes", 64))
+
+
 def paid_call(cache_key, max_cost, call):
-    """Run call(key) -> (result, actual_cost) unless cached or over the cap. Returns result or None."""
-    with _lock:
-        if cache_key in _cache:
-            return _cache[cache_key]
-        if spent_today() + max_cost > daily_cap():
-            return None
-    key = api_key()
-    if key is None:
+    """Serialize paid work separately from inference and reserve its upper-bound cost first.
+
+    Successful calls refund unused reservation. Failed calls keep it: a remote stage may
+    already have been billed. This is a conservative daily budget, not a billing statement.
+    The lock also deduplicates simultaneous identical requests in this single-process app.
+    """
+    cached = _cache.get(cache_key)
+    if cached is not None:
+        return cached
+    # Optional work must not occupy all of FastAPI's worker threads while another
+    # API request is slow. Return the normal unavailable fallback immediately.
+    if not _lock.acquire(blocking=False):
         return None
     try:
-        result, cost = call(key)
-    except Exception as error:  # any API problem: the app simply goes on without this extra
-        print(f"[meta_api] {type(error).__name__}: {str(error)[:200]}")
-        return None
-    with _lock:
-        _record(cost)
+        if cache_key in _cache:
+            value = _cache.pop(cache_key)
+            _cache[cache_key] = value
+            return value
+        if not math.isfinite(max_cost) or max_cost < 0 or spent_today() + max_cost > daily_cap():
+            return None
+        key = api_key()
+        if key is None:
+            return None
+        day = datetime.now(timezone.utc).date()
+        try:
+            _record(max_cost)  # persist before starting any potentially billed stage
+        except OSError:
+            return None
+        try:
+            result, cost = call(key)
+            if not math.isfinite(cost) or cost < 0:
+                raise ValueError("Invalid API cost")
+            if datetime.now(timezone.utc).date() == day:
+                if cost != max_cost:
+                    _record(cost - max_cost)
+            else:
+                _record(cost)  # conservative accounting across a UTC-day boundary
+        except Exception as error:
+            print(f"[meta_api] {type(error).__name__}: optional service unavailable")
+            return None
         if result is not None:
-            _cache[cache_key] = result
-    return result
+            if _size(result) <= MAX_CACHE_BYTES:
+                _cache[cache_key] = result
+                while len(_cache) > MAX_CACHE_ITEMS or sum(_size(v) for v in _cache.values()) > MAX_CACHE_BYTES:
+                    _cache.pop(next(iter(_cache)))
+        return result
+    finally:
+        _lock.release()
 
 
 def post(key, path, body, retries=3):

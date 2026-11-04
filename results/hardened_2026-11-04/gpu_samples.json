@@ -1,0 +1,66 @@
+{
+  "samples": [
+    {
+      "public_sample": "1_real_phone_photo.jpg",
+      "verdict": "Likely authentic",
+      "pixel_verdict": "Likely authentic",
+      "whole_score": -7.169492721557617,
+      "edit": {
+        "logit": -1.9785041809082031,
+        "flagged": false,
+        "flagged2": false,
+        "logit2": -1.1040840148925781
+      },
+      "evidence_source": "whole",
+      "map_mean_error": null,
+      "seconds": 2.245825699999841
+    },
+    {
+      "public_sample": "2_ai_edit_red_bicycle.jpg",
+      "verdict": "Likely AI-edited",
+      "pixel_verdict": "Likely AI-edited",
+      "whole_score": -7.737987518310547,
+      "edit": {
+        "logit": 11.867759704589844,
+        "flagged": true,
+        "flagged2": true,
+        "logit2": 9.539047241210938
+      },
+      "evidence_source": "edit",
+      "map_mean_error": 9.5367431640625e-07,
+      "seconds": 0.5674576000001252
+    },
+    {
+      "public_sample": "3_ai_group_photo.jpg",
+      "verdict": "Likely AI-edited",
+      "pixel_verdict": "Likely AI-edited",
+      "whole_score": -0.5886687636375427,
+      "edit": {
+        "logit": 13.025856018066406,
+        "flagged": true,
+        "flagged2": true,
+        "logit2": 16.94467544555664
+      },
+      "evidence_source": "edit",
+      "map_mean_error": 9.5367431640625e-07,
+      "seconds": 0.9372340999998414
+    },
+    {
+      "public_sample": "4_ai_selfie_original_file.png",
+      "verdict": "AI-generated",
+      "pixel_verdict": "Likely AI-generated",
+      "whole_score": 3.2727432250976562,
+      "edit": {
+        "logit": 13.7984619140625,
+        "flagged": true,
+        "flagged2": true,
+        "logit2": 16.138484954833984
+      },
+      "evidence_source": "whole",
+      "map_mean_error": null,
+      "seconds": 0.7256584999995539
+    }
+  ],
+  "peak_reserved_gib": 4.185546875,
+  "paid_apis_called": false
+}

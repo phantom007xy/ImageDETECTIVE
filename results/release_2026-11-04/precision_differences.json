@@ -1,0 +1,70 @@
+{
+  "scope": "CPU-only public cached-versus-live boundary diagnosis; images only hashed, no GPU or model backbone execution",
+  "differences": [
+    {
+      "set": "real_face_crops_dev_all",
+      "public_file": "commons_00355_0.jpg",
+      "source": "real_face_crops/commons/portrait",
+      "cached_verdict": "Uncertain",
+      "live_verdict": "Likely AI-generated",
+      "cached_whole": 0.6646256446838379,
+      "live_whole": 0.6666359901428223,
+      "whole_delta": 0.002010345458984375,
+      "whole_ai_line": 0.6646256446838379,
+      "whole_real_line": -2.7401700019836426,
+      "cached_whole_ai_margin": 0.0,
+      "live_whole_ai_margin": 0.002010345458984375,
+      "cached_whole_real_margin": 3.4047956466674805,
+      "live_whole_real_margin": 3.406805992126465,
+      "cached_edit1": -19.802770614624023,
+      "cached_edit2": -11.124446868896484,
+      "edit1_line": 5.410022735595703,
+      "edit2_line": 5.4017181396484375,
+      "live_edit": {
+        "logit": -19.80303192138672,
+        "flagged": false,
+        "flagged2": false,
+        "logit2": -11.12478256225586
+      },
+      "cached_face_ai_max": -3.098924160003662,
+      "cached_swap_max": -15.669347763061523,
+      "cached_any_face_flag": false,
+      "live_faces_flagged": 0,
+      "mean_feature_fp16_rounding_logit_bound": 0.03642649203538895,
+      "within_mean_fp16_rounding_bound": true
+    },
+    {
+      "set": "commons_dev",
+      "public_file": "commons_00500.jpg",
+      "source": "commons/portrait",
+      "cached_verdict": "Likely authentic",
+      "live_verdict": "Uncertain",
+      "cached_whole": -2.7401700019836426,
+      "live_whole": -2.738267183303833,
+      "whole_delta": 0.0019028186798095703,
+      "whole_ai_line": 0.6646256446838379,
+      "whole_real_line": -2.7401700019836426,
+      "cached_whole_ai_margin": -3.4047956466674805,
+      "live_whole_ai_margin": -3.402892827987671,
+      "cached_whole_real_margin": 0.0,
+      "live_whole_real_margin": 0.0019028186798095703,
+      "cached_edit1": -9.8814697265625,
+      "cached_edit2": -7.321575164794922,
+      "edit1_line": 5.410022735595703,
+      "edit2_line": 5.4017181396484375,
+      "live_edit": {
+        "logit": -9.884956359863281,
+        "flagged": false,
+        "flagged2": false,
+        "logit2": -7.324436187744141
+      },
+      "cached_face_ai_max": -0.059175968170166016,
+      "cached_swap_max": -9.29962158203125,
+      "cached_any_face_flag": false,
+      "live_faces_flagged": 0,
+      "mean_feature_fp16_rounding_logit_bound": 0.045426223427057266,
+      "within_mean_fp16_rounding_bound": true
+    }
+  ],
+  "interpretation": "Small threshold crossings within the mean-vector float16 rounding bound are consistent with cache quantization; no evidence of stale weights from these cases."
+}

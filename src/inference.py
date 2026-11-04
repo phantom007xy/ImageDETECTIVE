@@ -9,8 +9,7 @@ provisional thresholds below are used and the verdict is only a preview. Edited 
 and Muse come later.
 
 Verdict from the pixels (plan Section 5.6; Path B not built yet):
-  0. whole-image score above every real dev photo    -> "AI-generated" (the clear level)
-  1. whole-image score above the AI threshold        -> "Likely AI-generated"
+  1. whole-image score above the AI threshold        -> "Likely AI-generated" (even at high scores)
   2. otherwise the Muse-edit check above its line    -> "Likely AI-edited" (Meta's PE-Core, src/models/pe_core.py;
      its line is calibrated jointly with the head: src/calibrate/calibrate_edit_check.py)
   3. otherwise a face above the (very strict) face threshold -> "This face looks AI-made or AI-changed"
@@ -117,6 +116,11 @@ class Detector:
                 print(f"WARNING: face-swap model {swap_pe} not found: the face-swap check is off")
                 self.swap_head = None
 
+    def readiness(self):
+        return {"whole_image": bool(self.calibrated), "edit_check": self.edit_check is not None,
+                "faces": self.finder is not None, "face_swap": self.swap_head is not None and self.face_pe is not None,
+                "second_render_head": self.edit_check is not None and "head2" in self.edit_check}
+
     def probability(self, logit):
         return 1 / (1 + math.exp(-logit / self.calibration["temperature"]))
 
@@ -129,8 +133,9 @@ class Detector:
 
     def verdict(self, score, faces, edit=None):
         c = self.calibration
-        if c["strong_ai_logit"] is not None and score > c["strong_ai_logit"]:  # no real dev photo scores this high
-            return "AI-generated"
+        # A score above the largest calibration example is still statistical evidence,
+        # not proof. Its boundary also shifts between GPU and CPU kernels. Pixel-only
+        # results therefore retain "Likely" even at very high scores.
         if score > c["ai_logit"]:  # strictly above, as in the calibration
             return "Likely AI-generated"
         if edit is not None and edit["flagged"]:  # the Muse-edit check, calibrated jointly with the head
@@ -192,8 +197,12 @@ class Detector:
         score = patch_logits.mean().item()
         faces = self.check_faces(image)
         edit = None
+        pe_maps = []
         if self.edit_check is not None:
-            features = self.pe.layer_features(self.pe.to_tensor(self.pe.view(image)).unsqueeze(0))
+            heads = [self.edit_check["head"]]
+            if "head2" in self.edit_check:
+                heads.append(self.edit_check["head2"])
+            features, pe_maps = self.pe.layer_features(self.pe.to_tensor(self.pe.view(image)).unsqueeze(0), heads=heads)
             logit = float(self.edit_check["head"].logits(features.reshape(1, -1).float())[0])
             edit = {"logit": logit, "flagged": logit > self.edit_check["line"], "flagged2": False}
             if "head2" in self.edit_check:  # the second head (trained with Google's Gemini pictures too), its own line
@@ -206,6 +215,18 @@ class Detector:
             verdict, reason = "AI-generated", "metadata"
         elif meta and meta["ai_label"] == "edited" and "AI-generated" not in pixel_verdict:
             verdict, reason = "Part of this photo looks AI-made or AI-changed", "metadata"
+        evidence_source, evidence_logits, evidence_bounds = "whole", patch_logits.numpy(), None
+        if edit is not None and score <= self.calibration["ai_logit"]:
+            selected = 0 if edit["flagged"] else 1 if edit.get("flagged2") else None
+            if selected is not None:
+                evidence_source = "edit" if selected == 0 else "render"
+                evidence_logits = pe_maps[selected][0].numpy()
+                # Correct only floating-point reduction order; classifier score is unchanged.
+                evidence_logits += (edit["logit" if selected == 0 else "logit2"] - float(evidence_logits.mean()))
+                w, h = image.size
+                side = min(w, h)
+                x, y = (w - side) // 2, (h - side) // 2
+                evidence_bounds = (x / w, y / h, (x + side) / w, (y + side) / h)
         return {
             "score": score,
             "probability_ai": self.probability(score),  # calibrated, if a calibration exists
@@ -215,6 +236,9 @@ class Detector:
             "whole_ai": score > self.calibration["ai_logit"],  # the whole-image head alone crossed its AI line
             "metadata": meta,
             "patch_logits": patch_logits.numpy(),
+            "evidence_source": evidence_source,
+            "evidence_logits": evidence_logits,
+            "evidence_bounds": evidence_bounds,
             "faces": faces,
             "edit": edit,  # the Muse-edit check: {"logit", "flagged"}, or None if it is off
             "seconds": time.perf_counter() - start,

@@ -107,13 +107,22 @@
           <h2 id="examine-heading">Examine an Image</h2>
           <span class="caption">A closer look starts here</span>
         </div>
+        <div class="examples" aria-label="Try a public example">
+          <p class="examples-title">Try an example, or upload your own image below</p>
+          <div class="examples-grid">
+            <button class="example" type="button" data-example="real" data-filename="1_real_phone_photo.jpg"><img src="/examples/real" alt="" loading="lazy"><span>Real phone photo</span></button>
+            <button class="example" type="button" data-example="edit" data-filename="2_ai_edit_red_bicycle.jpg"><img src="/examples/edit" alt="" loading="lazy"><span>AI edit</span></button>
+            <button class="example" type="button" data-example="group" data-filename="3_ai_group_photo.jpg"><img src="/examples/group" alt="" loading="lazy"><span>AI group photo</span></button>
+            <button class="example" type="button" data-example="original" data-filename="4_ai_selfie_original_file.png"><img src="/examples/original" alt="" loading="lazy"><span>Original AI file</span></button>
+          </div>
+        </div>
         <div id="drop" class="drop" role="button" tabindex="0" aria-label="Upload an image: browse files or drop one here"
              aria-describedby="drop-help">
           <div id="drop-empty" class="drop-empty">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5V4.5m0 0-4.2 4.2M12 4.5l4.2 4.2"/><path d="M4.5 15v3.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5V15"/></svg>
             <span class="drop-title">Upload an image</span>
             <span class="drop-sub">Drag and drop, or browse files</span>
-            <span id="drop-help" class="drop-help">JPG, PNG or WEBP · up to 20 MB</span>
+            <span id="drop-help" class="drop-help">JPG, PNG or WEBP · up to 20 MB / 40 MP</span>
           </div>
           <img id="preview" class="preview" alt="The image you chose" hidden>
         </div>
@@ -127,7 +136,7 @@
           <span id="go-text">Start investigation</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
         </button>
-        <p class="privacy">Your image is checked on this app's server and kept in memory for at most 30 minutes; it is
+        <p class="privacy">Your image is checked on this app's server. A smaller copy is kept in memory for up to 30 minutes; it is
           never saved to disk. If it is not clearly authentic, a copy at most 1,024 pixels long is also sent to Meta's API
           (standard mode; Meta doesn't train on it) so the investigator can name and outline the evidence.</p>
       </section>
@@ -162,10 +171,8 @@
             <span><i class="swatch swatch-real"></i>Real-photo evidence</span>
             <span><i class="swatch swatch-weak"></i>Weak / mixed signal</span>
           </div>
-          <p class="note">The colours are the whole-image check's own signals for each part of the picture: model signals,
-            not proof of authenticity and not exact edit boundaries. The AI-edit check judges the picture as a whole, so it
-            has no map. Numbered boxes mark faces: red looks AI-made or swapped, orange shows some signs, green shows no
-            clear signs, grey is too small to check.</p>
+          <p id="evidence-source" class="evidence-source"></p>
+          <p id="evidence-description" class="note">Colors show model evidence, not proof of authenticity or exact edit boundaries.</p>
           <p id="outline-note" class="note" hidden></p>
           <details class="details">
             <summary>Investigation details</summary>
@@ -233,13 +240,13 @@
             <tr><td>DINOv3 (Meta) with a calibrated head</td><td>Whole-image check; its patch signals make the evidence
               view</td><td>A coarse map (one cell per 16 px of the checked copy), not an edit boundary</td></tr>
             <tr><td>Perception Encoder (Meta), fine-tuned</td><td>AI-edit check: traces an AI image model leaves when it
-              re-renders a photo; a second head for pictures rendered by AI image models</td><td>Judges the picture as a
-              whole; small local edits are caught less often</td></tr>
-            <tr><td>SAM 3 (Meta) + face checks</td><td>Finds every face; each is checked for being AI-made and, with a
+              re-renders a photo; a second head for pictures rendered by AI image models</td><td>Analyses the centre square;
+              its contribution map is not an edit boundary. Small local edits are caught less often</td></tr>
+            <tr><td>SAM 3 (Meta) + face checks</td><td>Finds candidate faces; each is checked for being AI-made and, with a
               separately fine-tuned Perception Encoder, for being swapped</td><td>Faces under 64 px are not checked; face
               swaps are only partly covered, less in heavily compressed copies</td></tr>
-            <tr><td>File metadata</td><td>Reads AI labels written into the file (IPTC "trained algorithmic media", C2PA
-              presence)</td><td>Forwarded copies and screenshots lose them, so a missing label proves nothing</td></tr>
+            <tr><td>File metadata</td><td>Reads structured AI declarations in IPTC XMP and supported C2PA containers</td>
+              <td>Declarations are unverified; signatures are not checked. Forwarding can strip them</td></tr>
             <tr><td>Muse Spark + SAM 3.1 (Meta's API)</td><td>Investigator: names and outlines the most suspicious
               object; writes a short explanation from the numbers</td><td>Optional; may be unavailable. The outline shows
               where to look, not a proven edit boundary</td></tr>
@@ -252,7 +259,8 @@
       <h2>How the verdict is set</h2>
       <p>The thresholds are set on development photos so that at most 5% of real photos get an AI verdict. When the
         checks don't point clearly either way, the answer is "Uncertain" instead of a guess. The percentage shown is the
-        whole-image check's calibrated AI evidence; the other checks are shown as findings, not as probabilities.</p>
+        whole-image check's calibrated AI evidence; the other checks are shown as findings, not as probabilities.
+        Calibration limits are not a guarantee on new photos.</p>
 
       <h2>How to read the evidence colours</h2>
       <ul>
@@ -261,6 +269,8 @@
         <li><b>Dark blue:</b> weak or mixed signals.</li>
         <li>Numbered boxes mark faces (red: looks AI-made or swapped; orange: some signs; green: no clear signs; grey:
           too small to check). A yellow outline, when shown, is the object Meta's investigator pointed to.</li>
+        <li>For a Perception Encoder finding, the map covers its outlined center square. The unshaded outer area is not
+          scored by that check. An evidence map is not a segmentation of the actual edit.</li>
       </ul>
 
       <h2>Known limitations</h2>
@@ -275,8 +285,8 @@
 
       <h2>What happens to your upload</h2>
       <ul>
-        <li>The image is checked on this app's server and kept in memory for at most 30 minutes (for the investigator
-          step); it is never saved to disk.</li>
+        <li>The original image is checked on this app's server. Only a smaller copy is retained in memory for up to
+          30 minutes for the investigator step; uploads are never saved to disk.</li>
         <li>For images that are not clearly authentic, a copy at most 1,024 pixels long is sent to Meta's Model API in
           standard mode (Meta doesn't train on it). The explanation is written from numbers only.</li>
         <li>"Try to fool it" sends only your text prompt to Meta's API.</li>

@@ -1,0 +1,127 @@
+{
+  "successful": true,
+  "scope": "Real Chrome interactions; actual frontend/ASGI; synthetic uploads; fake CPU detector",
+  "external_operations_attempted": {
+    "external_network": 0,
+    "download": 0,
+    "cuda": 0,
+    "paid_api": 0,
+    "spending_file_write": 0
+  },
+  "checks": [
+    {
+      "id": "desktop_home_and_initial_state",
+      "status": "passed",
+      "seconds": 0.075,
+      "measurements": {
+        "title": "ImageDETECTIVE",
+        "disabled": true,
+        "width": 1280,
+        "overflow": false
+      }
+    },
+    {
+      "id": "navigation_fool_about_investigate",
+      "status": "passed",
+      "seconds": 0.028
+    },
+    {
+      "id": "theme_toggle_roundtrip",
+      "status": "passed",
+      "seconds": 0.002
+    },
+    {
+      "id": "desktop_real_upload_verdict_evidence_details",
+      "status": "passed",
+      "seconds": 0.155,
+      "measurements": {
+        "verdict": "Likely authentic",
+        "evidence": true,
+        "context": "This photo doesn't look AI-made or AI-changed. It doesn't confirm when or where it was taken.",
+        "details": true
+      }
+    },
+    {
+      "id": "evidence_original_tabs",
+      "status": "passed",
+      "seconds": 0.002
+    },
+    {
+      "id": "corrupt_replacement_clears_stale_result",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "id": "browser_fetch_corrupt_server_upload_rejected",
+      "status": "passed",
+      "seconds": 0.036,
+      "measurements": {
+        "status": 400,
+        "detail": "This file could not be read as an image. It may be damaged; please try another file."
+      }
+    },
+    {
+      "id": "valid_upload_recovers_after_corrupt_file",
+      "status": "passed",
+      "seconds": 0.093
+    },
+    {
+      "id": "generation_api_unavailable_shows_recoverable_error",
+      "status": "passed",
+      "seconds": 0.102
+    },
+    {
+      "id": "mobile_layout_sidebar_and_navigation",
+      "status": "passed",
+      "seconds": 0.179,
+      "measurements": {
+        "width": 375,
+        "scrollWidth": 375,
+        "mainWidth": 315,
+        "sidebarOpen": false
+      }
+    },
+    {
+      "id": "mobile_upload_and_report",
+      "status": "passed",
+      "seconds": 0.134
+    },
+    {
+      "id": "frontend_has_no_javascript_exceptions",
+      "status": "passed",
+      "seconds": 0,
+      "measurements": {
+        "blocked_external_resources": 1,
+        "local_requests": 13
+      }
+    }
+  ],
+  "screenshots": [
+    "browser-desktop-home.png",
+    "browser-desktop-result.png",
+    "browser-mobile-home.png",
+    "browser-mobile-result.png"
+  ],
+  "javascript_errors": [],
+  "blocked_external_resources": [
+    "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+  ],
+  "local_requests": 13,
+  "local_request_paths": [
+    "/",
+    "/static/style.css",
+    "/static/app.js",
+    "/static/logo.png",
+    "/static/logo.png",
+    "/api/investigate",
+    "/api/investigate/a0d9057f7d094e1fa15f13b8935a7cf5/explain",
+    "/api/investigate",
+    "/api/investigate",
+    "/api/investigate/9762abcaa05d45d4885823b5fcf5d476/explain",
+    "/api/fool",
+    "/api/investigate",
+    "/api/investigate/7380392c91244d39b525171d276f5ef4/explain"
+  ],
+  "detector_calls": 3,
+  "seconds": 5.453
+}

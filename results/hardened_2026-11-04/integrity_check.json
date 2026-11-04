@@ -1,0 +1,32 @@
+{
+  "scope": "Exact frozen production/model/calibration bytes plus Python/JavaScript syntax",
+  "configuration_sha256": "3bd80a815a518a8ece21e75002249c172406c289f8c4ed4db6bb84182b89d412",
+  "production_artifacts_checked": 51,
+  "changed_production_artifacts": [],
+  "python_files_parsed": 109,
+  "python_syntax_errors": [],
+  "javascript_syntax_checks": [
+    {
+      "file": "app/web/app.js",
+      "exit_code": 0,
+      "error": ""
+    },
+    {
+      "file": "src/eval/release_browser_check.js",
+      "exit_code": 0,
+      "error": ""
+    }
+  ],
+  "model_weights_unchanged_from_baseline": true,
+  "passed": true,
+  "release_files_sha256": {
+    ".github/workflows/checks.yml": "b2fe30220067d2f46d73ebd9755b75f5d9d6cd94f2f06ab53332b71515cff8e4",
+    "app/web/app.js": "b554bcc3a22600f2a65dabe2d1041bfdefaba0af6288da4f345195497dbc9bc0",
+    "app/web/index.html": "2f2b806ad8412a1632af043b3fe3b83d701334acec8f9dfd0beec09d88b54787",
+    "app/web/style.css": "6cc868034793d04e812dad1f0295fb175b2aeff861e12b3deafa009133a83eb7",
+    "deploy/gcp_vm_setup.sh": "4b89b3b5bf34f0bf77e5f31f3df1b4ee588bb0eb5333ab187569bd49a1eb83f0",
+    "docs/DEMO.md": "942329a89229f19ad78425b1b2eb5519ad2ffe6658a0b782a954626efa82af88",
+    "README.md": "86799210e052a9f819fe12b74e439a93e5cbf958097355b60b7c777c0dee111d",
+    "requirements.txt": "8922a0485ef5991d3177116a16a220d05648a1bc9d028c96f52508155c8ae3e0"
+  }
+}

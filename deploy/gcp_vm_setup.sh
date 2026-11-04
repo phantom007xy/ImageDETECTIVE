@@ -21,12 +21,13 @@ if ! command -v caddy >/dev/null; then  # Caddy's official package repository
 fi
 
 id imagedetective >/dev/null 2>&1 || useradd --system --create-home --home-dir /var/lib/imagedetective imagedetective
-if [ -d $DIR/.git ]; then git config --global --add safe.directory $DIR; git -C $DIR pull -q; else git clone -q $REPO $DIR; fi
+if [ -d $DIR/.git ]; then git config --global --add safe.directory $DIR; git -C $DIR pull --ff-only -q; else git clone -q $REPO $DIR; fi
 chown -R imagedetective $DIR  # the app downloads the private heads into $DIR/weights at its first start
 [ -d /opt/venv ] || python3 -m venv /opt/venv
 /opt/venv/bin/pip install -q --upgrade pip
 /opt/venv/bin/pip install -q torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cpu
 /opt/venv/bin/pip install -q -r $DIR/requirements.txt
+/opt/venv/bin/pip check
 
 cat > /etc/systemd/system/imagedetective.service <<EOF
 [Unit]
@@ -61,4 +62,13 @@ EOF
 systemctl daemon-reload
 systemctl enable -q imagedetective caddy
 systemctl restart imagedetective caddy
-echo "set up: https://$HOSTNAME_PUBLIC (the app needs a few minutes for its first start: model downloads)"
+for attempt in $(seq 1 120); do
+    if curl --fail --silent --max-time 5 http://127.0.0.1:7860/healthz >/dev/null; then
+        echo "detector ready: https://$HOSTNAME_PUBLIC"
+        exit 0
+    fi
+    sleep 5
+done
+echo "Detector readiness did not pass. Check: journalctl -u imagedetective" >&2
+echo "Initial model downloads can take longer; verify /healthz before sharing the demo." >&2
+exit 1

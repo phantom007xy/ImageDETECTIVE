@@ -1,0 +1,257 @@
+{
+  "scope": "CPU-only FastAPI behavior with synthetic images and mocked detector/paid services",
+  "production_code_changed": false,
+  "external_operations_attempted": {
+    "network": 0,
+    "download": 0,
+    "cuda": 0,
+    "spending_file_write": 0
+  },
+  "checks": [
+    {
+      "id": "test_ai_photo_uses_strongest_object_outline",
+      "status": "passed",
+      "seconds": 0.05
+    },
+    {
+      "id": "test_authentic_photo_skips_picture_apis",
+      "status": "passed",
+      "seconds": 0.0125
+    },
+    {
+      "id": "test_budget_reserves_inflight_cost_and_deduplicates_same_request",
+      "status": "passed",
+      "seconds": 0.0057,
+      "measurements": {
+        "simulated_charges": 1,
+        "simulated_spend": 0.01,
+        "cap": 0.01
+      }
+    },
+    {
+      "id": "test_busy_api_returns_without_waiting_for_a_worker",
+      "status": "passed",
+      "seconds": 0.0057
+    },
+    {
+      "id": "test_chunked_oversize_upload_is_bounded_before_detector",
+      "status": "passed",
+      "seconds": 0.0069
+    },
+    {
+      "id": "test_comment_mention_is_not_an_actual_ai_source_declaration",
+      "status": "passed",
+      "seconds": 0.0048,
+      "measurements": {
+        "metadata_result": {
+          "ai_label": null,
+          "c2pa": false,
+          "verified": false
+        }
+      }
+    },
+    {
+      "id": "test_corrupt_upload_rejected",
+      "status": "passed",
+      "seconds": 0.069
+    },
+    {
+      "id": "test_decoded_format_used_instead_of_filename",
+      "status": "passed",
+      "seconds": 0.0099
+    },
+    {
+      "id": "test_empty_upload_rejected",
+      "status": "passed",
+      "seconds": 0.008
+    },
+    {
+      "id": "test_exif_orientation_applied_without_reencoding_original",
+      "status": "passed",
+      "seconds": 0.0076
+    },
+    {
+      "id": "test_expired_session_rejected_and_cleanup_preserves_fresh",
+      "status": "passed",
+      "seconds": 0.0098
+    },
+    {
+      "id": "test_failed_paid_stage_keeps_its_budget_reservation",
+      "status": "passed",
+      "seconds": 0.0037
+    },
+    {
+      "id": "test_file_size_enforced_before_detector",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "id": "test_fragmented_jpeg_comment_is_not_a_source_declaration",
+      "status": "passed",
+      "seconds": 0.0033
+    },
+    {
+      "id": "test_fragmented_jpeg_source_declaration_is_read",
+      "status": "passed",
+      "seconds": 0.0031
+    },
+    {
+      "id": "test_generated_image_crop_flow_and_expiry",
+      "status": "passed",
+      "seconds": 0.0126
+    },
+    {
+      "id": "test_generation_validation_and_unavailable_fallback",
+      "status": "passed",
+      "seconds": 0.0095
+    },
+    {
+      "id": "test_health_checks_local_model_readiness",
+      "status": "passed",
+      "seconds": 0.0076
+    },
+    {
+      "id": "test_homepage_and_static_javascript",
+      "status": "passed",
+      "seconds": 0.0381
+    },
+    {
+      "id": "test_https_iptc_source_declaration_is_read",
+      "status": "passed",
+      "seconds": 0.0029
+    },
+    {
+      "id": "test_incomplete_jpeg_manifest_does_not_declare_ai",
+      "status": "passed",
+      "seconds": 0.0038
+    },
+    {
+      "id": "test_malformed_multipart_is_a_client_error",
+      "status": "passed",
+      "seconds": 0.0041
+    },
+    {
+      "id": "test_memory_only_upload_does_not_spool_to_disk",
+      "status": "passed",
+      "seconds": 0.0312,
+      "measurements": {
+        "temporary_files_rolled_to_disk": 0
+      }
+    },
+    {
+      "id": "test_missing_upload_rejected",
+      "status": "passed",
+      "seconds": 0.0068
+    },
+    {
+      "id": "test_named_investigation_renders_real_outline",
+      "status": "passed",
+      "seconds": 0.0126
+    },
+    {
+      "id": "test_optional_api_does_not_block_another_detector_verdict",
+      "status": "passed",
+      "seconds": 0.0135,
+      "measurements": {
+        "verdict_completed_while_api_blocked": true
+      }
+    },
+    {
+      "id": "test_optional_services_unavailable_preserve_verdict",
+      "status": "passed",
+      "seconds": 0.008
+    },
+    {
+      "id": "test_original_bytes_reach_metadata_check_unchanged",
+      "status": "passed",
+      "seconds": 0.0083
+    },
+    {
+      "id": "test_oversized_content_length_rejected",
+      "status": "passed",
+      "seconds": 0.0059
+    },
+    {
+      "id": "test_pe_evidence_marks_only_the_analyzed_region",
+      "status": "passed",
+      "seconds": 0.0072
+    },
+    {
+      "id": "test_report_serialization_and_evidence_decode",
+      "status": "passed",
+      "seconds": 0.0188
+    },
+    {
+      "id": "test_retained_images_are_small_after_original_inference",
+      "status": "passed",
+      "seconds": 0.1882
+    },
+    {
+      "id": "test_sample_routes_are_whitelisted_and_keep_original_bytes",
+      "status": "passed",
+      "seconds": 0.0436
+    },
+    {
+      "id": "test_secondary_head_facts_describe_positive_detection",
+      "status": "passed",
+      "seconds": 0.0069,
+      "measurements": {
+        "facts": {
+          "verdict": "Likely AI-generated",
+          "verdict_based_on": "the pixels",
+          "whole_image_ai_evidence": 0.1,
+          "faces_checked": 0,
+          "faces_that_look_ai_made": 0,
+          "faces_that_lean_ai": 0,
+          "faces_too_small_to_check": 0,
+          "ai_edit_check": "the second Perception Encoder check sees an AI rendering"
+        }
+      }
+    },
+    {
+      "id": "test_session_cache_evicts_by_count_and_bytes",
+      "status": "passed",
+      "seconds": 0.0042
+    },
+    {
+      "id": "test_shutdown_clears_retained_sessions",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "id": "test_structured_xmp_is_an_unverified_declaration",
+      "status": "passed",
+      "seconds": 0.003
+    },
+    {
+      "id": "test_success_refunds_unused_reservation_and_reuses_cache",
+      "status": "passed",
+      "seconds": 0.0031
+    },
+    {
+      "id": "test_supported_decodable_uploads",
+      "status": "passed",
+      "seconds": 0.017
+    },
+    {
+      "id": "test_unknown_followup_session_rejected",
+      "status": "passed",
+      "seconds": 0.0056
+    },
+    {
+      "id": "test_unsupported_decodable_format_rejected",
+      "status": "passed",
+      "seconds": 0.0062
+    },
+    {
+      "id": "test_zero_indexed_jpeg_source_declaration_is_read",
+      "status": "passed",
+      "seconds": 0.0032
+    }
+  ],
+  "tests_run": 42,
+  "failures": 0,
+  "errors": 0,
+  "successful": true,
+  "seconds": 7.313
+}

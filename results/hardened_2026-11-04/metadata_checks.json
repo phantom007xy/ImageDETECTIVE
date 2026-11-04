@@ -1,0 +1,26 @@
+{
+  "groups": {
+    "judge/chatgpt": {
+      "n": 20,
+      "generated": 20,
+      "c2pa": 20
+    },
+    "judge/nanobanana_pro": {
+      "n": 20,
+      "generated": 20,
+      "c2pa": 20
+    },
+    "judge/nanobanana_2_1": {
+      "n": 20,
+      "generated": 20,
+      "c2pa": 20
+    },
+    "judge/metaai": {
+      "n": 20,
+      "generated": 20,
+      "c2pa": 0
+    }
+  },
+  "missing_declarations": [],
+  "passed": true
+}

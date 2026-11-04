@@ -1,0 +1,107 @@
+{
+  "measured_at_utc": "2026-11-04T12:53:38.617742+00:00",
+  "python": "3.12.7 (tags/v3.12.7:0b05ead, Oct  1 2024, 03:06:41) [MSC v.1941 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "requirements": [
+    {
+      "package": "transformers",
+      "required": "==5.21.0",
+      "installed": "5.21.0",
+      "matches": true
+    },
+    {
+      "package": "huggingface_hub",
+      "required": "==2.3.0",
+      "installed": "2.3.0",
+      "matches": true
+    },
+    {
+      "package": "numpy",
+      "required": "==2.5.2",
+      "installed": "2.5.2",
+      "matches": true
+    },
+    {
+      "package": "pillow",
+      "required": "==12.3.0",
+      "installed": "12.3.0",
+      "matches": true
+    },
+    {
+      "package": "pyarrow",
+      "required": "==26.0.0",
+      "installed": "26.0.0",
+      "matches": true
+    },
+    {
+      "package": "opencv-python-headless",
+      "required": "==5.0.0.93",
+      "installed": "5.0.0.93",
+      "matches": true
+    },
+    {
+      "package": "gradio",
+      "required": "==6.31.0",
+      "installed": "6.31.0",
+      "matches": true
+    },
+    {
+      "package": "fastapi",
+      "required": "==0.162.0",
+      "installed": "0.162.0",
+      "matches": true
+    },
+    {
+      "package": "starlette",
+      "required": "==1.10.0",
+      "installed": "1.10.0",
+      "matches": true
+    },
+    {
+      "package": "uvicorn",
+      "required": "==0.54.0",
+      "installed": "0.54.0",
+      "matches": true
+    },
+    {
+      "package": "python-multipart",
+      "required": "==0.0.32",
+      "installed": "0.0.32",
+      "matches": true
+    },
+    {
+      "package": "pandas",
+      "required": "==2.3.3",
+      "installed": "2.3.3",
+      "matches": true
+    },
+    {
+      "package": "meta-sam-parser",
+      "required": "==0.1.0",
+      "installed": "0.1.0",
+      "matches": true
+    },
+    {
+      "package": "httpx",
+      "required": "==0.28.1",
+      "installed": "0.28.1",
+      "matches": true
+    },
+    {
+      "package": "timm",
+      "required": "==1.0.30",
+      "installed": "1.0.30",
+      "matches": true
+    }
+  ],
+  "pip_check": {
+    "exit_code": 0,
+    "output": "No broken requirements found."
+  },
+  "core_versions": {
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "fastapi": "0.162.0",
+    "starlette": "1.10.0"
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "measured_at_ist": "2026-11-04T15:49:21.059004+05:30",
+  "python": "3.12.7 (tags/v3.12.7:0b05ead, Oct  1 2024, 03:06:41) [MSC v.1941 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "requirements": [
+    {
+      "package": "transformers",
+      "required": "==5.21.0",
+      "installed": "5.21.0",
+      "matches": true
+    },
+    {
+      "package": "huggingface_hub",
+      "required": "==2.3.0",
+      "installed": "2.3.0",
+      "matches": true
+    },
+    {
+      "package": "numpy",
+      "required": "==2.5.2",
+      "installed": "2.5.2",
+      "matches": true
+    },
+    {
+      "package": "pillow",
+      "required": "==12.3.0",
+      "installed": "12.3.0",
+      "matches": true
+    },
+    {
+      "package": "pyarrow",
+      "required": "==26.0.0",
+      "installed": "26.0.0",
+      "matches": true
+    },
+    {
+      "package": "opencv-python-headless",
+      "required": "==5.0.0.93",
+      "installed": "5.0.0.93",
+      "matches": true
+    },
+    {
+      "package": "gradio",
+      "required": "==6.31.0",
+      "installed": "6.31.0",
+      "matches": true
+    },
+    {
+      "package": "pandas",
+      "required": "==2.3.3",
+      "installed": "2.3.3",
+      "matches": true
+    },
+    {
+      "package": "meta-sam-parser",
+      "required": "==0.1.0",
+      "installed": "0.1.0",
+      "matches": true
+    },
+    {
+      "package": "httpx",
+      "required": "==0.28.1",
+      "installed": "0.28.1",
+      "matches": true
+    },
+    {
+      "package": "timm",
+      "required": "==1.0.30",
+      "installed": "1.0.30",
+      "matches": true
+    }
+  ],
+  "core_versions": {
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "fastapi": "0.162.0",
+    "starlette": "1.10.0",
+    "httpx": "0.28.1",
+    "numpy": "2.5.2",
+    "Pillow": "12.3.0",
+    "transformers": "5.21.0",
+    "timm": "1.0.30"
+  },
+  "pip_check": {
+    "exit_code": 0,
+    "output": "No broken requirements found.",
+    "source": "executed earlier in this same release-check session"
+  },
+  "gpu": "NVIDIA GeForce RTX 5050 Laptop GPU, 617.14, 8151 MiB"
+}

@@ -1,0 +1,256 @@
+{
+  "available": true,
+  "scope": "Final cached ensemble on exactly the saved whole-calibration real_pools and fake_sets; calibration-mix check only, not independent performance.",
+  "real_photo_union_checks": [
+    {
+      "pool": "polished dev",
+      "n": 330,
+      "ai": 16,
+      "uncertain": 79,
+      "authentic": 235,
+      "allowed_ai": 16,
+      "passed": true
+    },
+    {
+      "pool": "OpenImages val",
+      "n": 76,
+      "ai": 1,
+      "uncertain": 12,
+      "authentic": 63,
+      "allowed_ai": 3,
+      "passed": true
+    },
+    {
+      "pool": "OpenImages unseen",
+      "n": 576,
+      "ai": 11,
+      "uncertain": 82,
+      "authentic": 483,
+      "allowed_ai": 28,
+      "passed": true
+    },
+    {
+      "pool": "Commons v3 dev",
+      "n": 32,
+      "ai": 0,
+      "uncertain": 5,
+      "authentic": 27,
+      "allowed_ai": 1,
+      "passed": true
+    },
+    {
+      "pool": "close-ups",
+      "n": 150,
+      "ai": 6,
+      "uncertain": 49,
+      "authentic": 95,
+      "allowed_ai": 7,
+      "passed": true
+    },
+    {
+      "pool": "selfies+portraits",
+      "n": 62,
+      "ai": 2,
+      "uncertain": 13,
+      "authentic": 47,
+      "allowed_ai": 3,
+      "passed": true
+    },
+    {
+      "pool": "phone",
+      "n": 104,
+      "ai": 0,
+      "uncertain": 10,
+      "authentic": 94,
+      "allowed_ai": 5,
+      "passed": true
+    },
+    {
+      "pool": "phone objects",
+      "n": 100,
+      "ai": 3,
+      "uncertain": 5,
+      "authentic": 92,
+      "allowed_ai": 5,
+      "passed": true
+    }
+  ],
+  "fake_mix_components": [
+    {
+      "set": "Muse test v1",
+      "n": 100,
+      "uncertain": 0,
+      "valid": true
+    },
+    {
+      "set": "Muse pairs val",
+      "n": 76,
+      "uncertain": 0,
+      "valid": true
+    },
+    {
+      "set": "SDXL (unseen)",
+      "n": 332,
+      "uncertain": 15,
+      "valid": true
+    }
+  ],
+  "real_face_line_checks": [
+    {
+      "pool": "polished dev",
+      "check": "ai_made",
+      "n_faces": 285,
+      "strict": 1,
+      "allowed_strict": 1,
+      "passed": true
+    },
+    {
+      "pool": "polished dev",
+      "check": "swap",
+      "n_faces": 285,
+      "strict": 0,
+      "allowed_strict": 1,
+      "passed": true
+    },
+    {
+      "pool": "OpenImages val",
+      "check": "ai_made",
+      "n_faces": 81,
+      "strict": 0,
+      "allowed_strict": 0,
+      "passed": true
+    },
+    {
+      "pool": "OpenImages val",
+      "check": "swap",
+      "n_faces": 81,
+      "strict": 0,
+      "allowed_strict": 0,
+      "passed": true
+    },
+    {
+      "pool": "OpenImages unseen",
+      "check": "ai_made",
+      "n_faces": 557,
+      "strict": 0,
+      "allowed_strict": 2,
+      "passed": true
+    },
+    {
+      "pool": "OpenImages unseen",
+      "check": "swap",
+      "n_faces": 557,
+      "strict": 0,
+      "allowed_strict": 2,
+      "passed": true
+    },
+    {
+      "pool": "Commons v3 dev",
+      "check": "ai_made",
+      "n_faces": 15,
+      "strict": 0,
+      "allowed_strict": 0,
+      "passed": true
+    },
+    {
+      "pool": "Commons v3 dev",
+      "check": "swap",
+      "n_faces": 15,
+      "strict": 0,
+      "allowed_strict": 0,
+      "passed": true
+    },
+    {
+      "pool": "close-ups",
+      "check": "ai_made",
+      "n_faces": 174,
+      "strict": 0,
+      "allowed_strict": 0,
+      "passed": true
+    },
+    {
+      "pool": "close-ups",
+      "check": "swap",
+      "n_faces": 174,
+      "strict": 0,
+      "allowed_strict": 0,
+      "passed": true
+    },
+    {
+      "pool": "selfies+portraits",
+      "check": "ai_made",
+      "n_faces": 78,
+      "strict": 0,
+      "allowed_strict": 0,
+      "passed": true
+    },
+    {
+      "pool": "selfies+portraits",
+      "check": "swap",
+      "n_faces": 78,
+      "strict": 0,
+      "allowed_strict": 0,
+      "passed": true
+    },
+    {
+      "pool": "phone",
+      "check": "ai_made",
+      "n_faces": 148,
+      "strict": 0,
+      "allowed_strict": 0,
+      "passed": true
+    },
+    {
+      "pool": "phone",
+      "check": "swap",
+      "n_faces": 148,
+      "strict": 0,
+      "allowed_strict": 0,
+      "passed": true
+    },
+    {
+      "pool": "phone objects",
+      "check": "ai_made",
+      "n_faces": 20,
+      "strict": 0,
+      "allowed_strict": 0,
+      "passed": true
+    },
+    {
+      "pool": "phone objects",
+      "check": "swap",
+      "n_faces": 20,
+      "strict": 0,
+      "allowed_strict": 0,
+      "passed": true
+    },
+    {
+      "pool": "DFDC p3 real",
+      "check": "swap",
+      "n_faces": 1452,
+      "strict": 7,
+      "allowed_strict": 7,
+      "passed": true
+    },
+    {
+      "pool": "SID val real",
+      "check": "swap",
+      "n_faces": 292,
+      "strict": 1,
+      "allowed_strict": 1,
+      "passed": true
+    }
+  ],
+  "class_balanced_uncertainty": {
+    "real_n": 1430,
+    "real_uncertain": 255,
+    "fake_n": 508,
+    "fake_uncertain": 15,
+    "percent": 10.392462,
+    "cap_percent": 15.0,
+    "formula": "0.5 * real_uncertain/real_n + 0.5 * fake_uncertain/fake_n",
+    "passed": true
+  },
+  "face_check_limit": "The 0.5% checks apply to each calibrated face head on its specified pools. Separate head caps do not mathematically guarantee a 0.5% union of both heads; off-domain test pools are not guaranteed.",
+  "passed": true
+}

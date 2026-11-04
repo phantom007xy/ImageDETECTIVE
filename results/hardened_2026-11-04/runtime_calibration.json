@@ -1,0 +1,75 @@
+{
+  "scope": "Real calibration pools only; no training or test-set threshold selection",
+  "old_lines": [
+    5.410022735595703,
+    5.4017181396484375
+  ],
+  "new_lines": [
+    5.4107747077941895,
+    5.403400897979736
+  ],
+  "private_records_exported": false,
+  "pools": {
+    "polished dev": {
+      "n": 330,
+      "edit1": 1,
+      "edit2": 3,
+      "any_ai": 16
+    },
+    "OpenImages val": {
+      "n": 76,
+      "edit1": 0,
+      "edit2": 0,
+      "any_ai": 1
+    },
+    "originals v1": {
+      "n": 76,
+      "edit1": 0,
+      "edit2": 0,
+      "any_ai": 2
+    },
+    "originals v2": {
+      "n": 198,
+      "edit1": 0,
+      "edit2": 0,
+      "any_ai": 4
+    },
+    "OpenImages unseen": {
+      "n": 576,
+      "edit1": 2,
+      "edit2": 2,
+      "any_ai": 11
+    },
+    "Commons v3 dev": {
+      "n": 32,
+      "edit1": 0,
+      "edit2": 0,
+      "any_ai": 0
+    },
+    "close-ups": {
+      "n": 150,
+      "edit1": 0,
+      "edit2": 0,
+      "any_ai": 7
+    },
+    "selfies+portraits": {
+      "n": 62,
+      "edit1": 0,
+      "edit2": 0,
+      "any_ai": 2
+    },
+    "phone": {
+      "n": 104,
+      "edit1": 0,
+      "edit2": 0,
+      "any_ai": 0
+    },
+    "phone objects": {
+      "n": 100,
+      "edit1": 2,
+      "edit2": 2,
+      "any_ai": 3
+    }
+  },
+  "applied": true
+}

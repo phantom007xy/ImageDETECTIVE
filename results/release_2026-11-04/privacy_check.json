@@ -1,0 +1,9 @@
+{
+  "scope": "Public JSON/Markdown reports scanned for names and original paths of all private judge/calibration input images; photo pixels not read",
+  "public_artifacts_checked": 23,
+  "private_image_rows": 264,
+  "findings": [],
+  "private_prediction_keys_in_public_cache": 0,
+  "private_checkpoint_separate": true,
+  "passed": true
+}

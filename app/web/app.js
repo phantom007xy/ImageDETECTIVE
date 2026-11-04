@@ -221,12 +221,35 @@
     fillVerdict($("verdict"), r);
     sources.evidence = r.evidence;
     sources.original = previewUrl;
+    $("evidence-source").textContent = r.evidence_source || "DINOv3 · Whole-image check";
+    $("evidence-description").textContent = r.evidence_note || "Colors show model evidence, not proof of authenticity.";
     setTabs($("tab-evidence"), $("tab-original"), viewerImg, sources, "evidence");
     outlineNote.hidden = true;
     reportEmpty.hidden = true;
     reportBody.hidden = false;
+    $("report-heading").scrollIntoView({ block: "start", behavior:
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     return renderDetails(r, null);
   }
+  document.querySelectorAll("[data-example]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const mine = ++token;
+      button.disabled = true;
+      hideError(uploadError);
+      try {
+        const response = await fetch(`/examples/${button.dataset.example}`);
+        if (!response.ok) throw new Error("This example could not be loaded. Please upload an image.");
+        const blob = await response.blob();
+        if (mine !== token) return;
+        choose(new File([blob], button.dataset.filename, { type: blob.type }));
+        go.click();
+      } catch (error) {
+        if (mine === token) showError(uploadError, error.message);
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
   async function investigateMore(r, rows, mine) {
     try {
       const m = await postJSON(`/api/investigate/${r.id}/explain`, { signal: controller.signal });

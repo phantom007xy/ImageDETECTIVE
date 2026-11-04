@@ -1,0 +1,21 @@
+{
+  "scope": "Read-only comparison with the frozen baseline artifacts and production source, plus syntax checks; no model execution",
+  "configuration_sha256": "b999c90dfc48154c7740cc94f75299220e675fb79bfaa95742f51751fc9670ea",
+  "production_artifacts_checked": 50,
+  "changed_production_artifacts": [],
+  "python_files_parsed": 106,
+  "python_syntax_errors": [],
+  "javascript_syntax_checks": [
+    {
+      "file": "app/web/app.js",
+      "exit_code": 0,
+      "error": ""
+    },
+    {
+      "file": "src/eval/release_browser_check.js",
+      "exit_code": 0,
+      "error": ""
+    }
+  ],
+  "passed": true
+}

@@ -1,0 +1,106 @@
+{
+  "scope": "Aggregate-only strong-AI threshold check; no private photo paths or identifiers exported",
+  "pools": [
+    {
+      "pool": "polished dev",
+      "n": 330,
+      "max_whole_logit": 4.539841175079346,
+      "strong_ai_logit": 5.520974636077881,
+      "max_margin_to_strong": -0.9811334609985352,
+      "rows_at_pool_max": 1,
+      "rows_equal_to_strong_line": 0,
+      "max_row_fp16_rounding_logit_bound": 0.04511521756649017
+    },
+    {
+      "pool": "OpenImages val",
+      "n": 76,
+      "max_whole_logit": 1.6033434867858887,
+      "strong_ai_logit": 5.520974636077881,
+      "max_margin_to_strong": -3.917631149291992,
+      "rows_at_pool_max": 1,
+      "rows_equal_to_strong_line": 0,
+      "max_row_fp16_rounding_logit_bound": 0.046337906271219254
+    },
+    {
+      "pool": "OpenImages unseen",
+      "n": 576,
+      "max_whole_logit": 5.520974636077881,
+      "strong_ai_logit": 5.520974636077881,
+      "max_margin_to_strong": 0.0,
+      "rows_at_pool_max": 1,
+      "rows_equal_to_strong_line": 1,
+      "max_row_fp16_rounding_logit_bound": 0.04759260639548302
+    },
+    {
+      "pool": "Commons v3 dev",
+      "n": 32,
+      "max_whole_logit": -0.19986343383789062,
+      "strong_ai_logit": 5.520974636077881,
+      "max_margin_to_strong": -5.7208380699157715,
+      "rows_at_pool_max": 1,
+      "rows_equal_to_strong_line": 0,
+      "max_row_fp16_rounding_logit_bound": 0.04394892603158951
+    },
+    {
+      "pool": "close-ups",
+      "n": 150,
+      "max_whole_logit": 3.2892212867736816,
+      "strong_ai_logit": 5.520974636077881,
+      "max_margin_to_strong": -2.231753349304199,
+      "rows_at_pool_max": 1,
+      "rows_equal_to_strong_line": 0,
+      "max_row_fp16_rounding_logit_bound": 0.04164553061127663
+    },
+    {
+      "pool": "selfies+portraits",
+      "n": 62,
+      "max_whole_logit": 2.013467788696289,
+      "strong_ai_logit": 5.520974636077881,
+      "max_margin_to_strong": -3.507506847381592,
+      "rows_at_pool_max": 1,
+      "rows_equal_to_strong_line": 0,
+      "max_row_fp16_rounding_logit_bound": 0.04218744486570358
+    },
+    {
+      "pool": "phone",
+      "n": 104,
+      "max_whole_logit": 0.13145899772644043,
+      "strong_ai_logit": 5.520974636077881,
+      "max_margin_to_strong": -5.3895158767700195,
+      "rows_at_pool_max": 1,
+      "rows_equal_to_strong_line": 0,
+      "max_row_fp16_rounding_logit_bound": 0.051398180425167084
+    },
+    {
+      "pool": "phone objects",
+      "n": 100,
+      "max_whole_logit": 3.9342384338378906,
+      "strong_ai_logit": 5.520974636077881,
+      "max_margin_to_strong": -1.5867362022399902,
+      "rows_at_pool_max": 1,
+      "rows_equal_to_strong_line": 0,
+      "max_row_fp16_rounding_logit_bound": 0.043786294758319855
+    }
+  ],
+  "private_csv_counts": {
+    "phone": {
+      "expected": 104,
+      "available": 104
+    },
+    "objects": {
+      "expected": 100,
+      "available": 100
+    }
+  },
+  "live_max_row_check": {
+    "pool": "OpenImages unseen",
+    "rows_at_strong_line": 1,
+    "cached_whole": 5.520974636077881,
+    "strong_ai_logit": 5.520974636077881,
+    "live_prediction_available": true,
+    "live_whole": 5.520281791687012,
+    "live_margin_to_strong": -0.0006928443908691406,
+    "live_pixel_verdict": "Likely AI-generated",
+    "live_above_strong_line": false
+  }
+}

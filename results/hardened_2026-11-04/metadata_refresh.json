@@ -1,0 +1,14 @@
+{
+  "pixel_measurement_configuration_sha256": "8ed972e99dfe1472102663a68e58cbe8770beb2f9345d93c18dd2c9a987b3089",
+  "current_configuration_sha256": "3bd80a815a518a8ece21e75002249c172406c289f8c4ed4db6bb84182b89d412",
+  "changed_production_artifacts": [
+    "src/services/metadata.py"
+  ],
+  "pixel_scoring_artifacts_byte_identical": true,
+  "metadata_entries_reparsed": 3951,
+  "unique_file_records_reparsed": 3813,
+  "file_declarations_changed": 2,
+  "scope": "Reuse the completed GPU pixel/face/edit scores; reparse original file metadata locally. No new model measurements claimed.",
+  "fresh_http_equivalence_required": true,
+  "private_per_photo_records_exported": false
+}

@@ -178,7 +178,7 @@ def verdict_card(result):
         reason = (f"{metadata.describe(result['metadata'])} From the pixels alone: {result['pixel_verdict']} "
                   f"({p:.0%} AI evidence). A forwarded copy loses this label; the pixel checks still work then.")
     elif v == "AI-generated":
-        reason = f"The whole image looks AI-made ({p:.0%} AI evidence); no real test photo scored this high."
+        reason = f"The whole image has strong AI evidence ({p:.0%}); this is evidence, not proof."
     elif v == "Likely AI-generated" and not result.get("whole_ai", True):
         reason = ("Meta's Perception Encoder sees how the pixels were rendered: this picture looks made by an AI image "
                   f"model (a check also trained on Google Gemini pictures), although the whole-image check alone says {p:.0%}.")

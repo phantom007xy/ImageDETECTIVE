@@ -1,0 +1,29 @@
+{
+  "scope": "One known-real PUBLIC OpenImages calibration image through the existing hosted basic-detection endpoint; no investigator or paid API requested",
+  "public_image_sha256": "1e913aa9bad9d28a8f7303cf995493409b1324db5d6690fec789790337db67e3",
+  "expected_label": "real",
+  "host": "https://136-114-230-97.sslip.io",
+  "measured_at_utc": "2026-11-04T10:54:34.314262+00:00",
+  "private_images_uploaded": false,
+  "paid_endpoints_called": false,
+  "status": "complete",
+  "homepage_status": 200,
+  "http_status": 200,
+  "round_trip_seconds": 8.580391999999847,
+  "verdict": "AI-generated",
+  "probability_ai": 0.994587700600702,
+  "reason": "The whole image looks AI-made (99% AI evidence); no real test photo scored this high.",
+  "metadata": {
+    "read": true,
+    "ai_label": null,
+    "text": ""
+  },
+  "seconds": 6.0,
+  "faces_checked": 0,
+  "faces_flagged": 0,
+  "edit": {
+    "flagged": false,
+    "flagged2": false
+  },
+  "confident_false_alarm": true
+}

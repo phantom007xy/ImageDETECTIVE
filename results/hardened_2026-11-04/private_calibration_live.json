@@ -1,0 +1,108 @@
+{
+  "scope": "Current frozen detector on the original private calibration pools; neutral aggregate totals only.",
+  "complete": true,
+  "status": "complete",
+  "errors": 0,
+  "groups": {
+    "private/calibration_phone": {
+      "expected": 104,
+      "processed": 104,
+      "n": 104,
+      "errors": 0,
+      "error_types": {},
+      "pixel_verdict_counts": {
+        "AI-generated": 0,
+        "Likely AI-generated": 0,
+        "Likely AI-edited": 0,
+        "This face looks AI-made or AI-changed": 0,
+        "Uncertain": 10,
+        "Likely authentic": 94
+      },
+      "final_verdict_counts": {
+        "AI-generated": 0,
+        "Likely AI-generated": 0,
+        "Likely AI-edited": 0,
+        "This face looks AI-made or AI-changed": 0,
+        "Uncertain": 10,
+        "Likely authentic": 94
+      },
+      "pixel_ai": 0,
+      "final_ai": 0,
+      "strict_ai_generated_real": 0,
+      "final_strict_ai_generated_real": 0,
+      "component_flag_counts": {
+        "whole": 0,
+        "edit1": 0,
+        "edit2": 0,
+        "any_face": 0
+      },
+      "faces_checked": 148,
+      "faces_red": 0,
+      "complete": true
+    },
+    "private/calibration_objects": {
+      "expected": 100,
+      "processed": 100,
+      "n": 100,
+      "errors": 0,
+      "error_types": {},
+      "pixel_verdict_counts": {
+        "AI-generated": 0,
+        "Likely AI-generated": 2,
+        "Likely AI-edited": 1,
+        "This face looks AI-made or AI-changed": 0,
+        "Uncertain": 5,
+        "Likely authentic": 92
+      },
+      "final_verdict_counts": {
+        "AI-generated": 0,
+        "Likely AI-generated": 2,
+        "Likely AI-edited": 1,
+        "This face looks AI-made or AI-changed": 0,
+        "Uncertain": 5,
+        "Likely authentic": 92
+      },
+      "pixel_ai": 3,
+      "final_ai": 3,
+      "strict_ai_generated_real": 0,
+      "final_strict_ai_generated_real": 0,
+      "component_flag_counts": {
+        "whole": 1,
+        "edit1": 2,
+        "edit2": 2,
+        "any_face": 0
+      },
+      "faces_checked": 20,
+      "faces_red": 0,
+      "complete": true
+    }
+  },
+  "external_apis_called": false,
+  "backbone_weight_hashes_recomputed": false,
+  "limitations": [
+    "Calibration checks, not independent test performance.",
+    "Backbone weight hashes are taken from the existing frozen configuration; only heads/calibrations are rehashed here."
+  ],
+  "configuration_sha256": "3bd80a815a518a8ece21e75002249c172406c289f8c4ed4db6bb84182b89d412",
+  "verified_small_artifact_sha256": {
+    "weights/google_v1/head_G3tt.pt": "174faaefa6e8e02f5d5cc9d0cd39f351e1521812c56a0e00bc3fbcdffdbef2ab",
+    "weights/edit_check_v3/head_EC3pf.pt": "667177a1e24e923a43ec61ddc75de1e7284162b844c0cf7992da4ec6a62fc411",
+    "weights/edit_check_v3/head_EC3g.pt": "1df48748007988c4c10c4c84f014b2612a3cf4c35d481b9fd26a8585c54171a7",
+    "weights/face_pe_v4/head_facepe.pt": "cfdd553a0f8a221c14233f718d6557510bcd53f146cc79a37860f1489d2356dd",
+    "weights/google_v1/head_G3tt_calibration.json": "d8559e8d0d5e3cd3869d1d20140f1ec5fcabb588e295abcd136ac5389eb3c819",
+    "weights/edit_check_v3/head_EC3pf_calibration.json": "40bb2bf634d42aeb6ce403a7798c5dea9a6db21e184f60d4180a86c4adbb12d1"
+  },
+  "calibration_budgets": {
+    "max_false_alarm_rate": 0.05,
+    "max_edit_flag_rate_per_head": 0.02,
+    "whole_ai_logit": 0.6646256446838379,
+    "edit1_logit": 5.4107747077941895,
+    "edit2_logit": 5.403400897979736,
+    "strong_ai_logit": 5.520974636077881,
+    "face_ai_logit": 4.044705390930176,
+    "swap_ai_logit": 0.22257614135742188
+  },
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "seconds": 127.97265489999882
+}

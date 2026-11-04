@@ -30,7 +30,7 @@ def facts(result, outline=None, evidence=None, guess=None):
     out = {
         "verdict": result["verdict"],
         "verdict_based_on": "the file's own metadata label" if result["verdict_reason"] == "metadata" else "the pixels",
-        "ai_probability_from_pixels": round(result["probability_ai"], 2),
+        "whole_image_ai_evidence": round(result["probability_ai"], 2),
         "faces_checked": len(faces),
         "faces_that_look_ai_made": sum(f["level"] == "ai" for f in faces),
         "faces_that_lean_ai": sum(f["level"] == "leans_ai" for f in faces),
@@ -42,7 +42,10 @@ def facts(result, outline=None, evidence=None, guess=None):
         out["strongest_evidence"] = (f"one object was outlined; its AI evidence is about {evidence[0]:.0%}, "
                                      f"the rest of the photo about {evidence[1]:.0%}")
     if result.get("edit") is not None:
-        out["ai_edit_check"] = "looks re-rendered by an AI editor" if result["edit"]["flagged"] else "no clear signs"
+        edit = result["edit"]
+        out["ai_edit_check"] = ("looks re-rendered by an AI editor" if edit["flagged"] else
+                                "the second Perception Encoder check sees an AI rendering" if edit.get("flagged2")
+                                else "no clear signs")
     if guess:
         out["second_opinion_guess_of_changed_part"] = f"{guess} (a guess, not part of the verdict)"
     return out
@@ -53,7 +56,8 @@ def explain(result, outline=None, evidence=None, guess=None):
     text = INSTRUCTION + json.dumps(facts(result, outline, evidence, guess), indent=1)
 
     def call(key):
-        body = {"model": MODEL, "reasoning_effort": "minimal", "messages": [{"role": "user", "content": text}]}
+        body = {"model": MODEL, "reasoning_effort": "minimal", "max_completion_tokens": 512,
+                "messages": [{"role": "user", "content": text}]}
         response = meta_api.post(key, "/chat/completions", body)
         usage = response.get("usage", {})
         cost = usage.get("prompt_tokens", 0) * PRICE_IN + usage.get("completion_tokens", 0) * PRICE_OUT

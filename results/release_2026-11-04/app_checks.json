@@ -1,0 +1,186 @@
+{
+  "scope": "CPU-only FastAPI behavior with synthetic images and mocked detector/paid services",
+  "production_code_changed": false,
+  "external_operations_attempted": {
+    "network": 0,
+    "download": 0,
+    "cuda": 0,
+    "spending_file_write": 0
+  },
+  "checks": [
+    {
+      "id": "test_ai_photo_uses_strongest_object_outline",
+      "status": "passed",
+      "seconds": 0.0337
+    },
+    {
+      "id": "test_authentic_photo_skips_picture_apis",
+      "status": "passed",
+      "seconds": 0.0064
+    },
+    {
+      "id": "test_budget_reserves_inflight_cost_and_deduplicates_same_request",
+      "status": "failed",
+      "seconds": 0.2629,
+      "error_type": "AssertionError",
+      "message": "0.02 not less than or equal to 0.01 : Concurrent identical requests charged more than the remaining simulated daily cap",
+      "measurements": {
+        "simulated_charges": 2,
+        "simulated_spend": 0.02,
+        "cap": 0.01
+      }
+    },
+    {
+      "id": "test_comment_mention_is_not_an_actual_ai_source_declaration",
+      "status": "failed",
+      "seconds": 0.0025,
+      "error_type": "AssertionError",
+      "message": "'generated' is not None : Ordinary PNG Comment text was mistaken for an AI source field",
+      "measurements": {
+        "metadata_result": {
+          "ai_label": "generated",
+          "c2pa": false
+        }
+      }
+    },
+    {
+      "id": "test_corrupt_upload_rejected",
+      "status": "passed",
+      "seconds": 0.1473
+    },
+    {
+      "id": "test_decoded_format_used_instead_of_filename",
+      "status": "passed",
+      "seconds": 0.0057
+    },
+    {
+      "id": "test_empty_upload_rejected",
+      "status": "passed",
+      "seconds": 0.0047
+    },
+    {
+      "id": "test_exif_orientation_applied_without_reencoding_original",
+      "status": "passed",
+      "seconds": 0.0059
+    },
+    {
+      "id": "test_expired_session_rejected_and_cleanup_preserves_fresh",
+      "status": "passed",
+      "seconds": 0.0068
+    },
+    {
+      "id": "test_file_size_enforced_before_detector",
+      "status": "passed",
+      "seconds": 0.0046
+    },
+    {
+      "id": "test_generated_image_crop_flow_and_expiry",
+      "status": "passed",
+      "seconds": 0.0093
+    },
+    {
+      "id": "test_generation_validation_and_unavailable_fallback",
+      "status": "passed",
+      "seconds": 0.0072
+    },
+    {
+      "id": "test_homepage_and_static_javascript",
+      "status": "passed",
+      "seconds": 0.0385
+    },
+    {
+      "id": "test_memory_only_upload_does_not_spool_to_disk",
+      "status": "failed",
+      "seconds": 0.0112,
+      "error_type": "AssertionError",
+      "message": "1 != 0 : Synthetic upload reached temporary disk storage despite memory-only promise",
+      "measurements": {
+        "temporary_files_rolled_to_disk": 1
+      }
+    },
+    {
+      "id": "test_missing_upload_rejected",
+      "status": "passed",
+      "seconds": 0.0046
+    },
+    {
+      "id": "test_named_investigation_renders_real_outline",
+      "status": "passed",
+      "seconds": 0.0092
+    },
+    {
+      "id": "test_optional_api_does_not_block_another_detector_verdict",
+      "status": "failed",
+      "seconds": 0.7676,
+      "error_type": "AssertionError",
+      "message": "False is not true : A blocked optional API call held up the next basic detector verdict",
+      "measurements": {
+        "verdict_completed_while_api_blocked": false
+      }
+    },
+    {
+      "id": "test_optional_services_unavailable_preserve_verdict",
+      "status": "passed",
+      "seconds": 0.0067
+    },
+    {
+      "id": "test_original_bytes_reach_metadata_check_unchanged",
+      "status": "passed",
+      "seconds": 0.0052
+    },
+    {
+      "id": "test_oversized_content_length_rejected",
+      "status": "passed",
+      "seconds": 0.0031
+    },
+    {
+      "id": "test_report_serialization_and_evidence_decode",
+      "status": "passed",
+      "seconds": 0.0115
+    },
+    {
+      "id": "test_secondary_head_facts_describe_positive_detection",
+      "status": "failed",
+      "seconds": 0.0049,
+      "error_type": "AssertionError",
+      "message": "'no clear signs' == 'no clear signs' : Secondary PE head triggered the verdict but explanation facts say no clear signs",
+      "measurements": {
+        "facts": {
+          "verdict": "Likely AI-generated",
+          "verdict_based_on": "the pixels",
+          "ai_probability_from_pixels": 0.1,
+          "faces_checked": 0,
+          "faces_that_look_ai_made": 0,
+          "faces_that_lean_ai": 0,
+          "faces_too_small_to_check": 0,
+          "ai_edit_check": "no clear signs"
+        }
+      }
+    },
+    {
+      "id": "test_shutdown_clears_retained_sessions",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "id": "test_supported_decodable_uploads",
+      "status": "passed",
+      "seconds": 0.0115
+    },
+    {
+      "id": "test_unknown_followup_session_rejected",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "id": "test_unsupported_decodable_format_rejected",
+      "status": "passed",
+      "seconds": 0.0046
+    }
+  ],
+  "tests_run": 26,
+  "failures": 5,
+  "errors": 0,
+  "successful": false,
+  "seconds": 5.03
+}

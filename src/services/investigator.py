@@ -44,7 +44,8 @@ def investigate(image):
     data = base64.b64encode(buffer.getvalue()).decode()
 
     def call(key):
-        body = {"model": MODEL, "reasoning_effort": "low", "messages": [{"role": "user", "content": [
+        body = {"model": MODEL, "reasoning_effort": "low", "max_completion_tokens": 1024,
+                "messages": [{"role": "user", "content": [
             {"type": "text", "text": PROMPT}, {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{data}"}}]}]}
         reply = meta_api.post(key, "/chat/completions", body)
         usage = reply.get("usage", {})

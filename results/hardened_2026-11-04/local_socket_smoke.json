@@ -1,0 +1,48 @@
+{
+  "passed": true,
+  "scope": "Real local socket server, real GPU models, four existing public examples only; API budget zero",
+  "health": {
+    "status": "ready",
+    "checks": {
+      "whole_image": true,
+      "edit_check": true,
+      "faces": true,
+      "face_swap": true,
+      "second_render_head": true
+    }
+  },
+  "examples": [
+    {
+      "public_example": "real",
+      "verdict": "Likely authentic",
+      "faces_checked": 0,
+      "faces_flagged": 0,
+      "evidence_source": "DINOv3 \u00b7 Whole-image check"
+    },
+    {
+      "public_example": "edit",
+      "verdict": "Likely AI-edited",
+      "faces_checked": 0,
+      "faces_flagged": 0,
+      "evidence_source": "Perception Encoder \u00b7 AI-edit check"
+    },
+    {
+      "public_example": "group",
+      "verdict": "Likely AI-edited",
+      "faces_checked": 8,
+      "faces_flagged": 0,
+      "evidence_source": "Perception Encoder \u00b7 AI-edit check"
+    },
+    {
+      "public_example": "original",
+      "verdict": "AI-generated",
+      "faces_checked": 2,
+      "faces_flagged": 0,
+      "evidence_source": "DINOv3 \u00b7 Whole-image check"
+    }
+  ],
+  "optional_api_fallback": true,
+  "generation_over_budget_status": 503,
+  "spending_ledger_unchanged": true,
+  "private_photos_used": false
+}
