@@ -1,0 +1,623 @@
+{
+  "checked_at_utc": "2026-11-04T13:26:52.137483+00:00",
+  "base_url": "https://136-114-230-97.sslip.io",
+  "private_photos_used": false,
+  "paid_endpoints_called": false,
+  "checks": [
+    {
+      "name": "detector_ready",
+      "passed": true,
+      "status": 200,
+      "body": {
+        "status": "ready",
+        "checks": {
+          "whole_image": true,
+          "edit_check": true,
+          "faces": true,
+          "face_swap": true,
+          "second_render_head": true
+        }
+      }
+    },
+    {
+      "name": "four_clickable_public_examples",
+      "passed": true
+    },
+    {
+      "name": "public_example_bytes_real",
+      "passed": true
+    },
+    {
+      "name": "real_inference_real",
+      "passed": true,
+      "status": 200,
+      "verdict": "Likely authentic",
+      "seconds": 23.365,
+      "faces_checked": 0,
+      "faces_flagged": 0,
+      "evidence_source": "DINOv3 \u00b7 Whole-image check"
+    },
+    {
+      "name": "public_example_bytes_edit",
+      "passed": true
+    },
+    {
+      "name": "real_inference_edit",
+      "passed": true,
+      "status": 200,
+      "verdict": "Likely AI-edited",
+      "seconds": 9.338,
+      "faces_checked": 0,
+      "faces_flagged": 0,
+      "evidence_source": "Perception Encoder \u00b7 AI-edit check"
+    },
+    {
+      "name": "public_example_bytes_group",
+      "passed": true
+    },
+    {
+      "name": "real_inference_group",
+      "passed": true,
+      "status": 200,
+      "verdict": "Likely AI-edited",
+      "seconds": 12.519,
+      "faces_checked": 8,
+      "faces_flagged": 0,
+      "evidence_source": "Perception Encoder \u00b7 AI-edit check"
+    },
+    {
+      "name": "public_example_bytes_original",
+      "passed": true
+    },
+    {
+      "name": "real_inference_original",
+      "passed": true,
+      "status": 200,
+      "verdict": "AI-generated",
+      "seconds": 11.275,
+      "faces_checked": 2,
+      "faces_flagged": 0,
+      "evidence_source": "DINOv3 \u00b7 Whole-image check"
+    },
+    {
+      "name": "invalid_image_rejected",
+      "passed": true,
+      "status": 400
+    },
+    {
+      "name": "expired_explanation_rejected_before_api",
+      "passed": true,
+      "status": 410
+    },
+    {
+      "name": "real_person_prompt_refused_before_api",
+      "passed": true,
+      "status": 400
+    },
+    {
+      "name": "public_real_boundary_keeps_likely",
+      "passed": true,
+      "verdict": "Likely AI-generated",
+      "public_image_sha256": "1e913aa9bad9d28a8f7303cf995493409b1324db5d6690fec789790337db67e3"
+    },
+    {
+      "name": "judge_original_file_verdicts",
+      "passed": true
+    }
+  ],
+  "judge_files": [
+    {
+      "public_file": "jt_001,a selfie of a young man at a train station.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_002,a selfie of a woman in a park on a sunny day, phone front camera.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_003,a group photo of five friends at a beach.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_004,a family having dinner together at home, phone photo.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_005,portrait of a smiling grandmother in her kitchen.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_006,a man in a suit giving a speech at a conference.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_007,a woman taking a mirror selfie in a gym.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_008,two friends eating street food at night.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_009,a golden retriever lying on a sofa.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_010,a cat sleeping on a laptop keyboard.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_011,a plate of pasta in a restaurant, photo taken from above.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_012,a cup of coffee and a croissant on a cafe table.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_013,a busy street in Mumbai during heavy rain.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_014,a car with a flat tyre at the side of a road.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_015,a flooded village street after heavy monsoon rain.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_016,people waiting at a bus stop in the evening.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_017,a student studying in a library-2.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_018,a birthday party at home with balloons and a cake-3.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_019,a sunset over the sea seen from a beach-4.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_020,an office desk with a computer and a plant, phone photo-5.png",
+      "source": "judge/chatgpt",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_001,a selfie of a young man at a train station.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_002,a selfie of a woman in a park on a sunny day, phone front camera.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_003,a group photo of five friends at a beach.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_004,a family having dinner together at home, phone photo.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_005,portrait of a smiling grandmother in her kitchen.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_006,a man in a suit giving a speech at a conference.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_007,a woman taking a mirror selfie in a gym.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_008,two friends eating street food at night.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_009,a golden retriever lying on a sofa.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_010,a cat sleeping on a laptop keyboard.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_011,a plate of pasta in a restaurant, photo taken from above.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_012,a cup of coffee and a croissant on a cafe table.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_013,a busy street in Mumbai during heavy rain.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_014,a car with a flat tyre at the side of a road.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_015,a flooded village street after heavy monsoon rain.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_016,people waiting at a bus stop in the evening.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_017,a student studying in a library.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_018,a birthday party at home with balloons and a cake.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_019,a sunset over the sea seen from a beach.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_020,an office desk with a computer and a plant, phone photo.png",
+      "source": "judge/nanobanana_pro",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_001,a selfie of a young man at a train station.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_002,a selfie of a woman in a park on a sunny day, phone front camera.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_003,a group photo of five friends at a beach.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_004,a family having dinner together at home, phone photo.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_005,portrait of a smiling grandmother in her kitchen.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_006,a man in a suit giving a speech at a conference.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_007,a woman taking a mirror selfie in a gym.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_008,two friends eating street food at night.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_009,a golden retriever lying on a sofa.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_010,a cat sleeping on a laptop keyboard.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_011,a plate of pasta in a restaurant, photo taken from above.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_012,a cup of coffee and a croissant on a cafe table.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_013,a busy street in Mumbai during heavy rain.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_014,a car with a flat tyre at the side of a road.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_015,a flooded village street after heavy monsoon rain.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_016,people waiting at a bus stop in the evening.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_017,a student studying in a library.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_018,a birthday party at home with balloons and a cake.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_019,a sunset over the sea seen from a beach.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_020,an office desk with a computer and a plant, phone photo.jpeg",
+      "source": "judge/nanobanana_2_1",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_001,a selfie of a young man at a train station.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_002,a selfie of a woman in a park on a sunny day, phone front camera.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_003,a group photo of five friends at a beach.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_004,a family having dinner together at home, phone photo.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_005,portrait of a smiling grandmother in her kitchen.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_006,a man in a suit giving a speech at a conference.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_007,a woman taking a mirror selfie in a gym.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_008,two friends eating street food at night.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_009,a golden retriever lying on a sofa.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_011,a plate of pasta in a restaurant, photo taken from above.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_012,a cup of coffee and a croissant on a cafe table.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_013,a busy street in Mumbai during heavy rain.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_014,a car with a flat tyre at the side of a road.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_015,a flooded village street after heavy monsoon rain.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_016,people waiting at a bus stop in the evening.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_017,a student studying in a library.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_018,a birthday party at home with balloons and a cake.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_019,a sunset over the sea seen from a beach.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "jt_020,an office desk with a computer and a plant, phone photo.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    },
+    {
+      "public_file": "t_010,a cat sleeping on a laptop keyboard.webp",
+      "source": "judge/metaai",
+      "passed": true,
+      "verdict": "AI-generated"
+    }
+  ],
+  "pixel_component_differences": [
+    {
+      "public_file": "jt_006,a man in a suit giving a speech at a conference.png",
+      "fields": [
+        "faces_flagged"
+      ]
+    },
+    {
+      "public_file": "jt_008,two friends eating street food at night.jpeg",
+      "fields": [
+        "faces_checked"
+      ]
+    },
+    {
+      "public_file": "jt_012,a cup of coffee and a croissant on a cafe table.webp",
+      "fields": [
+        "faces_checked"
+      ]
+    },
+    {
+      "public_file": "t_010,a cat sleeping on a laptop keyboard.webp",
+      "fields": [
+        "faces_checked",
+        "faces_flagged"
+      ]
+    }
+  ],
+  "passed": true,
+  "limitations": [
+    "Public examples and known regressions, not a hosted population-level accuracy estimate.",
+    "CPU/GPU floating-point scores need not match exactly; component differences are recorded.",
+    "No live Muse/SAM API success or billing test; those endpoints were not invoked."
+  ]
+}

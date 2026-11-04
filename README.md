@@ -1,6 +1,8 @@
 # ImageDETECTIVE
 
-**Is this photo real, made by AI, or changed by AI?** ImageDETECTIVE checks one photo and gives one clear verdict, a calibrated confidence and **where** the evidence is: an evidence map of the whole image, a box and a score for every face (AI-made faces and face swaps), and an investigator step in which Meta's Muse Spark names what was most likely changed and SAM 3.1 outlines it.
+[![App regression checks](https://github.com/phantom007xy/ImageDETECTIVE/actions/workflows/checks.yml/badge.svg)](https://github.com/phantom007xy/ImageDETECTIVE/actions/workflows/checks.yml)
+
+**Is this photo real, made by AI, or changed by AI?** ImageDETECTIVE checks one photo using calibrated decision thresholds and shows **where** the evidence comes from: a contribution map from the check that raised the alert, a box and a score for every face (AI-made faces and face swaps), and an investigator step in which Meta's Muse Spark names what was most likely changed and SAM 3.1 outlines it. Pixel evidence is a likelihood, never proof that a photo is fake.
 
 Built for the **Meta Global AI Developer Hackathon 2026** (Indie Developer track, theme "Build for Your World"), 26 Oct – 4 Nov 2026. **Built with DINOv3**, Meta's Perception Encoder, SAM 3 / SAM 3.1, Muse Image and Muse Spark.
 
@@ -14,7 +16,7 @@ ImageDETECTIVE is built for that flow: everyday phone photos, compressed and for
 
 ## Results at a glance
 
-Whole-photo numbers are the final app's verdict (whole image, edit check and faces together) **from the pixels alone**, unless marked otherwise; face-swap numbers are measured on face crops at the app's red line; rows marked \* come from tests run before the last recalibration (3 Nov) or at a training-time line. A file that still carries its AI label is caught in every case. Details and commands: [results/](results/).
+Whole-photo numbers are the app's verdict (whole image, edit check and faces together) **from the pixels alone**, unless marked otherwise; face-swap numbers are measured on face crops at the app's red line; rows marked \* come from tests run before the last recalibration (3 Nov) or at a training-time line. All 80 original judge-test files retain readable AI declarations. See the [local release report](results/hardened_2026-11-04/summary.md) and the separate [verified hosted deployment](results/deployment_2026-11-04/summary.md): 80/80 original-file verdicts matched, with four CPU/GPU face-count/flag differences recorded. These metadata-assisted matches are not 100% pixel detection.
 
 | AI images (most never used in training) | Caught |
 |---|---|
@@ -22,7 +24,7 @@ Whole-photo numbers are the final app's verdict (whole image, edit check and fac
 | Muse Image, **cropped and re-saved**\* (Meta's watermark-based detector missed 55% of cropped Muse images, Reuters, July 2026) | **100%** |
 | Pictures made by hand in the apps judges are likely to use: **ChatGPT / Meta AI / Nano Banana Pro / Nano Banana 2.1** (20 each) | **100% / 100% / 95% / 60%** |
 | The same 80 files as downloaded (their AI label read from the file) | 100% |
-| Generators never used in training: **PixArt-Σ / SDXL** | 98% / 92% |
+| Generators never used in training: **PixArt-Σ / SDXL** | 388/396 (98.0%) / 317/332 (95.5%) |
 | GAN faces (thispersondoesnotexist / SFHQ) | 95% / 92% |
 | Muse Image edits of real photos: whole-image changes / local changes ("add a red bicycle") | 88% / 71% |
 | **Face swaps**, per face crop (turns red): photo swaps (OpenForensics test, app line) / today's swap tools inswapper + UniFace on people never seen (RTFS-10k test\*, training-time line on Colab) / DFDC video swaps (app line) | **97% / 89% / 39%** |
@@ -33,7 +35,7 @@ Whole-photo numbers are the final app's verdict (whole image, edit check and fac
 | My new phone photos of objects and places, final test (private, offline) | 30 | 10% (3, all "Likely", none "AI-generated") |
 | My phone photos (calibration, private, offline) | 104 | 0% |
 | Polished professional photos (Wikimedia Commons, held out) | 330 | 4.8% |
-| Amateur photos (OpenImages, held out / used nowhere before) | 76 / 576 | 1.3% / 1.7% |
+| Amateur photos (OpenImages, calibration pools held out from training) | 76 / 576 | 1/76 (1.3%) / 11/576 (1.9%) |
 | Real faces flagged as a swap: photo pools (polished, OpenImages, close-ups, selfies, my phone photos) / video frames (DFDC) / SID-Set | 1,358 / 1,452 / 292 | **0%** / 0.5% / 0.3% |
 
 **Forwarded copies\*** (WhatsApp-like JPEG, a second forward, 800-px copies, screenshots, 70% crops; whole image and edit check, no faces): compression and screenshots add no false alarms on the real photos tested (polished 2.0–2.7%, OpenImages 0–0.7%), but **cropping raised polished photos from 2.7% to 4.7%**; Muse Image stays at 100% in every version ([robustness](results/robustness_final_v1.txt)).
@@ -42,14 +44,16 @@ Whole-photo numbers are the final app's verdict (whole image, edit check and fac
 
 | Verdict | When |
 |---|---|
-| **AI-generated** | The whole-image score is above every real photo we tested, or the file itself carries an "AI-made" label |
+| **AI-generated** | The file contains a structured declaration of AI generation; the app explicitly marks this declaration as unverified |
 | **Likely AI-generated** | The whole-image score is above the calibrated AI line |
 | **Likely AI-edited** | The Muse-edit check (Perception Encoder) is above its line: the photo was re-rendered by an AI image model |
 | **This face looks AI-made or AI-changed** | One face is above a strict line: AI-made face or face swap |
 | **Likely authentic** | Nothing points to AI. Always shown with: *"This photo doesn't look AI-made or AI-changed. It doesn't confirm when or where it was taken."* |
 | **Uncertain** | Everything in between. We would rather say this than guess |
 
-Next to the verdict: a calibrated confidence, the **evidence map**, numbered **face boxes** with their own scores (red = changes the verdict, orange = some signs, green = no clear signs), a table of everything that was checked (including the file's metadata), and the **investigator**: Muse Spark names what was most likely changed, SAM 3.1 outlines it, and Muse Spark explains the numbers in 2–3 plain sentences.
+Next to the verdict: an AI evidence score, the **evidence map**, numbered **face boxes** with their own scores (red = changes the verdict, orange = some signs, green = no clear signs), a table of everything that was checked (including the file's metadata), and the **investigator**: Muse Spark names what was most likely changed, SAM 3.1 outlines it, and Muse Spark explains the numbers in 2–3 plain sentences. Four public examples use the same upload path as your own photo, including the original file metadata.
+
+The map names its source. DINOv3 covers the whole photo; when a PE head raises the alert, its contribution map covers only the outlined centre square that PE actually analysed. The map explains the classifier score; it does not establish the boundary of a real edit. A face alert is shown by its face box.
 
 ## How it works
 
@@ -70,8 +74,8 @@ flowchart LR
 1. **Whole image (DINOv3).** The photo is resized so its long side is 448 px (never squashed). A frozen DINOv3 ViT-L/16 gives one feature vector per 16 × 16 patch, and a linear head scores every patch. The image score is *exactly* the average of the patch scores, so the evidence map shows what really produced the score. The head was trained on real photos and AI images from the same kinds of sources (same-content pairs made from Muse Spark captions, 7 generators, GAN faces, real close-ups and selfies), so it cannot learn "portrait = real" or "PNG = AI".
 2. **Muse-edit check (Perception Encoder).** Muse Image edits **re-render every pixel** of a photo, so a Muse edit is an AI image as a whole, but a subtle one: frozen DINOv3 let 75% of local edits through. The middle layers of Meta's Perception Encoder separate edits from their own real originals far better (AUC 0.97 vs. 0.75), so we fine-tuned all 304M weights of PE-Core-L/14 on ~7,400 Muse renders against ~14,900 real photos, plus Muse edits of my own selfies. A second head on the same features adds Google's Gemini pictures.
 3. **Faces (SAM 3).** SAM 3 runs locally with the prompt "face". Each face is scored twice: by the DINOv3 head (AI-made face) and by a **separate Perception Encoder fine-tuned on face crops for face swaps** (Colab A100, 20,000 steps): photo swaps (OpenForensics), video swaps (DFDC), today's swap tools (inswapper and UniFace, RTFS-10k), and real faces from six sources (FairFace, Open Images, FaceID-550, Indian faces, SID-Set, Commons) so that beauty filters and phone processing don't look like swaps.
-4. **File metadata.** An IPTC "trainedAlgorithmicMedia" label (Muse Image, ChatGPT and Gemini write one) or a C2PA manifest is strong evidence; a missing label proves nothing, because forwarding strips it.
-5. **Verdict and calibration.** All checks share **one false-alarm budget**: in every real-photo pool, at most 5% of real photos may get any AI verdict; the edit check alone at most 2%, a red face at most 0.5% of the real faces. The pools include my own phone photos, selfies and phone photos without people, measured offline on my laptop. Scores are temperature-scaled; "Uncertain" is capped at 15% of a balanced mix.
+4. **File metadata.** Reads structured IPTC DigitalSourceType declarations in XMP and supported C2PA/JUMBF containers. An ordinary comment mentioning AI does not count. A declaration is explicitly **unverified**: the app does not authenticate C2PA signatures, and metadata can be forged. A missing declaration proves nothing, because forwarding strips it.
+5. **Verdict and calibration.** All checks share **one false-alarm budget on the calibration pools**: at most 5% of real photos in each pool may get any AI verdict; each edit head at most 2%, a red face at most 0.5% of the real faces. This is a calibration constraint, not a guarantee on new photos. The pools include my own phone photos, selfies and phone photos without people, measured offline on my laptop. Scores are temperature-scaled; "Uncertain" is capped at 15% of a balanced calibration mix. Thresholds are checked against live float32 logits rather than rounded feature caches. Even very high pixel scores stay **Likely AI-generated**: a highest-real calibration score is not a safe certainty boundary across CPU/GPU arithmetic.
 6. **Investigator (Meta Model API).** Muse Spark names the single object most likely added or changed and SAM 3.1 outlines it (on 151 local Muse edits it named an object in 28; for those 28, SAM 3.1's outline landed on the truly changed area 96% of the time, so the outline is a hint, not a guarantee); for AI-made photos SAM 3.1 outlines the object at the hottest spot of the evidence map. Muse Spark then writes 2–3 sentences **from our numbers only**. The verdict never comes from Muse Spark and never waits on an API.
 7. **Try to fool it.** Type a prompt; **Muse Image** makes the picture, ImageDETECTIVE checks it at once, and "crop and re-save" shows what happens when the file's AI label is lost.
 
@@ -81,7 +85,7 @@ flowchart LR
 |---|---|---|
 | **DINOv3** ViT-L/16 (`facebook/dinov3-vitl16-pretrain-lvd1689m`) | Locally, frozen | The whole-image detector and the AI-made-face score; patch scores give the evidence map |
 | **Perception Encoder** PE-Core-L/14-336 | Locally, **fine-tuned by us twice** | The Muse-edit check (whole photo) and the face-swap check (face crops) |
-| **SAM 3** (`facebook/sam3`) | Locally | Finds every face (training data and app use the same prompt, threshold and crop rule) |
+| **SAM 3** (`facebook/sam3`) | Locally | Finds faces (training data and app use the same prompt, threshold and crop rule); some faces can be missed |
 | **SAM 3.1** | Meta Model API | Outlines the object Muse Spark names, or the object with the strongest evidence |
 | **Muse Spark** (`muse-spark-1.3`, standard mode) | Meta Model API | Captions for the same-content training pairs; the investigator; the plain-language explanation |
 | **Muse Image** (`muse-image-1.0`, standard mode) | Meta Model API | Two test sets, ~780 same-content training pairs and ~7,000 training and test edits; the "Try to fool it" tab |
@@ -94,36 +98,180 @@ Every model the app calls while running is a Meta model. Non-Meta tools were use
 - **Held-out generators and people:** SDXL and PixArt-Σ never in training; RTFS dev/test faces share neither the person nor the swapped-in identity with training; near-duplicate faces removed (OpenForensics reuses photos: 49% of its dev faces had a twin in training before cleaning).
 - **Choices on dev, results on test:** e.g. the face-swap model was picked on dev sets among 8 checkpoints of a controlled experiment (with vs. without self-blended fakes: the self-blended fakes did not help).
 - **A fresh final test:** a new Muse Image set generated on the last day, new selfies and object photos taken for the final test, and pictures made by hand in ChatGPT, Meta AI and Gemini.
+- **Scoped provenance audit:** accessible public files and recorded manifests are checked in [the manifest audit](results/release_2026-11-04/manifest_checks.md). Missing original Colab face-training manifests and incomplete derivative-source records prevent a complete reconstruction of every training run; this is not a universal leakage-free claim.
 - **What didn't work**, briefly: frozen DINOv3 on Muse edits (tuning it learned a "people-free scene = AI" shortcut, so the edit check moved to the Perception Encoder); an edited-region head trained on SID-Set (24% of SID-Set edits, 0% of Muse edits); anomaly detection on real photos only (chance level); Muse Spark as a detector (AUC 0.61–0.69, so it never decides); more Google pictures for Nano Banana (no gain).
 
 ## Known limits
 
-- **Nano Banana 2.1** (Google): 60% caught from pixels (35% "Uncertain"); its original files are caught through their AI label, forwards lose it. **SD 3.5:** about half.
-- **Small local AI edits:** 71% caught, about 60% after a crop or heavy compression.
+- **Nano Banana 2.1** (Google): 12/20 (60%) caught from pixels (35% "Uncertain"); all 20 original files in this test are caught through their AI declaration, forwards lose it. **SD 3.5:** 26/38 (68.4%) with the full app; the whole-image/edit checks alone catch fewer.
+- **Small local Muse edits:** 94/132 (71.2%) caught by the whole-image/edit checks alone, falling to 70/132 (53.0%) after a crop and 72/132 (54.5%) for 800-px JPEG copies. Faces and file declarations are excluded from these robustness numbers.
 - **Polished stock photos and phone photos without people** are more often "Uncertain" (about 1 in 4 professional photos) and sometimes "Likely AI" (3 of my 30 final-test object photos; 11–12% of the professional Unsplash photos in the Chameleon benchmark\*, which keeps only AI images humans took for real: 79–82% of them caught).
 - **Face swaps in tight video crops** (WildDeepfake): 14% turn red; photo swaps and today's swap tools are the strength.
 - **Not in scope:** classic manual editing without AI, a real photo shared with a false story, documents, video. "Likely authentic" means "no AI traces found", not "proven real".
 
 ## Privacy and safety
 
-- Uploaded photos are kept in memory only and deleted at most 30 minutes after their check (a background sweep runs every 30 s, also when nobody uses the app); they are never used for training. For photos not called authentic, the investigator sends a smaller copy to Meta's Model API in **standard mode**, where Meta doesn't train on it.
+- Uploads are bounded at 20 MB and 40 megapixels. Multipart uploads stay in memory without spilling to disk. After inference the app retains a copy at most 1600 px wide/tall for follow-up requests, with a limit of 32 sessions and an estimated 128 MB; older sessions can expire sooner. Retained copies are deleted within 30 minutes (a background sweep runs every 30 s). Photos are never used for training. For photos not called authentic, the investigator sends the smaller copy to Meta's Model API in **standard mode**, where Meta doesn't train on it.
 - Muse Image in the app makes pictures **from text prompts only**: it never edits uploaded photos, and it refuses prompts for real or famous people or their lookalikes (a word list, on top of Meta's own safety filter).
 - All Muse edits for training and testing were made from **people-free** photos with free licences, or from photos of myself.
 - My own phone photos and selfies stayed on my laptop: tests and calibration ran fully offline, and only totals left it.
 
 ## Run it yourself
 
-**Note first:** the trained heads, the two fine-tuned Perception Encoders and their calibration files are **private and not in this repository** (they are trained partly on DFDC, whose frames may not be redistributed). Installing the code alone does not give a working detector: the app expects them under `weights/` (`google_v1/head_G3tt.pt` + `_calibration.json`, `edit_check_v3/` with `head_EC3pf.pt`, `head_EC3g.pt`, `pe_EC3.pt` + calibration, `face_pe_v4/` with `head_facepe.pt` and `pe_step14000.pt`), or downloads them at start from a private Hugging Face repo set in `HEADS_REPO`. To try it, use the [live demo](https://136-114-230-97.sslip.io). Every training step that makes these files is in the code.
+**A public clone is sufficient for the code and synthetic behavior checks. Running the full detector also requires the project's trained artifacts.** Those artifacts are private, are not included in GitHub, and are not downloaded anonymously. The face model was trained partly on DFDC; this project keeps its weights private. The [hosted demo](https://136-114-230-97.sslip.io) runs the full detector without installing anything.
 
-Python 3.12. Install PyTorch for your GPU first (see [requirements.txt](requirements.txt)), then:
+| What you want to check | What you need |
+|---|---|
+| Run the actual detector on your own PC | Python environment below, approved trained artifacts, and access to the gated Meta backbones |
+| Run the app's synthetic regression checks | Python environment only; no trained weights, Hugging Face account, API key or GPU |
+| Use the optional investigator or generate a Muse image | Full detector plus your own Meta Model API key and an enabled spending cap |
 
-```bash
-pip install -r requirements.txt
-huggingface-cli login        # needs access to facebook/dinov3-vitl16-pretrain-lvd1689m and facebook/sam3 (gated)
-python -m app.server         # http://127.0.0.1:7860
+**Tested systems:** Windows 11, Python 3.12.7, RTX 5050 Laptop GPU with 8 GB VRAM and 16 GB system RAM; Ubuntu 24.04 on the hosted CPU server. CPU inference is supported but slower. Allow several GB of disk space for PyTorch, the model cache and the trained artifacts. The GPU automatically uses bf16 when supported; older GPUs use fp32 and can require more VRAM. Other hardware configurations have not all been benchmarked.
+
+Install Git and Python 3.12 before starting. CPU/GPU floating-point scores and near-threshold face findings can differ; the main measured pixel results above use the laptop GPU. Hosted checks report those differences separately.
+
+### 1. Clone and create a Python 3.12 environment
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/phantom007xy/ImageDETECTIVE.git
+cd ImageDETECTIVE
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 ```
 
-The investigator and "Try to fool it" need a Meta Model API key (`MODEL_API_KEY` in the environment or in `.env`); the daily spending cap is `API_DAILY_CAP_USD` (default $3). Without a key, the app still gives the full verdict. The hosted demo runs on a Google Cloud C3 CPU machine in bf16 ([deploy/gcp_vm_setup.sh](deploy/gcp_vm_setup.sh)); on a laptop GPU a photo takes about a second.
+Ubuntu/Linux (install Python 3.12 and its `venv` support first):
+
+```bash
+git clone https://github.com/phantom007xy/ImageDETECTIVE.git
+cd ImageDETECTIVE
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+```
+
+Keep this virtual environment active for the following commands, and run them from the repository root. If Windows blocks activation, use `.\.venv\Scripts\python.exe` in place of `python` and `.\.venv\Scripts\hf.exe` in place of `hf`; activation is not required with those explicit paths. `py` not found means the Windows Python launcher/Python 3.12 needs installing; alternatively use an existing Python 3.12 executable to create the environment.
+
+### 2. Install PyTorch, then the project dependencies
+
+Choose **one** PyTorch build. For a CPU-only PC, or to run the synthetic checks:
+
+```bash
+python -m pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cpu
+```
+
+For the tested NVIDIA RTX 50-series configuration with a compatible driver:
+
+```bash
+python -m pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cu128
+```
+
+For other GPUs, use the [official PyTorch installer](https://pytorch.org/get-started/locally/) to choose a compatible build. Then install the remaining pinned dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+python -m pip check
+```
+
+If you only want the no-weights checks, skip to [Local release checks](#local-release-checks). They use a mocked detector and do **not** establish detection accuracy.
+
+### 3. Authenticate and restore the trained artifacts
+
+For a full local run, request access using your own Hugging Face account and accept the terms for [DINOv3 ViT-L/16](https://huggingface.co/facebook/dinov3-vitl16-pretrain-lvd1689m) and [SAM 3](https://huggingface.co/facebook/sam3). Then authenticate:
+
+```bash
+hf auth login
+```
+
+The current CLI is `hf`, not `huggingface-cli`; see [Hugging Face's authentication guide](https://huggingface.co/docs/huggingface_hub/en/quick-start#authentication). A Hugging Face login alone does not grant access to this project's private trained artifacts. Judges/participants who need a full local evaluation must arrange approved artifact access with the project owner through the [repository](https://github.com/phantom007xy/ImageDETECTIVE/issues). Use your own read token; no shared credentials are supplied.
+
+Once the owner supplies an approved private repository ID, replace `OWNER/APPROVED_REPO` below with that ID:
+
+```bash
+python scripts/download_weights.py --repo OWNER/APPROVED_REPO
+```
+
+The helper downloads only the eight required files and uses your authenticated account. An approved artifact bundle can instead be extracted directly into `weights/`. The resulting layout must be:
+
+```text
+weights/
+  google_v1/
+    head_G3tt.pt
+    head_G3tt_calibration.json
+  edit_check_v3/
+    head_EC3pf.pt
+    head_EC3g.pt
+    pe_EC3.pt
+    head_EC3pf_calibration.json
+  face_pe_v4/
+    head_facepe.pt
+    pe_step14000.pt
+```
+
+Keep this bundle and its calibrations together; base PE weights or a different checkpoint are not substitutes for the fine-tuned files. The pretrained DINOv3/SAM backbones download into Hugging Face's cache on the first full launch, so that launch needs internet access and can take several minutes. With `HEADS_REPO` set, the server can also sync an approved private artifact repository at startup; the explicit download above is easier to inspect locally.
+
+### 4. Check your setup and start the app
+
+```bash
+python scripts/check_setup.py --hardware
+```
+
+This checks Python, pinned dependency versions, all eight trained files and matching calibration references without loading models or making API calls. Continue only when it reports that dependencies and artifact layout are ready.
+
+Start with paid features disabled. Windows PowerShell:
+
+```powershell
+$env:API_DAILY_CAP_USD = "0"
+python -m app.server
+```
+
+Ubuntu/Linux:
+
+```bash
+export API_DAILY_CAP_USD=0
+python -m app.server
+```
+
+Open **http://127.0.0.1:7860**. After the models load, **http://127.0.0.1:7860/healthz** should return HTTP 200, `status: ready`, and all five component checks should be `true`. Startup fails if a required detector branch is missing. Try the four public example buttons, then upload your own JPG, PNG or WEBP (up to 20 MB / 40 MP). Stop the server with Ctrl+C.
+
+### 5. Optional Meta API features
+
+The full pixel verdict, evidence map and face checks work without a Meta Model API key. To enable Muse Spark explanations, SAM 3.1 outlines and "Try to fool it", copy [.env.example](.env.example) to `.env`, add **your own** `MODEL_API_KEY`, set `API_DAILY_CAP_USD` in the environment to your chosen cap (for example `3`), and restart. `.env` is gitignored. The app reads only `MODEL_API_KEY` from this file; `API_DAILY_CAP_USD`, `HEADS_REPO`, `HF_TOKEN`, `HOST` and `PORT` are environment settings, not `.env` settings.
+
+When enabled, the investigator sends a smaller image copy to Meta as described under [Privacy and safety](#privacy-and-safety). API work has a separate lock and bounded cache, so it does not hold up local inference. A busy/unavailable API returns a fallback. The ledger reserves the maximum estimated cost before a paid request; failed requests retain that reservation because a remote stage may already have been billed. The cap is application accounting, not a provider-enforced billing limit.
+
+| Problem | What to check |
+|---|---|
+| Missing weights / startup stops | Run `python scripts/check_setup.py`; restore every listed artifact from the matching approved bundle |
+| Hugging Face 401/403/404 | Log in with your own account; check gated-model approval and private-repo access. A private repo may appear as 404 without permission |
+| CUDA is unavailable or a kernel is unsupported | Confirm the active environment's PyTorch build and GPU driver using the official PyTorch installer |
+| GPU runs out of memory | Close other GPU jobs, or use CPU: set `CUDA_VISIBLE_DEVICES=-1` before starting the server |
+| Optional explanation/generation unavailable | Check your API key, cap and provider availability; the pixel checks still work |
+| Port 7860 already in use | Stop the existing process or set `PORT` to another free port before starting |
+
+### Local release checks
+
+The CPU behavior checks use synthetic images and mocked models/services. They need no model weights, API key, downloads or GPU:
+
+```bash
+python scripts/check_setup.py --checks-only
+python -m src.eval.app_release_check --output results/ci/app_checks.json
+python -m pip check
+```
+
+The GitHub Actions workflow runs these checks on pushes and pull requests. If Node.js is installed, `node --check app/web/app.js` also checks frontend syntax. Node is not required to run the app. The separate Chrome interaction check is `python -m src.eval.release_browser_check --output-dir results/browser_local`; it requires Chrome and Node. It uses the normal Windows Chrome location by default; on Linux, pass `--chrome /path/to/google-chrome`. Neither synthetic check measures detector accuracy.
+
+With access to the private weights and local evaluation data, run the complete GPU regression and then the transformation checks, one GPU job at a time:
+
+```bash
+python -m src.eval.release_live --ui --out-dir results/hardened_2026-11-04 --private-out-dir data/private/hardened_2026-11-04
+python -m src.eval.release_private_live --directory results/hardened_2026-11-04
+python -m src.eval.release_robustness --out-dir results/hardened_2026-11-04
+```
+
+Reports keep calibration, development, reused regression and held-out evaluation roles separate. Overlapping dataset entries are not an independent sample count. The original audit is preserved in [results/release_2026-11-04/summary.md](results/release_2026-11-04/summary.md); local checks are in [results/hardened_2026-11-04/](results/hardened_2026-11-04/). After all three GPU commands finish, `python -m src.eval.release_finalize` checks frozen artifacts, privacy, dependencies and local release gates. Its original deployment-pending status describes that earlier local checkpoint; the later [deployment report](results/deployment_2026-11-04/summary.md) records the completed hosted verification and passing GitHub CI. The [demo guide](docs/DEMO.md) gives a three-minute walkthrough and reusable hosted checks.
 
 Training code: [src/](src/), [scripts/](scripts/) and the Colab launcher [notebooks/colab_face_swap.ipynb](notebooks/colab_face_swap.ipynb).
 

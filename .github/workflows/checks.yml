@@ -30,6 +30,8 @@ jobs:
           python -m pip install -r requirements.txt
           python -m pip check
       - name: Offline behavior checks
-        run: python -m src.eval.app_release_check --output results/ci/app_checks.json
+        run: |
+          python scripts/check_setup.py --checks-only
+          python -m src.eval.app_release_check --output results/ci/app_checks.json
       - name: Frontend syntax
         run: node --check app/web/app.js

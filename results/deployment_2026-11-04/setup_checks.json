@@ -1,0 +1,29 @@
+{
+  "checked_at_utc": "2026-11-04T13:44:40.622056+00:00",
+  "passed": true,
+  "cases": [
+    {
+      "name": "actual_bundle",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true,
+      "output": "Python: 3.12.7\nPyTorch: 2.11.0+cu128; CUDA available: True\nGPU: NVIDIA GeForce RTX 5050 Laptop GPU\nDependencies and trained artifact layout ready. Model access/cache is verified when app.server starts."
+    },
+    {
+      "name": "synthetic_checks_without_artifacts",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true,
+      "output": "Python: 3.12.7\nDependency setup ready for synthetic checks; trained artifacts were skipped."
+    },
+    {
+      "name": "missing_artifacts_clear_failure",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "passed": true,
+      "output": "Python: 3.12.7\nERROR: Missing artifact: weights/google_v1/head_G3tt.pt\nERROR: Missing artifact: weights/google_v1/head_G3tt_calibration.json\nERROR: Missing artifact: weights/edit_check_v3/head_EC3pf.pt\nERROR: Missing artifact: weights/edit_check_v3/head_EC3g.pt\nERROR: Missing artifact: weights/edit_check_v3/pe_EC3.pt\nERROR: Missing artifact: weights/edit_check_v3/head_EC3pf_calibration.json\nERROR: Missing artifact: weights/face_pe_v4/head_facepe.pt\nERROR: Missing artifact: weights/face_pe_v4/pe_step14000.pt\nSetup incomplete. Follow README > Run it yourself."
+    }
+  ],
+  "model_downloads_performed": false,
+  "paid_apis_called": false
+}

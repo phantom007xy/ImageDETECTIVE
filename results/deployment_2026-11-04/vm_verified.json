@@ -1,0 +1,22 @@
+{
+  "verified_at_utc": "2026-11-04T13:33:21.755269+00:00",
+  "code_commit": "8f64ca6c6350bcbd0d59c4a4923f312bf26f0ab8",
+  "service_active": true,
+  "frozen_configuration_sha256": "3bd80a815a518a8ece21e75002249c172406c289f8c4ed4db6bb84182b89d412",
+  "artifacts_checked": 51,
+  "artifact_mismatches": [],
+  "edit_lines": [
+    5.4107747077941895,
+    5.403400897979736
+  ],
+  "optional_api_key_configured": true,
+  "expected_private_model_repo": true,
+  "versions": {
+    "torch": "2.11.0+cpu",
+    "torchvision": "0.26.0+cpu",
+    "fastapi": "0.162.0",
+    "starlette": "1.10.0",
+    "python-multipart": "0.0.32"
+  },
+  "passed": true
+}

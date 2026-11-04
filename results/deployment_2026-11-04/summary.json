@@ -1,0 +1,18 @@
+{
+  "verified_at_utc": "2026-11-04T13:44:40.624055+00:00",
+  "application_code_commit": "8f64ca6c6350bcbd0d59c4a4923f312bf26f0ab8",
+  "frozen_configuration_sha256": "3bd80a815a518a8ece21e75002249c172406c289f8c4ed4db6bb84182b89d412",
+  "hosted_verified": true,
+  "setup_checks_passed": true,
+  "hosted_checks_passed": 15,
+  "judge_original_file_matches": 80,
+  "judge_original_file_count": 80,
+  "cpu_gpu_component_differences": 4,
+  "passing_application_ci": "https://github.com/phantom007xy/ImageDETECTIVE/actions/runs/41836585609",
+  "private_photos_uploaded": false,
+  "meta_paid_test_calls": false,
+  "remaining_user_work": [
+    "Record/upload the video and add its link before submission."
+  ],
+  "scope": "Deployment report supersedes the deployment-pending TODOs in the earlier local checkpoint. Original reports are preserved."
+}
