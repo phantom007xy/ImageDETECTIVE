@@ -12,6 +12,8 @@ Models (licences checked 31 Oct 2026):
            so its images are a dev test only, never training: SDXL must stay unseen.
   k22    = kandinsky-community/kandinsky-2-2-decoder + -prior (Apache 2.0, open); its own MoVQ decoder
 No SDXL-based model for training: SDXL stays the generator the head has never seen.
+Added 13 Nov 2026 (see MODELS): sana (Apache 2.0, DC-AE decoder), wuerstchen (MIT, VQGAN decoder), amused (OpenRAIL++,
+VQ-VAE token model) for training variety; kolors (Apache 2.0, SDXL's VAE) as a dev set only.
 Runtime rule: these are offline data-preparation tools only; the app never calls them.
 
 Each model gets its own share of the prompts (--part / --parts), so every caption is used once.
@@ -37,6 +39,20 @@ import torch
 MODELS = {
     "sd35m": {"repo": "stabilityai/stable-diffusion-3.5-medium", "steps": 28, "guidance": 4.5, "megapixels": 0.8},
     "pixart": {"repo": "PixArt-alpha/PixArt-Sigma-XL-2-1024-MS", "steps": 20, "guidance": 4.5, "megapixels": 0.8},
+    # Added 13 Nov 2026 (after the hackathon; licences checked on Hugging Face that day). Each brings a decoder family
+    # the head has not seen: Sana (DC-AE, Apache 2.0), Wuerstchen v2 (Paella VQGAN, MIT), aMUSEd (VQ-VAE token model,
+    # OpenRAIL++, 512 px). Kolors (Apache 2.0) uses SDXL's VAE, so like PixArt it is a dev set only, never training.
+    # "pipeline": the diffusers class; "variant": fp16 weights where they exist; "offload": CPU offload (16 GB GPUs);
+    # "multiple": the size step the model needs; "call": extra call arguments; "plain_call": no guidance/steps names.
+    "sana": {"repo": "Efficient-Large-Model/Sana_1600M_1024px_diffusers", "pipeline": "SanaPipeline", "variant": "fp16",
+             "steps": 20, "guidance": 4.5, "megapixels": 0.8, "multiple": 32, "bf16_parts": ("vae", "text_encoder")},
+    "wuerstchen": {"repo": "warp-ai/wuerstchen", "pipeline": "AutoPipelineForText2Image", "megapixels": 0.8, "multiple": 128,
+                   "plain_call": True, "call": {"prior_guidance_scale": 4.0, "prior_num_inference_steps": 60,
+                                                "num_inference_steps": 12, "decoder_guidance_scale": 0.0}},
+    "amused": {"repo": "amused/amused-512", "pipeline": "AmusedPipeline", "variant": "fp16", "steps": 12, "guidance": 10.0,
+               "megapixels": 0.26, "multiple": 16},
+    "kolors": {"repo": "Kwai-Kolors/Kolors-diffusers", "pipeline": "KolorsPipeline", "variant": "fp16", "offload": True,
+               "steps": 25, "guidance": 5.0, "megapixels": 0.8},
     # Kandinsky 2.2 was trained at 768 x 768, so it gets a smaller size.
     "k22": {"repo": "kandinsky-community/kandinsky-2-2-decoder", "steps": 30, "guidance": 4.0, "megapixels": 0.6},
 }
@@ -52,18 +68,31 @@ def load_pipeline(name, device):
     elif name == "k22":
         from diffusers import AutoPipelineForText2Image  # loads the prior and the decoder together
         pipe = AutoPipelineForText2Image.from_pretrained(MODELS[name]["repo"], torch_dtype=torch.float16).to(device)
-    else:
+    elif name == "pixart":
         from diffusers import PixArtSigmaPipeline
         pipe = PixArtSigmaPipeline.from_pretrained(MODELS[name]["repo"], torch_dtype=torch.float16).to(device)
+    else:  # the generic entries (13 Nov): class name, fp16 variant, optional CPU offload, parts kept in bf16
+        import diffusers
+        m = MODELS[name]
+        kwargs = {"torch_dtype": torch.float16}
+        if m.get("variant"):
+            kwargs["variant"] = m["variant"]
+        pipe = getattr(diffusers, m["pipeline"]).from_pretrained(m["repo"], **kwargs)
+        for part in m.get("bf16_parts", ()):  # e.g. Sana's VAE and text encoder overflow in fp16 (their own snippet)
+            getattr(pipe, part).to(torch.bfloat16)
+        if m.get("offload"):
+            pipe.enable_model_cpu_offload(gpu_id=torch.device(device).index or 0)
+        else:
+            pipe.to(device)
     pipe.set_progress_bar_config(disable=True)
     return pipe
 
 
-def target_size(size, megapixels):
-    """The real photo's aspect ratio at about `megapixels`, both sides a multiple of 64."""
+def target_size(size, megapixels, multiple=64):
+    """The real photo's aspect ratio at about `megapixels`, both sides a multiple of `multiple`."""
     w, h = (int(v) for v in size.split("x"))
     scale = math.sqrt(megapixels * 1e6 / (w * h))
-    return max(256, round(w * scale / 64) * 64), max(256, round(h * scale / 64) * 64)
+    return (max(256, round(w * scale / multiple) * multiple), max(256, round(h * scale / multiple) * multiple))
 
 
 def main():
@@ -100,11 +129,14 @@ def main():
         if new_file:
             writer.writeheader()
         for i, row in enumerate(todo, 1):
-            width, height = target_size(row["size"], args.megapixels or settings["megapixels"])
+            width, height = target_size(row["size"], args.megapixels or settings["megapixels"], settings.get("multiple", 64))
             seed = zlib.crc32(row["id"].encode())  # the same image on every run
             start = time.time()
-            image = pipe(row["prompt"], width=width, height=height, num_inference_steps=settings["steps"],
-                         guidance_scale=settings["guidance"], generator=torch.Generator("cpu").manual_seed(seed)).images[0]
+            call = dict(settings.get("call", {}))
+            if not settings.get("plain_call"):
+                call.update(num_inference_steps=settings["steps"], guidance_scale=settings["guidance"])
+            image = pipe(row["prompt"], width=width, height=height, generator=torch.Generator("cpu").manual_seed(seed),
+                         **call).images[0]
             # fp16 can overflow and give a black (or NaN) image: record it instead of using it.
             status = "ok" if np.asarray(image).mean() > 2 else "black"
             if status == "ok":
