@@ -17,7 +17,7 @@ import io
 
 import numpy as np
 import torch
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageFilter
 
 MODEL_SIZE = 448  # a multiple of 16 -> 28 x 28 = 784 patches
 MEAN = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)  # ImageNet values that DINOv3 expects
@@ -43,6 +43,30 @@ def train_view(image, rng, size=MODEL_SIZE):
 
     w, h = image.size
     smallest_scale = min(1.0, max(0.5, size / min(w, h)))  # don't shrink below the model size
+    scale = rng.uniform(smallest_scale, 1.0)
+    if scale < 1.0:
+        image = image.resize((round(w * scale), round(h * scale)), Image.BICUBIC)
+
+    w, h = image.size
+    side = round(min(w, h) * rng.uniform(0.6, 1.0))
+    image = square_crop(image, side, rng.randint(0, w - side), rng.randint(0, h - side), size)
+
+    image = ImageEnhance.Brightness(image).enhance(rng.uniform(0.6, 1.5))
+    image = ImageEnhance.Contrast(image).enhance(rng.uniform(0.85, 1.15))
+    return jpeg(image, rng.randint(65, 95))
+
+
+def train_view_strong(image, rng, size=MODEL_SIZE):
+    """train_view with CNNDetection's robustness recipe (Wang et al., CVPR 2020: Gaussian blur, sigma 0-3, and JPEG
+    quality 30-100, each with probability 0.5, applied before the crop) in place of the first JPEG step. Added
+    13 Nov 2026 for the "strong augmentation" experiment; train_view itself stays as it was for every earlier head."""
+    if rng.random() < 0.5:
+        image = image.filter(ImageFilter.GaussianBlur(rng.uniform(0.0, 3.0)))
+    if rng.random() < 0.5:
+        image = jpeg(image, rng.randint(30, 100))
+
+    w, h = image.size
+    smallest_scale = min(1.0, max(0.5, size / min(w, h)))
     scale = rng.uniform(smallest_scale, 1.0)
     if scale < 1.0:
         image = image.resize((round(w * scale), round(h * scale)), Image.BICUBIC)

@@ -39,7 +39,7 @@ def read_input(path, labels):
     return sid_set.iter_rows(path, labels=labels)
 
 
-def extract_file(backbone, input_path, out_path, mode, copies, seed, batch_size, labels, app_view=None):
+def extract_file(backbone, input_path, out_path, mode, copies, seed, batch_size, labels, app_view=None, strong=False):
     features, labels_out, img_ids, copy_ids, sources = [], [], [], [], []
     batch = []
 
@@ -53,7 +53,8 @@ def extract_file(backbone, input_path, out_path, mode, copies, seed, batch_size,
         images += 1
         for copy in range(copies if mode == "train" else 1):
             if mode == "train":
-                view = preprocess.train_view(row["image"], view_rng(row["img_id"], copy, seed))
+                make_view = preprocess.train_view_strong if strong else preprocess.train_view
+                view = make_view(row["image"], view_rng(row["img_id"], copy, seed))
             elif mode == "app":
                 view = preprocess.inference_view(row["image"], app_view)  # exactly what the app sees
             else:
@@ -98,6 +99,8 @@ def main():
     parser.add_argument("--tuned", type=Path, help="tuned DINOv3 weights (src/models/tune_backbone.py); "
                                                    "the file name gets _<folder>-<file>, e.g. _ln_v1-ln_step2000")
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--strong", action="store_true", help="train mode: blur 0-3 + JPEG 30-100 at p 0.5 before the crop "
+                        "(preprocess.train_view_strong, the CNNDetection recipe)")
     args = parser.parse_args()
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
@@ -108,8 +111,8 @@ def main():
         if args.tuned:
             suffix += f"_{args.tuned.parent.name}-{args.tuned.stem}"
         out_path = args.out_dir / f"{path.stem}_{args.mode}{suffix}.npz"
-        extract_file(backbone, path, out_path, args.mode, args.copies, args.seed, args.batch_size, tuple(args.labels),
-                     args.view)
+        extract_file(backbone, path, out_path, args.mode, args.copies, args.seed, args.batch_size, tuple(args.labels), strong=args.strong,
+                     app_view=args.view)
 
 
 if __name__ == "__main__":
