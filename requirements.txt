@@ -8,7 +8,6 @@ numpy==2.5.2
 pillow==12.3.0
 pyarrow==26.0.0
 opencv-python-headless==5.0.0.93
-gradio==6.31.0
 # Direct web-server dependencies: upload handling is tested against these versions.
 fastapi==0.162.0
 starlette==1.10.0
@@ -18,7 +17,7 @@ python-multipart==0.0.32
 pandas==2.3.3
 # Meta's parser for SAM 3.1 API output (SAM Licence, no dependencies); used by src/services/sam_outline.py.
 meta-sam-parser==0.1.0
-# HTTP client for the Meta Model API (already installed with gradio; pinned here because we use it directly).
+# HTTP client for the Meta Model API and the download scripts.
 httpx==0.28.1
 # Loads Meta's Perception Encoder (PE-Core-L/14, Apache 2.0) for the Muse-edit check (src/models/pe_core.py).
 timm==1.0.30

@@ -2,7 +2,7 @@
 
 The heads (a few KB each) are never in the public GitHub repo or the public Space: the DFDC face-swap head
 must not be published, and a public Space's files are public. The Space downloads them at start with its
-token (app/app.py, environment variables HEADS_REPO and HF_TOKEN).
+token (app/server.py, environment variables HEADS_REPO and HF_TOKEN).
 
 Uploads: the app's head, its calibration file and every head the calibration names (e.g. the DFDC swap head),
 the edit check's head and calibration and, if it names one, its fine-tuned PE, under the same paths as in weights/.
